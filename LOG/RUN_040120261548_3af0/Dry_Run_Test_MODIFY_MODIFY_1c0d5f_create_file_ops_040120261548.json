@@ -1,0 +1,16 @@
+{
+  "action": "create",
+  "path": "dry\\docs\\README.md",
+  "absolute_path": "C:\\Kaja_generator\\OUT\\dry\\docs\\README.md",
+  "source_path": null,
+  "target_path": "C:\\Kaja_generator\\OUT\\dry\\docs\\README.md",
+  "size_before": null,
+  "size_after": 185,
+  "hash_before": null,
+  "hash_after": "cd959218b23bb78b18f8acd5725aa3b43d13c13025edb810c20898b1cd6eaf27",
+  "project": "Dry Run Test",
+  "response_id": "MODIFY_1c0d5f",
+  "stage": "MODIFY",
+  "timestamp": "2026-01-04T14:48:59.759151",
+  "run_id": "RUN_040120261548_3af0"
+}

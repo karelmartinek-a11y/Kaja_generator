@@ -1,0 +1,28 @@
+{
+  "project": "Dry Run Test",
+  "response_id": "MODIFY_1c0d5f",
+  "mode": "MODIFY",
+  "phase": "B2",
+  "files": [
+    {
+      "path": "dry/core/runtime.py",
+      "absolute_path": "C:\\Kaja_generator\\OUT\\dry\\core\\runtime.py",
+      "existing": false,
+      "purpose": "Entry point runtime orchestrator"
+    },
+    {
+      "path": "dry/core/pipeline.py",
+      "absolute_path": "C:\\Kaja_generator\\OUT\\dry\\core\\pipeline.py",
+      "existing": false,
+      "purpose": "Plní úkoly A/B pipeline"
+    },
+    {
+      "path": "dry/docs/README.md",
+      "absolute_path": "C:\\Kaja_generator\\OUT\\dry\\docs\\README.md",
+      "existing": false,
+      "purpose": "Popis projektu a zvoleného režimu"
+    }
+  ],
+  "risks": [],
+  "generated_at": "2026-01-04T14:48:59.738791"
+}

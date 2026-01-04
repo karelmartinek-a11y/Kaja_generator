@@ -1,0 +1,67 @@
+{
+  "receipt": {
+    "run_id": "RUN_040120261548_3af0",
+    "project": "Dry Run Test",
+    "model": "gpt-4o",
+    "mode": "MODIFY",
+    "response_id": "MODIFY_1c0d5f",
+    "total_cost": 0.000793,
+    "details": {
+      "mode": "MODIFY",
+      "model": "gpt-4o",
+      "summary_steps": [
+        "B1",
+        "B2",
+        "B3"
+      ],
+      "usage": {
+        "input_tokens": 4,
+        "output_tokens": 201,
+        "storage_bytes": 746,
+        "storage_gb": 6.94766640663147e-07,
+        "storage_days": 6.94766640663147e-07,
+        "vector_store_files": 0,
+        "attachments_bytes": 0,
+        "attachments": [],
+        "files": [
+          {
+            "path": "C:\\Kaja_generator\\OUT\\dry\\core\\runtime.py",
+            "size": 284
+          },
+          {
+            "path": "C:\\Kaja_generator\\OUT\\dry\\core\\pipeline.py",
+            "size": 277
+          },
+          {
+            "path": "C:\\Kaja_generator\\OUT\\dry\\docs\\README.md",
+            "size": 185
+          }
+        ]
+      },
+      "vector_store_ids": [],
+      "cost_breakdown": {
+        "input_cost": 1e-05,
+        "output_cost": 0.000603,
+        "vector_store_cost": 0.0,
+        "storage_cost": 6.94766640663147e-12,
+        "file_api_cost": 0.00018,
+        "tool_cost": 0.0,
+        "discount_factor": 1.0
+      },
+      "total_cost": 0.000793,
+      "pricing_summary": {
+        "source": "defaults",
+        "last_refreshed": null,
+        "verified": false,
+        "status": "Ceník offline / odhad",
+        "error": "Pricing URL není nastaven"
+      },
+      "status": "Ceník offline / odhad",
+      "verified": false,
+      "computed_at": "2026-01-04T14:48:59.759753"
+    },
+    "created_at": "2026-01-04T14:48:59.759795",
+    "verified_pricing": false
+  },
+  "logged_at": "2026-01-04T14:48:59.766112"
+}

@@ -1,0 +1,209 @@
+{
+  "attachments": [],
+  "vector_store_ids": [],
+  "mode": "MODIFY",
+  "response_id": "MODIFY_c683ad",
+  "project": "E2E Diff/Hook Test",
+  "run_id": "RUN_040120261546_3f78",
+  "vector_store_requested": [],
+  "vector_store_enabled": false,
+  "capabilities": {
+    "supports_vector_store": true,
+    "supports_file_search": false,
+    "source": "defaults"
+  },
+  "files_written": [
+    "C:\\Kaja_generator\\OUT\\modify\\core\\runtime.py",
+    "C:\\Kaja_generator\\OUT\\modify\\core\\pipeline.py",
+    "C:\\Kaja_generator\\OUT\\modify\\docs\\README.md"
+  ],
+  "duration_s": 0.06,
+  "steps": [
+    "B1",
+    "B2",
+    "B3"
+  ],
+  "total_cost": 0.000822,
+  "pricing_receipt": "E2E_Diff_Hook_Test_MODIFY_c683ad_MODIFY_receipt_040120261546.json",
+  "ui_state_log": "E2E_Diff_Hook_Test_MODIFY_MODIFY_c683ad_ui_state_040120261546.json",
+  "log_files": [
+    {
+      "path": "E2E_Diff_Hook_Test_MODIFY_MODIFY_c683ad_ui_state_040120261546.json",
+      "category": "ui_state"
+    },
+    {
+      "path": "E2E_Diff_Hook_Test_MODIFY_c683ad_run_metadata_040120261546.json",
+      "category": "run_metadata",
+      "meta": {
+        "mode": "MODIFY"
+      }
+    },
+    {
+      "path": "E2E_Diff_Hook_Test_B1_MODIFY_c683ad_request_040120261546.json",
+      "category": "request",
+      "meta": {
+        "stage": "B1"
+      }
+    },
+    {
+      "path": "E2E_Diff_Hook_Test_B1_MODIFY_c683ad_response_040120261546.json",
+      "category": "response",
+      "meta": {
+        "stage": "B1",
+        "response_id": "MODIFY_c683ad"
+      }
+    },
+    {
+      "path": "files\\modify\\core\\runtime.py",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "modify\\core\\runtime.py"
+      }
+    },
+    {
+      "path": "E2E_Diff_Hook_Test_MODIFY_MODIFY_c683ad_create_file_ops_040120261546.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "files\\modify\\core\\pipeline.py",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "modify\\core\\pipeline.py"
+      }
+    },
+    {
+      "path": "E2E_Diff_Hook_Test_MODIFY_MODIFY_c683ad_create_file_ops_040120261546.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "files\\modify\\docs\\README.md",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "modify\\docs\\README.md"
+      }
+    },
+    {
+      "path": "E2E_Diff_Hook_Test_MODIFY_MODIFY_c683ad_create_file_ops_040120261546.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "E2E_Diff_Hook_Test_MODIFY_MODIFY_c683ad_local_hook_040120261546.json",
+      "category": "hook",
+      "meta": {
+        "kind": "local",
+        "command": "python -c \"print('post-hook local run')\"",
+        "stage": "MODIFY"
+      }
+    },
+    {
+      "path": "E2E_Diff_Hook_Test_MODIFY_c683ad_MODIFY_receipt_040120261546.json",
+      "category": "receipt",
+      "meta": {
+        "total_cost": 0.000822
+      }
+    }
+  ],
+  "dry_run_summary": null,
+  "dry_run_summary_log": null,
+  "post_run_hooks": [
+    {
+      "kind": "local",
+      "command": "python -c \"print('post-hook local run')\"",
+      "status": "success",
+      "exit_code": 0,
+      "stdout": "post-hook local run",
+      "stderr": "",
+      "timestamp": "2026-01-04T14:46:23.611761",
+      "project": "E2E Diff/Hook Test",
+      "response_id": "MODIFY_c683ad",
+      "stage": "MODIFY",
+      "log": "E2E_Diff_Hook_Test_MODIFY_MODIFY_c683ad_local_hook_040120261546.json"
+    }
+  ],
+  "pricing_details": {
+    "mode": "MODIFY",
+    "model": "gpt-4o",
+    "summary_steps": [
+      "B1",
+      "B2",
+      "B3"
+    ],
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 209,
+      "storage_bytes": 779,
+      "storage_gb": 7.255002856254578e-07,
+      "storage_days": 7.255002856254578e-07,
+      "vector_store_files": 0,
+      "attachments_bytes": 0,
+      "attachments": [],
+      "files": [
+        {
+          "path": "C:\\Kaja_generator\\OUT\\modify\\core\\runtime.py",
+          "size": 295
+        },
+        {
+          "path": "C:\\Kaja_generator\\OUT\\modify\\core\\pipeline.py",
+          "size": 288
+        },
+        {
+          "path": "C:\\Kaja_generator\\OUT\\modify\\docs\\README.md",
+          "size": 196
+        }
+      ]
+    },
+    "vector_store_ids": [],
+    "cost_breakdown": {
+      "input_cost": 1.5000000000000002e-05,
+      "output_cost": 0.0006270000000000001,
+      "vector_store_cost": 0.0,
+      "storage_cost": 7.2550028562545785e-12,
+      "file_api_cost": 0.00018,
+      "tool_cost": 0.0,
+      "discount_factor": 1.0
+    },
+    "total_cost": 0.000822,
+    "pricing_summary": {
+      "source": "defaults",
+      "last_refreshed": null,
+      "verified": false,
+      "status": "Ceník offline / odhad",
+      "error": "Pricing URL není nastaven"
+    },
+    "status": "Ceník offline / odhad",
+    "verified": false,
+    "computed_at": "2026-01-04T14:46:23.664506"
+  },
+  "pricing_catalog": {
+    "source": "defaults",
+    "last_refreshed": null,
+    "verified": false,
+    "status": "Ceník offline / odhad",
+    "error": "Pricing URL není nastaven"
+  },
+  "timeline": [
+    {
+      "step": "B1",
+      "start": "2026-01-04T14:46:23.604259",
+      "end": "2026-01-04T14:46:23.605561",
+      "duration_s": 0.001,
+      "result": "completed",
+      "details": {
+        "contract": "B1_PLAN"
+      },
+      "ids": {
+        "response_id": "MODIFY_c683ad"
+      }
+    }
+  ],
+  "timeline_log": "RUN_040120261546_3f78_timeline_040120261546.json"
+}

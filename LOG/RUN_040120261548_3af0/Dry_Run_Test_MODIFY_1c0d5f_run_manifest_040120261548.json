@@ -1,0 +1,221 @@
+{
+  "attachments": [],
+  "vector_store_ids": [],
+  "mode": "MODIFY",
+  "response_id": "MODIFY_1c0d5f",
+  "project": "Dry Run Test",
+  "run_id": "RUN_040120261548_3af0",
+  "vector_store_requested": [],
+  "vector_store_enabled": false,
+  "capabilities": {
+    "supports_vector_store": true,
+    "supports_file_search": false,
+    "source": "defaults"
+  },
+  "files_written": [
+    "C:\\Kaja_generator\\OUT\\dry\\core\\runtime.py",
+    "C:\\Kaja_generator\\OUT\\dry\\core\\pipeline.py",
+    "C:\\Kaja_generator\\OUT\\dry\\docs\\README.md"
+  ],
+  "duration_s": 0.02,
+  "steps": [
+    "B1",
+    "B2",
+    "B3"
+  ],
+  "total_cost": 0.000793,
+  "pricing_receipt": "Dry_Run_Test_MODIFY_1c0d5f_MODIFY_receipt_040120261548.json",
+  "ui_state_log": "Dry_Run_Test_MODIFY_MODIFY_1c0d5f_ui_state_040120261548.json",
+  "log_files": [
+    {
+      "path": "Dry_Run_Test_MODIFY_MODIFY_1c0d5f_ui_state_040120261548.json",
+      "category": "ui_state"
+    },
+    {
+      "path": "Dry_Run_Test_MODIFY_1c0d5f_run_metadata_040120261548.json",
+      "category": "run_metadata",
+      "meta": {
+        "mode": "MODIFY"
+      }
+    },
+    {
+      "path": "Dry_Run_Test_B1_MODIFY_1c0d5f_request_040120261548.json",
+      "category": "request",
+      "meta": {
+        "stage": "B1"
+      }
+    },
+    {
+      "path": "Dry_Run_Test_B1_MODIFY_1c0d5f_response_040120261548.json",
+      "category": "response",
+      "meta": {
+        "stage": "B1",
+        "response_id": "MODIFY_1c0d5f"
+      }
+    },
+    {
+      "path": "Dry_Run_Test_MODIFY_1c0d5f_dry_run_summary_040120261548.json",
+      "category": "dry_run_summary",
+      "meta": {
+        "phase": "B2"
+      }
+    },
+    {
+      "path": "files\\dry\\core\\runtime.py",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "dry\\core\\runtime.py"
+      }
+    },
+    {
+      "path": "Dry_Run_Test_MODIFY_MODIFY_1c0d5f_create_file_ops_040120261548.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "files\\dry\\core\\pipeline.py",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "dry\\core\\pipeline.py"
+      }
+    },
+    {
+      "path": "Dry_Run_Test_MODIFY_MODIFY_1c0d5f_create_file_ops_040120261548.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "files\\dry\\docs\\README.md",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "dry\\docs\\README.md"
+      }
+    },
+    {
+      "path": "Dry_Run_Test_MODIFY_MODIFY_1c0d5f_create_file_ops_040120261548.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "Dry_Run_Test_MODIFY_1c0d5f_MODIFY_receipt_040120261548.json",
+      "category": "receipt",
+      "meta": {
+        "total_cost": 0.000793
+      }
+    }
+  ],
+  "dry_run_summary": {
+    "project": "Dry Run Test",
+    "response_id": "MODIFY_1c0d5f",
+    "mode": "MODIFY",
+    "phase": "B2",
+    "files": [
+      {
+        "path": "dry/core/runtime.py",
+        "absolute_path": "C:\\Kaja_generator\\OUT\\dry\\core\\runtime.py",
+        "existing": false,
+        "purpose": "Entry point runtime orchestrator"
+      },
+      {
+        "path": "dry/core/pipeline.py",
+        "absolute_path": "C:\\Kaja_generator\\OUT\\dry\\core\\pipeline.py",
+        "existing": false,
+        "purpose": "Plní úkoly A/B pipeline"
+      },
+      {
+        "path": "dry/docs/README.md",
+        "absolute_path": "C:\\Kaja_generator\\OUT\\dry\\docs\\README.md",
+        "existing": false,
+        "purpose": "Popis projektu a zvoleného režimu"
+      }
+    ],
+    "risks": [],
+    "generated_at": "2026-01-04T14:48:59.738791",
+    "log": "Dry_Run_Test_MODIFY_1c0d5f_dry_run_summary_040120261548.json"
+  },
+  "dry_run_summary_log": "Dry_Run_Test_MODIFY_1c0d5f_dry_run_summary_040120261548.json",
+  "post_run_hooks": [],
+  "pricing_details": {
+    "mode": "MODIFY",
+    "model": "gpt-4o",
+    "summary_steps": [
+      "B1",
+      "B2",
+      "B3"
+    ],
+    "usage": {
+      "input_tokens": 4,
+      "output_tokens": 201,
+      "storage_bytes": 746,
+      "storage_gb": 6.94766640663147e-07,
+      "storage_days": 6.94766640663147e-07,
+      "vector_store_files": 0,
+      "attachments_bytes": 0,
+      "attachments": [],
+      "files": [
+        {
+          "path": "C:\\Kaja_generator\\OUT\\dry\\core\\runtime.py",
+          "size": 284
+        },
+        {
+          "path": "C:\\Kaja_generator\\OUT\\dry\\core\\pipeline.py",
+          "size": 277
+        },
+        {
+          "path": "C:\\Kaja_generator\\OUT\\dry\\docs\\README.md",
+          "size": 185
+        }
+      ]
+    },
+    "vector_store_ids": [],
+    "cost_breakdown": {
+      "input_cost": 1e-05,
+      "output_cost": 0.000603,
+      "vector_store_cost": 0.0,
+      "storage_cost": 6.94766640663147e-12,
+      "file_api_cost": 0.00018,
+      "tool_cost": 0.0,
+      "discount_factor": 1.0
+    },
+    "total_cost": 0.000793,
+    "pricing_summary": {
+      "source": "defaults",
+      "last_refreshed": null,
+      "verified": false,
+      "status": "Ceník offline / odhad",
+      "error": "Pricing URL není nastaven"
+    },
+    "status": "Ceník offline / odhad",
+    "verified": false,
+    "computed_at": "2026-01-04T14:48:59.759753"
+  },
+  "pricing_catalog": {
+    "source": "defaults",
+    "last_refreshed": null,
+    "verified": false,
+    "status": "Ceník offline / odhad",
+    "error": "Pricing URL není nastaven"
+  },
+  "timeline": [
+    {
+      "step": "B1",
+      "start": "2026-01-04T14:48:59.737110",
+      "end": "2026-01-04T14:48:59.738445",
+      "duration_s": 0.001,
+      "result": "completed",
+      "details": {
+        "contract": "B1_PLAN"
+      },
+      "ids": {
+        "response_id": "MODIFY_1c0d5f"
+      }
+    }
+  ],
+  "timeline_log": "RUN_040120261548_3af0_timeline_040120261548.json"
+}

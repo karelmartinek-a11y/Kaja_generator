@@ -1,0 +1,12 @@
+{
+  "kind": "local",
+  "command": "python -c \"print('post-hook local run')\"",
+  "status": "success",
+  "exit_code": 0,
+  "stdout": "post-hook local run",
+  "stderr": "",
+  "timestamp": "2026-01-04T14:46:23.611761",
+  "project": "E2E Diff/Hook Test",
+  "response_id": "MODIFY_c683ad",
+  "stage": "MODIFY"
+}

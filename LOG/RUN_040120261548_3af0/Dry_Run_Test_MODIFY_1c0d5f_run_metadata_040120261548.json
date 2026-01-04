@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "project": "Dry Run Test",
+    "mode": "MODIFY",
+    "model": "gpt-4o",
+    "response_id": "MODIFY_1c0d5f",
+    "user_spec": "Dry run modify test",
+    "attachments": [],
+    "vector_store_ids": [],
+    "diagnostics": [],
+    "captured_at": "2026-01-04T14:48:59.735959",
+    "pricing_catalog": {
+      "source": "defaults",
+      "last_refreshed": null,
+      "verified": false,
+      "status": "Ceník offline / odhad",
+      "error": "Pricing URL není nastaven"
+    }
+  },
+  "captured_at": "2026-01-04T14:48:59.735971",
+  "run_id": "RUN_040120261548_3af0"
+}

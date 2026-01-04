@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "run_id": "RUN_040120261548_3af0",
+    "project": "Dry Run Test",
+    "stage": "B1",
+    "response_id": "MODIFY_1c0d5f",
+    "logged_at": "2026-01-04T14:48:59.737763"
+  },
+  "payload": {
+    "model": "gpt-4o",
+    "temperature": 0.2,
+    "instructions": "Režim B1_PLAN: generuj artefakt podle specifikace.",
+    "input": "Projekt: Dry Run Test\nRežim: MODIFY\nModel: gpt-4o\nSpecifikace: Dry run modify test",
+    "contract": "B1_PLAN",
+    "previous_response_id": "",
+    "ui_state_snapshot": {},
+    "result": "Simulovaný výstup pro B1_PLAN"
+  }
+}

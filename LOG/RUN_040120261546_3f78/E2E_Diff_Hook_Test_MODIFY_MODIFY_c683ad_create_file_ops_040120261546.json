@@ -1,0 +1,16 @@
+{
+  "action": "create",
+  "path": "modify\\docs\\README.md",
+  "absolute_path": "C:\\Kaja_generator\\OUT\\modify\\docs\\README.md",
+  "source_path": null,
+  "target_path": "C:\\Kaja_generator\\OUT\\modify\\docs\\README.md",
+  "size_before": null,
+  "size_after": 196,
+  "hash_before": null,
+  "hash_after": "6bcf8abcd7b9f48665951b08c61f376d873f0f3fa3efdf34caebdd1c5c9e8085",
+  "project": "E2E Diff/Hook Test",
+  "response_id": "MODIFY_c683ad",
+  "stage": "MODIFY",
+  "timestamp": "2026-01-04T14:46:23.611308",
+  "run_id": "RUN_040120261546_3f78"
+}

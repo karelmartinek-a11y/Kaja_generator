@@ -1,0 +1,31 @@
+{
+  "models": {
+    "default": {
+      "input_token_rate": 2e-06,
+      "output_token_rate": 2.5e-06,
+      "vector_store_file_rate": 0.0001,
+      "vector_store_gb_rate": 0.0004,
+      "file_api_rate": 5e-05
+    },
+    "gpt-4o": {
+      "input_token_rate": 2.5e-06,
+      "output_token_rate": 3e-06,
+      "vector_store_file_rate": 0.00012,
+      "vector_store_gb_rate": 0.00045,
+      "file_api_rate": 6e-05
+    },
+    "gpt-4o-mini": {
+      "input_token_rate": 1.8e-06,
+      "output_token_rate": 2e-06,
+      "vector_store_file_rate": 8.5e-05,
+      "vector_store_gb_rate": 0.00035,
+      "file_api_rate": 4e-05
+    }
+  },
+  "storage_gb_day": 1e-05,
+  "tool_call_rate": 2e-05,
+  "batch_discount": 1.0,
+  "source": "defaults",
+  "last_refreshed": null,
+  "verified": false
+}

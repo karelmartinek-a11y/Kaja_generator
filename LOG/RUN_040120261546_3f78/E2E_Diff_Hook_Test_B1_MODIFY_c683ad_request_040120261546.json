@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "run_id": "RUN_040120261546_3f78",
+    "project": "E2E Diff/Hook Test",
+    "stage": "B1",
+    "response_id": "MODIFY_c683ad",
+    "logged_at": "2026-01-04T14:46:23.604309"
+  },
+  "payload": {
+    "model": "gpt-4o",
+    "temperature": 0.2,
+    "instructions": "Režim B1_PLAN: generuj artefakt podle specifikace.",
+    "input": "Projekt: E2E Diff/Hook Test\nRežim: MODIFY\nModel: gpt-4o\nSpecifikace: Modify test run for diff",
+    "contract": "B1_PLAN",
+    "previous_response_id": "",
+    "ui_state_snapshot": {}
+  }
+}

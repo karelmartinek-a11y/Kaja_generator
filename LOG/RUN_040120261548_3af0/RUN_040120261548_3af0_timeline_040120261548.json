@@ -1,0 +1,18 @@
+{
+  "run_id": "RUN_040120261548_3af0",
+  "timeline": [
+    {
+      "step": "B1",
+      "start": "2026-01-04T14:48:59.737110",
+      "end": "2026-01-04T14:48:59.738445",
+      "duration_s": 0.001,
+      "result": "completed",
+      "details": {
+        "contract": "B1_PLAN"
+      },
+      "ids": {
+        "response_id": "MODIFY_1c0d5f"
+      }
+    }
+  ]
+}

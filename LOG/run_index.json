@@ -1,0 +1,30 @@
+[
+  {
+    "run_id": "RUN_040120261546_3f78",
+    "project": "E2E Diff/Hook Test",
+    "mode": "MODIFY",
+    "response_id": "MODIFY_c683ad",
+    "status": "completed",
+    "start": "2026-01-04T14:46:23.603001",
+    "end": "2026-01-04T14:46:23.687206",
+    "duration_s": 0.061,
+    "manifest": "E2E_Diff_Hook_Test_MODIFY_c683ad_run_manifest_040120261546.json",
+    "timeline": "RUN_040120261546_3f78_timeline_040120261546.json",
+    "log_dir": "LOG\\RUN_040120261546_3f78",
+    "diagnostics": []
+  },
+  {
+    "run_id": "RUN_040120261548_3af0",
+    "project": "Dry Run Test",
+    "mode": "MODIFY",
+    "response_id": "MODIFY_1c0d5f",
+    "status": "completed",
+    "start": "2026-01-04T14:48:59.735363",
+    "end": "2026-01-04T14:48:59.767914",
+    "duration_s": 0.024,
+    "manifest": "Dry_Run_Test_MODIFY_1c0d5f_run_manifest_040120261548.json",
+    "timeline": "RUN_040120261548_3af0_timeline_040120261548.json",
+    "log_dir": "LOG\\RUN_040120261548_3af0",
+    "diagnostics": []
+  }
+]

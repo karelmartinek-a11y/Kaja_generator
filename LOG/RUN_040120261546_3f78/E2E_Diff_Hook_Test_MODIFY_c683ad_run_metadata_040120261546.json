@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "project": "E2E Diff/Hook Test",
+    "mode": "MODIFY",
+    "model": "gpt-4o",
+    "response_id": "MODIFY_c683ad",
+    "user_spec": "Modify test run for diff",
+    "attachments": [],
+    "vector_store_ids": [],
+    "diagnostics": [],
+    "captured_at": "2026-01-04T14:46:23.603537",
+    "pricing_catalog": {
+      "source": "defaults",
+      "last_refreshed": null,
+      "verified": false,
+      "status": "Ceník offline / odhad",
+      "error": "Pricing URL není nastaven"
+    }
+  },
+  "captured_at": "2026-01-04T14:46:23.603548",
+  "run_id": "RUN_040120261546_3f78"
+}
