@@ -220,7 +220,6 @@ class MainWindow(QMainWindow):
         self._controls_initialized = True
         self.project_name_edit = QLineEdit()
         self.prompt_edit = QPlainTextEdit()
-        self.prompt_edit.setFixedHeight(120)
         self.mode_combo = QComboBox()
         self.mode_combo.addItems(["GENERATE", "MODIFY", "QA"])
         self.mode_combo.setCurrentText("GENERATE")
@@ -240,7 +239,6 @@ class MainWindow(QMainWindow):
         self.go_button = QPushButton("KÁJA GO")
         self.log_edit = QPlainTextEdit()
         self.log_edit.setReadOnly(True)
-        self.log_edit.setFixedHeight(140)
         self.windows_in_checkbox = QCheckBox("WINDOWS IN")
         self.windows_out_checkbox = QCheckBox("WINDOWS OUT")
         self.ssh_in_checkbox = QCheckBox("SSH IN")
@@ -278,9 +276,7 @@ class MainWindow(QMainWindow):
         self.api_key_button.clicked.connect(self._open_api_key_dialog)
         self.pricing_button = QPushButton("$")
         self.pricing_button.clicked.connect(self._show_pricing)
-        self.pricing_button.setFixedWidth(40)
         self.settings_button = QPushButton("NASTAVENÍ")
-        self.settings_button.setFixedWidth(120)
         self.settings_button.clicked.connect(self._open_settings)
         self.save_button = QPushButton("SAVE")
         self.save_button.clicked.connect(self._on_save_state)
@@ -303,7 +299,9 @@ class MainWindow(QMainWindow):
             self.new_button,
         ):
             control.setCursor(QCursor(Qt.PointingHandCursor))
+            control.setMinimumSize(0, 0)
         self.exit_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.exit_button.setMinimumSize(0, 0)
         self.in_dir_edit.textChanged.connect(self._on_dir_content_changed)
         self.out_dir_edit.textChanged.connect(self._on_dir_content_changed)
         self.get_models_button.clicked.connect(self._on_fetch_models)
@@ -324,9 +322,7 @@ class MainWindow(QMainWindow):
         self.api_key_button.clicked.connect(self._open_api_key_dialog)
         self.pricing_button = QPushButton("$")
         self.pricing_button.clicked.connect(self._show_pricing)
-        self.pricing_button.setFixedWidth(40)
         self.settings_button = QPushButton("NASTAVENÍ")
-        self.settings_button.setFixedWidth(120)
         self.settings_button.clicked.connect(self._open_settings)
         self.save_button = QPushButton("SAVE")
         self.save_button.clicked.connect(self._on_save_state)
@@ -363,7 +359,6 @@ class MainWindow(QMainWindow):
         layout.setColumnStretch(1, 1)
         self.project_name_edit = QLineEdit()
         self.prompt_edit = QPlainTextEdit()
-        self.prompt_edit.setFixedHeight(120)
         self.mode_combo = QComboBox()
         self.mode_combo.addItems(["GENERATE", "MODIFY", "QA"])
         self.mode_combo.setCurrentText("GENERATE")
@@ -383,7 +378,6 @@ class MainWindow(QMainWindow):
         self.go_button = QPushButton("KÁJA GO")
         self.log_edit = QPlainTextEdit()
         self.log_edit.setReadOnly(True)
-        self.log_edit.setFixedHeight(140)
         self.windows_in_checkbox = QCheckBox("WINDOWS IN")
         self.windows_out_checkbox = QCheckBox("WINDOWS OUT")
         self.ssh_in_checkbox = QCheckBox("SSH IN")
@@ -834,8 +828,8 @@ class MainWindow(QMainWindow):
     def _create_batch_table(self) -> QTableWidget:
         table = QTableWidget(0, 5)
         table.setHorizontalHeaderLabels(["Run", "Status", "Started", "Duration", "Akce"])
-        table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        table.setFixedHeight(220)
+        table.setMinimumSize(0, 0)
+        table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         return table
 
     def _create_file_table(self, headers: List[str]) -> QTableWidget:
@@ -844,6 +838,8 @@ class MainWindow(QMainWindow):
         table.setSelectionBehavior(QTableWidget.SelectRows)
         table.setSelectionMode(QTableWidget.MultiSelection)
         table.verticalHeader().hide()
+        table.setMinimumSize(0, 0)
+        table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         return table
 
     def _refresh_local_files_table(self) -> None:
@@ -2248,13 +2244,15 @@ class SectionWidget(QFrame):
         self._section_id = section_id
         self._workspace = workspace
         self.setObjectName("section_frame")
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.setMinimumSize(0, 0)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setStyleSheet(
             "QFrame#section_frame { background:#020202; border:1px solid #222; border-radius:10px; }"
         )
         layout = QVBoxLayout(self)
         layout.setContentsMargins(10, 10, 10, 10)
         layout.setSpacing(8)
+        layout.setSizeConstraint(QLayout.SetNoConstraint)
 
         header = QFrame()
         header_layout = QHBoxLayout(header)
@@ -2264,11 +2262,24 @@ class SectionWidget(QFrame):
         header_layout.addWidget(self._drag_handle)
         header_layout.addStretch()
         layout.addWidget(header)
+        content.setMinimumSize(0, 0)
+        content.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        if content.layout():
+            content.layout().setSizeConstraint(QLayout.SetNoConstraint)
+        self._relax_widget_constraints(content)
+        for child in content.findChildren(QWidget):
+            self._relax_widget_constraints(child)
         layout.addWidget(content, 1)
 
     @property
     def section_id(self) -> str:
         return self._section_id
+
+    @staticmethod
+    def _relax_widget_constraints(widget: QWidget) -> None:
+        widget.setMinimumSize(0, 0)
+        if isinstance(widget, (QPlainTextEdit, QTableWidget, QListWidget, QScrollArea)):
+            widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
 
 class ParkTile(QFrame):
@@ -2448,28 +2459,48 @@ class ColumnArea(QFrame):
         self.setAcceptDrops(True)
         self.setFrameShape(QFrame.NoFrame)
         self.setStyleSheet("background:#030303;")
+        self.setMinimumSize(0, 0)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(10, 10, 10, 10)
-        self._layout.setSpacing(10)
-        self._layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        self._layout.setSpacing(0)
+        self._layout.setSizeConstraint(QLayout.SetNoConstraint)
+        self._splitter = QSplitter(Qt.Vertical)
+        self._splitter.setChildrenCollapsible(True)
+        self._splitter.setHandleWidth(6)
+        self._splitter.setMinimumSize(0, 0)
+        self._splitter.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self._layout.addWidget(self._splitter)
 
     def set_index(self, index: int) -> None:
         self._index = index
 
     def section_widgets(self) -> List[SectionWidget]:
         widgets: List[SectionWidget] = []
-        for idx in range(self._layout.count()):
-            item = self._layout.itemAt(idx)
-            widget = item.widget()
+        for idx in range(self._splitter.count()):
+            widget = self._splitter.widget(idx)
             if isinstance(widget, SectionWidget):
                 widgets.append(widget)
         return widgets
 
     def add_section(self, widget: SectionWidget) -> None:
-        self._layout.addWidget(widget)
+        self._splitter.addWidget(widget)
+        self._rebalance_sections()
 
     def remove_section(self, widget: SectionWidget) -> None:
-        self._layout.removeWidget(widget)
+        index = self._splitter.indexOf(widget)
+        if index < 0:
+            return
+        widget.setParent(None)
+        self._rebalance_sections()
+
+    def _rebalance_sections(self) -> None:
+        count = self._splitter.count()
+        if count == 0:
+            return
+        self._splitter.setSizes([1] * count)
+        for index in range(count):
+            self._splitter.setStretchFactor(index, 1)
 
     def dragEnterEvent(self, event) -> None:
         if self._workspace.has_section_mime(event.mimeData()):
@@ -2549,7 +2580,7 @@ class WorkspacePane(QWidget):
         for number in range(1, 5):
             button = QPushButton(str(number))
             button.setCheckable(True)
-            button.setFixedHeight(102)
+            button.setMinimumSize(0, 0)
             button.setCursor(QCursor(Qt.PointingHandCursor))
             button.clicked.connect(partial(self._set_column_count, number))
             button.setProperty("park_control", True)
@@ -2634,6 +2665,7 @@ class WorkspacePane(QWidget):
             column.set_index(idx)
         self._active_columns = target
         self._sync_column_buttons()
+        self._rebalance_columns()
 
     def _sync_column_buttons(self) -> None:
         for index, button in enumerate(self._column_buttons, start=1):
@@ -2642,6 +2674,14 @@ class WorkspacePane(QWidget):
             button.setProperty("active", active)
             button.style().unpolish(button)
             button.style().polish(button)
+
+    def _rebalance_columns(self) -> None:
+        count = len(self._columns)
+        if count == 0:
+            return
+        self._columns_splitter.setSizes([1] * count)
+        for index in range(count):
+            self._columns_splitter.setStretchFactor(index, 1)
 
     def _get_section_widget(self, section_id: str) -> SectionWidget:
         widget = self._section_widgets.get(section_id)
@@ -2658,8 +2698,12 @@ class WorkspacePane(QWidget):
         if not widget:
             return
         parent = widget.parentWidget()
+        if isinstance(parent, QSplitter) and isinstance(parent.parentWidget(), ColumnArea):
+            parent.parentWidget().remove_section(widget)
+            return
         if isinstance(parent, ColumnArea):
             parent.remove_section(widget)
+            return
         widget.setParent(None)
 
     def _update_park_tiles(self) -> None:
@@ -2689,10 +2733,8 @@ class WorkspacePane(QWidget):
         self._header_label.setFont(header_font)
         button_font = self._column_buttons[0].font() if self._column_buttons else QFont()
         button_font.setPointSize(max(1, int(12 * scale)))
-        button_height = max(12, int(102 * scale))
         for button in self._column_buttons:
             button.setFont(button_font)
-            button.setFixedHeight(button_height)
         self._control_layout.setSpacing(max(0, int(6 * scale)))
         self._park_grid.set_spacing(max(0, int(8 * scale)))
 

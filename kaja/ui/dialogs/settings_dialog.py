@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QPlainTextEdit,
     QScrollArea,
+    QSizePolicy,
     QSpinBox,
     QVBoxLayout,
     QCheckBox,
@@ -173,7 +174,8 @@ class SettingsDialog(QDialog):
             self._deny_paths_diag_edit,
         ):
             edit.setPlaceholderText("Enter one pattern per line (e.g., *.env or **/logs/*)")
-            edit.setFixedHeight(80)
+            edit.setMinimumSize(0, 0)
+            edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         security_group = QGroupBox("Security policy (B1/B2/B3)")
         security_layout = QGridLayout()
@@ -220,7 +222,8 @@ class SettingsDialog(QDialog):
         self._ssh_hooks_edit = QPlainTextEdit(self._list_to_text(settings.ssh_post_hooks))
         for edit in (self._local_hooks_edit, self._ssh_hooks_edit):
             edit.setPlaceholderText("Příkaz na řádek; prázdný řádek odděluje další hook")
-            edit.setFixedHeight(80)
+            edit.setMinimumSize(0, 0)
+            edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         dev_group = QGroupBox("Vývojářský workflow (C1–C3)")
         dev_layout = QGridLayout()
         dev_group.setLayout(dev_layout)

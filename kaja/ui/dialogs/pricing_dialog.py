@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QTableWidgetItem,
     QVBoxLayout,
     QHeaderView,
+    QSizePolicy,
 )
 
 from kaja.core.price_catalog import PriceCatalog
@@ -78,7 +79,8 @@ class PricingDialog(QDialog):
         self._details = QPlainTextEdit()
         self._details.setReadOnly(True)
         self._details.setPlaceholderText("Vyberte účtenku pro zobrazení detailu.")
-        self._details.setMinimumHeight(180)
+        self._details.setMinimumSize(0, 0)
+        self._details.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         layout.addWidget(self._details)
 
         toolbar = QHBoxLayout()
