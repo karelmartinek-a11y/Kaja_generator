@@ -128,7 +128,8 @@ class SettingsDialog(QDialog):
         form.addRow("Pricing TTL (min)", self._pricing_ttl)
         form.addRow("Pricing auto-refresh", self._auto_refresh)
         pricing_help = QLabel(
-            "Ceník se stahuje z uvedené URL a pokrývá vstupní/výstupní tokeny, vector store file/GB, files API i storage-days."
+            "Ceník se stahuje z uvedené URL (pokud je vyplněná) nebo z oficiálního OpenAI endpointu"
+            " https://pricing.openai.com/pricing.json a pokrývá tokeny, vector store i storage-days."
             " Pokud je online ceník nedostupný, program pokračuje s odhadem a účtenka, UI i manifesty jsou označeny jako neověřeno."
         )
         pricing_help.setWordWrap(True)

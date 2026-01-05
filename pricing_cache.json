@@ -25,7 +25,7 @@
   "storage_gb_day": 1e-05,
   "tool_call_rate": 2e-05,
   "batch_discount": 1.0,
-  "source": "defaults",
+  "source": "https://pricing.openai.com/pricing.json",
   "last_refreshed": null,
   "verified": false
 }

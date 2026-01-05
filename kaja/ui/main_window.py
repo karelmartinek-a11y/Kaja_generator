@@ -2,33 +2,38 @@ from __future__ import annotations
 
 import difflib
 import json
+import math
 import os
 import shutil
 import uuid
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime
+from functools import partial
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QCursor, QFont, QGuiApplication
+from PySide6.QtCore import Qt, QMimeData, QSize, QTimer
+from PySide6.QtGui import QCursor, QDrag, QFont, QFontMetrics, QGuiApplication, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
     QComboBox,
     QDialog,
+    QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QListWidget,
+    QLayout,
     QMessageBox,
     QPushButton,
     QPlainTextEdit,
     QScrollArea,
     QSizePolicy,
     QSpinBox,
+    QSplitter,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -64,7 +69,6 @@ from .dialogs import ProgressDialog
 from .dialogs.api_key_dialog import ApiKeyDialog
 from .dialogs.pricing_dialog import PricingDialog
 from .dialogs.settings_dialog import SettingsDialog
-from .flow_layout import FlowLayout
 from .section_card import SectionCard
 try:
     import winreg
@@ -76,6 +80,7 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("Kája – SuperCodex")
+        self.setMinimumSize(0, 0)
         self._root_dir = Path(__file__).resolve().parents[2]
         self._settings_store = SettingsStore(self._root_dir)
         self._settings = self._settings_store.load()
@@ -91,6 +96,7 @@ class MainWindow(QMainWindow):
         self._batch_table = self._create_batch_table()
         self._attached_table = self._create_file_table(["Name", "Purpose", "Size"])
         self._file_api_table = self._create_file_table(["ID", "Name", "Purpose", "Size"])
+        self._local_files_table = self._create_file_table(["Name", "Path", "Akce"])
         self._vector_list = QListWidget()
         self._vector_detail = QPlainTextEdit()
         self._answare_view = QPlainTextEdit()
@@ -99,6 +105,8 @@ class MainWindow(QMainWindow):
         self._file_api_records: List[FileRecord] = []
         self._vector_stores: List[VectorStoreRecord] = []
         self._vector_store_files: Dict[str, List[str]] = {}
+        self._local_files: List[Path] = []
+        self._controls_initialized = False
         self._progress_dialog: ProgressDialog | None = None
         self._script_running = False
         self._last_response_text = ""
@@ -122,15 +130,19 @@ class MainWindow(QMainWindow):
         self._apply_settings_to_ssh_fields()
         QTimer.singleShot(200, self._auto_initialize_api_state)
 
+    def minimumSizeHint(self) -> QSize:
+        return QSize(0, 0)
+
     def _init_ui(self) -> None:
+        self._init_controls()
         central = QWidget()
         self.setCentralWidget(central)
         root_layout = QVBoxLayout(central)
-        root_layout.addWidget(self._build_config_section())
-        root_layout.addWidget(self._build_sections_area())
-        root_layout.addWidget(self._build_answare_section())
-        self._refresh_diag_warning_label()
-        self._update_pricing_status_label()
+        root_layout.setContentsMargins(0, 0, 0, 0)
+        root_layout.setSpacing(0)
+        root_layout.setSizeConstraint(QLayout.SetNoConstraint)
+        root_layout.addWidget(self._build_header())
+        root_layout.addWidget(self._build_workspace(), 1)
 
     def _auto_initialize_api_state(self) -> None:
         if self._auto_init_done:
@@ -202,7 +214,109 @@ class MainWindow(QMainWindow):
             dialog.close()
             self._auto_init_done = True
 
+    def _init_controls(self) -> None:
+        if self._controls_initialized:
+            return
+        self._controls_initialized = True
+        self.project_name_edit = QLineEdit()
+        self.prompt_edit = QPlainTextEdit()
+        self.prompt_edit.setFixedHeight(120)
+        self.mode_combo = QComboBox()
+        self.mode_combo.addItems(["GENERATE", "MODIFY", "QA"])
+        self.mode_combo.setCurrentText("GENERATE")
+        self.send_as_c_checkbox = QCheckBox("SEND AS C (BATCH)")
+        self.in_dir_edit = QLineEdit()
+        self.out_dir_edit = QLineEdit()
+        self.response_id_edit = QLineEdit()
+        self.api_key_edit = QLineEdit()
+        self.api_key_edit.setPlaceholderText("API Key")
+        self.model_combo = QComboBox()
+        self.model_combo.addItems(["gpt-4o", "gpt-4o-mini", "gpt-4o-mini-transcribe"])
+        self.temperature_spin = QSpinBox()
+        self.temperature_spin.setRange(0, 20)
+        self.temperature_spin.setValue(2)
+        self.temperature_spin.setSuffix(" ×0.1")
+        self.get_models_button = QPushButton("GET MODELS")
+        self.go_button = QPushButton("KÁJA GO")
+        self.log_edit = QPlainTextEdit()
+        self.log_edit.setReadOnly(True)
+        self.log_edit.setFixedHeight(140)
+        self.windows_in_checkbox = QCheckBox("WINDOWS IN")
+        self.windows_out_checkbox = QCheckBox("WINDOWS OUT")
+        self.ssh_in_checkbox = QCheckBox("SSH IN")
+        self.ssh_out_checkbox = QCheckBox("SSH OUT")
+        self.windows_in_checkbox.stateChanged.connect(self._on_windows_in_state_changed)
+        self.windows_out_checkbox.stateChanged.connect(self._on_windows_out_state_changed)
+        self.ssh_in_checkbox.stateChanged.connect(self._on_ssh_in_state_changed)
+        self.ssh_out_checkbox.stateChanged.connect(self._on_ssh_out_state_changed)
+        self.ssh_host_edit = QLineEdit(self._settings.ssh_host)
+        self.ssh_host_edit.setPlaceholderText("IP / hostname")
+        self.ssh_port_spin = QSpinBox()
+        self.ssh_port_spin.setRange(1, 65535)
+        self.ssh_port_spin.setValue(self._settings.ssh_port)
+        self.ssh_user_edit = QLineEdit(self._settings.ssh_user or "root")
+        self.ssh_key_edit = QLineEdit(self._settings.ssh_key_path)
+        self.ssh_key_button = QPushButton("Vybrat")
+        self.ssh_key_button.clicked.connect(self._browse_ssh_key)
+        self.ssh_password_edit = QLineEdit(self._settings.ssh_password)
+        self.ssh_password_edit.setEchoMode(QLineEdit.Password)
+        self.in_dir_button = QPushButton("VSTUP")
+        self.in_dir_button.clicked.connect(self._pick_in_dir)
+        self.in_dir_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.out_dir_button = QPushButton("Výstup")
+        self.out_dir_button.clicked.connect(self._pick_out_dir)
+        self.out_dir_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.in_equals_out_button = QPushButton("IN=OUT")
+        self.in_equals_out_button.clicked.connect(self._on_in_equals_out)
+        self.in_equals_out_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.versing_button = QPushButton("VERSING")
+        self.versing_button.setCheckable(True)
+        self.versing_button.setEnabled(False)
+        self.versing_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.versing_button.toggled.connect(self._on_versing_toggled)
+        self.api_key_button = QPushButton("API-KEY")
+        self.api_key_button.clicked.connect(self._open_api_key_dialog)
+        self.pricing_button = QPushButton("$")
+        self.pricing_button.clicked.connect(self._show_pricing)
+        self.pricing_button.setFixedWidth(40)
+        self.settings_button = QPushButton("NASTAVENÍ")
+        self.settings_button.setFixedWidth(120)
+        self.settings_button.clicked.connect(self._open_settings)
+        self.save_button = QPushButton("SAVE")
+        self.save_button.clicked.connect(self._on_save_state)
+        self.load_button = QPushButton("LOAD")
+        self.load_button.clicked.connect(self._on_load_state)
+        self.load_request_button = QPushButton("LOAD REQUEST")
+        self.load_request_button.clicked.connect(self._on_load_request)
+        self.new_button = QPushButton("NEW")
+        self.new_button.clicked.connect(self._on_new_clicked)
+        self.exit_button = QPushButton("EXIT")
+        self.exit_button.setProperty("danger", True)
+        self.exit_button.clicked.connect(self._on_exit_clicked)
+        for control in (
+            self.api_key_button,
+            self.pricing_button,
+            self.settings_button,
+            self.save_button,
+            self.load_button,
+            self.load_request_button,
+            self.new_button,
+        ):
+            control.setCursor(QCursor(Qt.PointingHandCursor))
+        self.exit_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.in_dir_edit.textChanged.connect(self._on_dir_content_changed)
+        self.out_dir_edit.textChanged.connect(self._on_dir_content_changed)
+        self.get_models_button.clicked.connect(self._on_fetch_models)
+        self.go_button.clicked.connect(self._on_go_clicked)
+        self._pricing_status_label = QLabel()
+        self._pricing_status_label.setWordWrap(True)
+        self._pricing_status_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self._diag_warning_label = QLabel()
+        self._diag_warning_label.setWordWrap(True)
+
     def _build_config_section(self) -> QWidget:
+        self._init_controls()
+        return QWidget()
         group = QGroupBox("Konfigurace")
         group_layout = QVBoxLayout(group)
         toolbar = QHBoxLayout()
@@ -223,6 +337,8 @@ class MainWindow(QMainWindow):
         self.exit_button = QPushButton("EXIT")
         self.exit_button.setProperty("danger", True)
         self.exit_button.clicked.connect(self._on_exit_clicked)
+        self.new_button = QPushButton("NEW")
+        self.new_button.clicked.connect(self._on_new_clicked)
         for control in (
             self.api_key_button,
             self.pricing_button,
@@ -230,10 +346,10 @@ class MainWindow(QMainWindow):
             self.save_button,
             self.load_button,
             self.load_request_button,
+            self.new_button,
         ):
             control.setCursor(QCursor(Qt.PointingHandCursor))
         self.exit_button.setCursor(QCursor(Qt.PointingHandCursor))
-        self.exit_button.setStyleSheet("color: #fff; background: #a00;")
         toolbar.addWidget(self.api_key_button)
         toolbar.addWidget(self.pricing_button)
         toolbar.addWidget(self.settings_button)
@@ -367,6 +483,160 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.log_edit, 10, 1, 1, 3)
         group_layout.addLayout(layout)
         return group
+
+    def _build_header(self) -> QWidget:
+        header = QFrame()
+        header.setFrameShape(QFrame.StyledPanel)
+        header.setStyleSheet(
+            "border:2px solid #fff; background:#020202; border-radius:12px;"
+        )
+        layout = QVBoxLayout(header)
+        layout.setContentsMargins(24, 12, 24, 12)
+        layout.setSpacing(6)
+        title = QLabel("K Á J O V O")
+        title_font = QFont("Montserrat", 26, QFont.Bold)
+        title.setFont(title_font)
+        title.setStyleSheet("border:none;")
+        title.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title)
+        button_row = QHBoxLayout()
+        button_row.setSpacing(10)
+        button_row.addWidget(self.settings_button)
+        button_row.addWidget(self.pricing_button)
+        button_row.addWidget(self.save_button)
+        button_row.addWidget(self.load_button)
+        button_row.addWidget(self.load_request_button)
+        button_row.addWidget(self.api_key_button)
+        button_row.addStretch()
+        button_row.addWidget(self.new_button)
+        button_row.addWidget(self.exit_button)
+        layout.addLayout(button_row)
+        return header
+
+    def _build_workspace(self) -> QWidget:
+        sections = [
+            SectionDefinition("zadani", "ZADÁNÍ", self._build_assignment_section),
+            SectionDefinition("attached_files", "PŘIPOJENÉ SOUBORY", self._build_attached_files_widget),
+            SectionDefinition("in_dir", "IN", self._build_in_section),
+            SectionDefinition("out_dir", "OUT", self._build_out_section),
+            SectionDefinition(
+                "diagnostics",
+                "DIAGNOSTICS (WINDOWS / SSH)",
+                self._build_diagnostics_section,
+            ),
+            SectionDefinition("model_openai", "MODEL OPENAI", self._build_model_section),
+            SectionDefinition("batch_monitor", "BATCH MONITOR", self._build_batch_monitor_widget),
+            SectionDefinition("go", "GO", self._build_go_section),
+            SectionDefinition("answer", "ANSWARE", self._build_answare_section),
+            SectionDefinition("local_files", "LOCAL FILES", self._build_local_files_widget),
+            SectionDefinition("file_api", "FILE API", self._build_file_api_widget),
+            SectionDefinition("vector_stores", "VECTOR STORES", self._build_vector_store_widget),
+            SectionDefinition("timeline", "TIMELINE", self._build_timeline_widget),
+            SectionDefinition("diff_viewer", "DIFF VIEWER", self._build_diff_view_widget),
+        ]
+        return WorkspacePane(sections)
+
+    def _build_assignment_section(self) -> QWidget:
+        box = QWidget()
+        layout = QVBoxLayout(box)
+        layout.addWidget(QLabel("Název projektu"))
+        layout.addWidget(self.project_name_edit)
+        layout.addWidget(QLabel("Prompt / specifikace"))
+        layout.addWidget(self.prompt_edit)
+        return box
+
+    def _build_in_section(self) -> QWidget:
+        box = QWidget()
+        layout = QVBoxLayout(box)
+        layout.addWidget(QLabel("In adresář"))
+        row = QHBoxLayout()
+        row.addWidget(self.in_dir_edit)
+        row.addWidget(self.in_dir_button)
+        layout.addLayout(row)
+        return box
+
+    def _build_out_section(self) -> QWidget:
+        box = QWidget()
+        layout = QVBoxLayout(box)
+        layout.addWidget(QLabel("Out adresář"))
+        row = QHBoxLayout()
+        row.addWidget(self.out_dir_edit)
+        row.addWidget(self.out_dir_button)
+        row.addWidget(self.in_equals_out_button)
+        row.addWidget(self.versing_button)
+        layout.addLayout(row)
+        return box
+
+    def _build_model_section(self) -> QWidget:
+        box = QWidget()
+        layout = QVBoxLayout(box)
+        layout.addWidget(QLabel("Model"))
+        layout.addWidget(self.model_combo)
+        layout.addWidget(QLabel("Temperature"))
+        layout.addWidget(self.temperature_spin)
+        layout.addWidget(self.get_models_button)
+        layout.addWidget(QLabel("API Key"))
+        layout.addWidget(self.api_key_edit)
+        layout.addWidget(self._pricing_status_label)
+        return box
+
+    def _build_go_section(self) -> QWidget:
+        box = QWidget()
+        layout = QVBoxLayout(box)
+        layout.addWidget(QLabel("MODE / režim"))
+        layout.addWidget(self.mode_combo)
+        layout.addWidget(self.send_as_c_checkbox)
+        layout.addWidget(QLabel("Response ID"))
+        layout.addWidget(self.response_id_edit)
+        layout.addWidget(self.go_button)
+        layout.addWidget(QLabel("Log"))
+        layout.addWidget(self.log_edit)
+        return box
+
+    def _build_diagnostics_section(self) -> QWidget:
+        box = QWidget()
+        layout = QVBoxLayout(box)
+        row = QHBoxLayout()
+        row.addWidget(self.windows_in_checkbox)
+        row.addWidget(self.windows_out_checkbox)
+        row.addWidget(self.ssh_in_checkbox)
+        row.addWidget(self.ssh_out_checkbox)
+        layout.addLayout(row)
+        layout.addWidget(self._diag_warning_label)
+        ssh_group = QGroupBox("SSH cíl")
+        ssh_layout = QGridLayout(ssh_group)
+        ssh_layout.setColumnStretch(1, 1)
+        ssh_layout.addWidget(QLabel("Host / IP"), 0, 0)
+        ssh_layout.addWidget(self.ssh_host_edit, 0, 1)
+        ssh_layout.addWidget(QLabel("Port"), 0, 2)
+        ssh_layout.addWidget(self.ssh_port_spin, 0, 3)
+        ssh_layout.addWidget(QLabel("Uživatel"), 1, 0)
+        ssh_layout.addWidget(self.ssh_user_edit, 1, 1)
+        key_layout = QHBoxLayout()
+        key_layout.setContentsMargins(0, 0, 0, 0)
+        key_layout.addWidget(self.ssh_key_edit)
+        key_layout.addWidget(self.ssh_key_button)
+        ssh_layout.addWidget(QLabel("SSH klíč"), 2, 0)
+        ssh_layout.addLayout(key_layout, 2, 1, 1, 3)
+        ssh_layout.addWidget(QLabel("SSH heslo"), 3, 0)
+        ssh_layout.addWidget(self.ssh_password_edit, 3, 1)
+        layout.addWidget(ssh_group)
+        return box
+
+    def _build_local_files_widget(self) -> QWidget:
+        box = QWidget()
+        layout = QVBoxLayout(box)
+        layout.addWidget(self._local_files_table)
+        buttons = QHBoxLayout()
+        add_button = QPushButton("VLOŽ")
+        add_button.clicked.connect(self._add_local_files)
+        upload_button = QPushButton("UPLOAD")
+        upload_button.clicked.connect(self._upload_local_files)
+        buttons.addWidget(add_button)
+        buttons.addWidget(upload_button)
+        buttons.addStretch()
+        layout.addLayout(buttons)
+        return box
 
     def _ensure_api_key_loaded(self) -> None:
         if self.api_key_edit.text().strip():
@@ -575,6 +845,66 @@ class MainWindow(QMainWindow):
         table.setSelectionMode(QTableWidget.MultiSelection)
         table.verticalHeader().hide()
         return table
+
+    def _refresh_local_files_table(self) -> None:
+        table = self._local_files_table
+        table.setRowCount(0)
+        for path in self._local_files:
+            row = table.rowCount()
+            table.insertRow(row)
+            table.setItem(row, 0, QTableWidgetItem(path.name))
+            table.setItem(row, 1, QTableWidgetItem(str(path)))
+            remove_button = QPushButton("X")
+            remove_button.clicked.connect(lambda _, p=path: self._remove_local_file(p))
+            table.setCellWidget(row, 2, remove_button)
+
+    def _add_local_files(self) -> None:
+        paths, _ = QFileDialog.getOpenFileNames(self, "Vyberte soubory")
+        if not paths:
+            return
+        for raw in paths:
+            path = Path(raw)
+            if path not in self._local_files:
+                self._local_files.append(path)
+        self._refresh_local_files_table()
+
+    def _remove_local_file(self, path: Path) -> None:
+        self._local_files = [item for item in self._local_files if item != path]
+        self._refresh_local_files_table()
+
+    def _upload_local_files(self) -> None:
+        if not self._local_files:
+            self._append_log("LOCAL FILES: žádné soubory k uploadu.")
+            return
+        key = os.environ.get("OPENAI_API_KEY") or self.api_key_edit.text().strip()
+        if not key:
+            QMessageBox.warning(self, "API key", "API key je povinný pro upload.")
+            return
+        if not self._openai_client:
+            try:
+                self._openai_client = OpenAIClient(key)
+            except Exception as exc:
+                QMessageBox.warning(self, "OpenAI", str(exc))
+                return
+        uploaded = []
+        for path in list(self._local_files):
+            try:
+                response = self._openai_client.upload_file(path, "user data")
+                record = FileRecord(
+                    file_id=response.get("id") or response.get("file_id") or str(uuid.uuid4())[:8],
+                    filename=response.get("filename") or path.name,
+                    purpose=response.get("purpose") or "user data",
+                    size_bytes=int(response.get("bytes") or path.stat().st_size),
+                )
+                self._file_api_records.append(record)
+                uploaded.append(path.name)
+            except Exception as exc:
+                self._append_log(f"LOCAL FILES: upload {path} selhal: {exc}")
+        if uploaded:
+            self._append_log(f"LOCAL FILES: upload dokončen ({len(uploaded)}).")
+        self._refresh_file_api_table()
+        self._local_files.clear()
+        self._refresh_local_files_table()
 
     def _add_attachment(self) -> None:
         paths, _ = QFileDialog.getOpenFileNames(self, "Vyberte soubory")
@@ -830,6 +1160,9 @@ class MainWindow(QMainWindow):
             if self._progress_dialog:
                 self._progress_dialog.close()
                 self._progress_dialog = None
+
+    def _on_new_clicked(self) -> None:
+        self._append_log("Nový projekt připraven.")
 
     def _on_exit_clicked(self) -> None:
         if not self.close():
@@ -1714,10 +2047,29 @@ QPushButton:pressed {
 QPushButton[danger="true"] {
     background: #a00;
     border-color: #a00;
+    color: #000;
+    font-weight: bold;
 }
 QPushButton[danger="true"]:pressed {
-    background: #fff;
+    background: #000;
     color: #a00;
+    border-color: #a00;
+}
+QPushButton[active="true"] {
+    background: #fff;
+    color: #000;
+    border-color: #aaa;
+}
+QPushButton[park_control="true"] {
+    border: none;
+    border-radius: 14px;
+    background: #030303;
+    color: #fff;
+    padding: 0;
+}
+QPushButton[park_control="true"][active="true"] {
+    background: #fff;
+    color: #000;
 }
 QPushButton:disabled {
     color: #888;
@@ -1843,4 +2195,505 @@ QLabel {
             return True
         self._append_log("Diagnostické varování odmítnuto.")
         return False
+
+
+SECTION_MIME_TYPE = "application/x-kaja-section"
+
+
+@dataclass(frozen=True)
+class SectionDefinition:
+    section_id: str
+    title: str
+    builder: Callable[[], QWidget]
+
+
+class SectionDragHandle(QLabel):
+    def __init__(self, section_id: str, title: str, workspace: "WorkspacePane"):
+        super().__init__(title)
+        self._section_id = section_id
+        self._workspace = workspace
+        self._drag_start = None
+        self.setCursor(QCursor(Qt.OpenHandCursor))
+        self.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+
+    def mousePressEvent(self, event) -> None:
+        if event.button() == Qt.LeftButton:
+            self._drag_start = event.pos()
+            self.setCursor(QCursor(Qt.ClosedHandCursor))
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event) -> None:
+        self.setCursor(QCursor(Qt.OpenHandCursor))
+        super().mouseReleaseEvent(event)
+
+    def mouseMoveEvent(self, event) -> None:
+        if not (event.buttons() & Qt.LeftButton):
+            return
+        if not self._drag_start:
+            return
+        if (event.pos() - self._drag_start).manhattanLength() < QApplication.startDragDistance():
+            return
+        self._workspace.start_section_drag(self._section_id, self)
+
+
+class SectionWidget(QFrame):
+    def __init__(
+        self,
+        section_id: str,
+        title: str,
+        content: QWidget,
+        workspace: "WorkspacePane",
+    ):
+        super().__init__()
+        self._section_id = section_id
+        self._workspace = workspace
+        self.setObjectName("section_frame")
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.setStyleSheet(
+            "QFrame#section_frame { background:#020202; border:1px solid #222; border-radius:10px; }"
+        )
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(8)
+
+        header = QFrame()
+        header_layout = QHBoxLayout(header)
+        header_layout.setContentsMargins(0, 0, 0, 0)
+        header_layout.setSpacing(6)
+        self._drag_handle = SectionDragHandle(section_id, title, workspace)
+        header_layout.addWidget(self._drag_handle)
+        header_layout.addStretch()
+        layout.addWidget(header)
+        layout.addWidget(content, 1)
+
+    @property
+    def section_id(self) -> str:
+        return self._section_id
+
+
+class ParkTile(QFrame):
+    def __init__(self, section_id: str, title: str, workspace: "WorkspacePane"):
+        super().__init__()
+        self._section_id = section_id
+        self._workspace = workspace
+        self.setObjectName("park_tile")
+        self.setFrameShape(QFrame.NoFrame)
+        self.setStyleSheet("background:#fff; border-radius:0px;")
+        self.setCursor(QCursor(Qt.OpenHandCursor))
+        self.setMinimumSize(0, 0)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        self._label = QLabel(title)
+        self._label.setAlignment(Qt.AlignCenter)
+        self._label.setWordWrap(True)
+        self._label.setStyleSheet("color:#000;")
+        self._label.setMinimumSize(0, 0)
+        self._label.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        layout.addWidget(self._label, 1)
+        self._drag_start = None
+
+    def label_text(self) -> str:
+        return self._label.text()
+
+    def apply_style(self, font_size: int, padding: int) -> None:
+        font = self._label.font()
+        font.setPointSize(max(1, font_size))
+        self._label.setFont(font)
+        self._label.setStyleSheet(f"color:#000; padding:{max(0, padding)}px;")
+
+    def mousePressEvent(self, event) -> None:
+        if event.button() == Qt.LeftButton:
+            self._drag_start = event.pos()
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event) -> None:
+        if not (event.buttons() & Qt.LeftButton):
+            return
+        if not self._drag_start:
+            return
+        if (event.pos() - self._drag_start).manhattanLength() < QApplication.startDragDistance():
+            return
+        self._workspace.start_section_drag(self._section_id, self)
+
+
+class ParkGrid(QWidget):
+    def __init__(self, workspace: "WorkspacePane") -> None:
+        super().__init__()
+        self._workspace = workspace
+        self._tiles: List[ParkTile] = []
+        self._spacing = 8
+        self.setAcceptDrops(True)
+        self.setMinimumSize(0, 0)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+    def set_tiles(self, tiles: List[ParkTile]) -> None:
+        for tile in self._tiles:
+            tile.hide()
+        self._tiles = tiles
+        for tile in self._tiles:
+            if tile.parent() is not self:
+                tile.setParent(self)
+            tile.show()
+        self._relayout()
+
+    def set_spacing(self, spacing: int) -> None:
+        self._spacing = spacing
+        self._relayout()
+
+    def dragEnterEvent(self, event) -> None:
+        if self._workspace.has_section_mime(event.mimeData()):
+            event.acceptProposedAction()
+
+    def dragMoveEvent(self, event) -> None:
+        if self._workspace.has_section_mime(event.mimeData()):
+            event.acceptProposedAction()
+
+    def dropEvent(self, event) -> None:
+        section_id = self._workspace.extract_section_id(event.mimeData())
+        if section_id:
+            self._workspace.move_section_to_park(section_id)
+            event.acceptProposedAction()
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._relayout()
+
+    def sizeHint(self) -> QSize:
+        return QSize(0, 0)
+
+    def minimumSizeHint(self) -> QSize:
+        return QSize(0, 0)
+
+    def _relayout(self) -> None:
+        count = len(self._tiles)
+        if count == 0:
+            return
+        width = max(1, self.width())
+        height = max(1, self.height())
+        spacing = self._spacing
+        best_cols = 1
+        best_size = 0
+        max_cols = min(2, count)
+        for cols in range(1, max_cols + 1):
+            rows = math.ceil(count / cols)
+            tile_size = min(
+                (width - spacing * (cols - 1)) / cols,
+                (height - spacing * (rows - 1)) / rows,
+            )
+            if tile_size > best_size:
+                best_size = tile_size
+                best_cols = cols
+        tile_size = max(4, int(best_size))
+        padding = max(2, int(tile_size * 0.08))
+        available_width = max(1, tile_size - 2 * padding)
+        available_height = max(1, tile_size - 2 * padding)
+        font_size = self._compute_global_font_size(
+            available_width,
+            available_height,
+            [tile.label_text() for tile in self._tiles],
+        )
+        rows = math.ceil(count / best_cols)
+        grid_width = tile_size * best_cols + spacing * (best_cols - 1)
+        grid_height = tile_size * rows + spacing * (rows - 1)
+        offset_x = max(0, int((width - grid_width) / 2))
+        offset_y = max(0, int((height - grid_height) / 2))
+        for index, tile in enumerate(self._tiles):
+            tile.apply_style(font_size, padding)
+            row = index // best_cols
+            col = index % best_cols
+            x = offset_x + col * (tile_size + spacing)
+            y = offset_y + row * (tile_size + spacing)
+            tile.setGeometry(x, y, tile_size, tile_size)
+
+    def _compute_global_font_size(
+        self, width: int, height: int, texts: List[str]
+    ) -> int:
+        if not texts:
+            return 1
+        low, high = 1, max(1, height)
+        best = 1
+        base_font = self.font()
+        while low <= high:
+            mid = (low + high) // 2
+            font = QFont(base_font)
+            font.setPointSize(mid)
+            metrics = QFontMetrics(font)
+            fits = True
+            for text in texts:
+                rect = metrics.boundingRect(
+                    0,
+                    0,
+                    width,
+                    height,
+                    Qt.AlignCenter | Qt.TextWordWrap,
+                    text,
+                )
+                if rect.width() > width or rect.height() > height:
+                    fits = False
+                    break
+            if fits:
+                best = mid
+                low = mid + 1
+            else:
+                high = mid - 1
+        return best
+
+
+class ColumnArea(QFrame):
+    def __init__(self, workspace: "WorkspacePane", index: int) -> None:
+        super().__init__()
+        self._workspace = workspace
+        self._index = index
+        self.setAcceptDrops(True)
+        self.setFrameShape(QFrame.NoFrame)
+        self.setStyleSheet("background:#030303;")
+        self._layout = QVBoxLayout(self)
+        self._layout.setContentsMargins(10, 10, 10, 10)
+        self._layout.setSpacing(10)
+        self._layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+
+    def set_index(self, index: int) -> None:
+        self._index = index
+
+    def section_widgets(self) -> List[SectionWidget]:
+        widgets: List[SectionWidget] = []
+        for idx in range(self._layout.count()):
+            item = self._layout.itemAt(idx)
+            widget = item.widget()
+            if isinstance(widget, SectionWidget):
+                widgets.append(widget)
+        return widgets
+
+    def add_section(self, widget: SectionWidget) -> None:
+        self._layout.addWidget(widget)
+
+    def remove_section(self, widget: SectionWidget) -> None:
+        self._layout.removeWidget(widget)
+
+    def dragEnterEvent(self, event) -> None:
+        if self._workspace.has_section_mime(event.mimeData()):
+            event.acceptProposedAction()
+
+    def dragMoveEvent(self, event) -> None:
+        if self._workspace.has_section_mime(event.mimeData()):
+            event.acceptProposedAction()
+
+    def dropEvent(self, event) -> None:
+        section_id = self._workspace.extract_section_id(event.mimeData())
+        if section_id:
+            self._workspace.move_section_to_column(section_id, self._index)
+            event.acceptProposedAction()
+
+
+
+class WorkspacePane(QWidget):
+    _min_columns = 1
+    _max_columns = 4
+
+    def __init__(self, sections: List[SectionDefinition]) -> None:
+        super().__init__()
+        self.setMinimumSize(0, 0)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self._sections = sections
+        self._section_order = [section.section_id for section in sections]
+        self._section_defs = {section.section_id: section for section in sections}
+        self._section_locations: Dict[str, Optional[int]] = {
+            section.section_id: None for section in sections
+        }
+        self._section_widgets: Dict[str, SectionWidget] = {}
+        self._park_tiles = {
+            section.section_id: ParkTile(section.section_id, section.title, self)
+            for section in sections
+        }
+        self._palette_scale = 1.0
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        self._columns_splitter = QSplitter(Qt.Horizontal)
+        self._columns_splitter.setHandleWidth(1)
+        self._columns_splitter.setChildrenCollapsible(False)
+        self._columns_splitter.setStyleSheet(
+            "QSplitter::handle { background:#fff; width:1px; }"
+        )
+        layout.addWidget(self._columns_splitter)
+
+        self._palette_frame = QFrame()
+        self._palette_frame.setObjectName("park_panel")
+        self._palette_frame.setFrameShape(QFrame.NoFrame)
+        self._palette_frame.setStyleSheet(
+            "QFrame#park_panel { border:2px solid #fff; border-radius:12px; background:#010101; }"
+            "QFrame#park_panel * { border: none; }"
+        )
+        self._palette_layout = QVBoxLayout(self._palette_frame)
+        self._palette_layout.setContentsMargins(12, 12, 12, 12)
+        self._palette_layout.setSpacing(12)
+
+        self._header_label = QLabel("PARKOVIŠTĚ")
+        header_label_font = QFont("Montserrat", 10, QFont.Bold)
+        self._header_label.setFont(header_label_font)
+        self._header_label.setStyleSheet("border:none;")
+        self._header_label.setAlignment(Qt.AlignCenter)
+        self._palette_layout.addWidget(self._header_label)
+
+        self._park_grid = ParkGrid(self)
+        self._palette_layout.addWidget(self._park_grid, 1)
+
+        control_holder = QWidget()
+        self._control_layout = QHBoxLayout(control_holder)
+        self._control_layout.setContentsMargins(0, 0, 0, 0)
+        self._control_layout.setSpacing(6)
+        self._column_buttons: List[QPushButton] = []
+        for number in range(1, 5):
+            button = QPushButton(str(number))
+            button.setCheckable(True)
+            button.setFixedHeight(102)
+            button.setCursor(QCursor(Qt.PointingHandCursor))
+            button.clicked.connect(partial(self._set_column_count, number))
+            button.setProperty("park_control", True)
+            self._control_layout.addWidget(button)
+            self._column_buttons.append(button)
+        self._palette_layout.addWidget(control_holder)
+
+        layout.addWidget(self._palette_frame)
+        self._columns: List[ColumnArea] = []
+        self._active_columns = 0
+        self._set_column_count(1)
+        self._update_palette_width(self.width() or 800)
+        self._update_park_tiles()
+
+    def start_section_drag(self, section_id: str, source: QWidget) -> None:
+        mime = QMimeData()
+        mime.setData(SECTION_MIME_TYPE, section_id.encode("utf-8"))
+        drag = QDrag(source)
+        drag.setMimeData(mime)
+        pixmap = source.grab()
+        if not pixmap.isNull():
+            drag.setPixmap(pixmap)
+            drag.setHotSpot(pixmap.rect().center())
+        drag.exec(Qt.MoveAction)
+
+    def has_section_mime(self, mime: QMimeData) -> bool:
+        return mime.hasFormat(SECTION_MIME_TYPE)
+
+    def extract_section_id(self, mime: QMimeData) -> Optional[str]:
+        if not mime.hasFormat(SECTION_MIME_TYPE):
+            return None
+        raw = bytes(mime.data(SECTION_MIME_TYPE))
+        section_id = raw.decode("utf-8")
+        if section_id not in self._section_defs:
+            return None
+        return section_id
+
+    def move_section_to_column(self, section_id: str, column_index: int) -> None:
+        if section_id not in self._section_defs:
+            return
+        if column_index < 0 or column_index >= len(self._columns):
+            return
+        if self._section_locations.get(section_id) == column_index:
+            return
+        self._detach_section(section_id)
+        widget = self._get_section_widget(section_id)
+        column = self._columns[column_index]
+        column.add_section(widget)
+        widget.show()
+        self._section_locations[section_id] = column_index
+        self._update_park_tiles()
+
+    def move_section_to_park(self, section_id: str) -> None:
+        if section_id not in self._section_defs:
+            return
+        if self._section_locations.get(section_id) is None:
+            return
+        self._detach_section(section_id)
+        widget = self._section_widgets.get(section_id)
+        if widget:
+            widget.hide()
+        self._section_locations[section_id] = None
+        self._update_park_tiles()
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._update_palette_width(event.size().width())
+
+    def _set_column_count(self, count: int) -> None:
+        target = max(self._min_columns, min(self._max_columns, count))
+        while len(self._columns) < target:
+            column = ColumnArea(self, len(self._columns))
+            self._columns_splitter.addWidget(column)
+            self._columns.append(column)
+        while len(self._columns) > target:
+            column = self._columns.pop()
+            for widget in column.section_widgets():
+                self.move_section_to_park(widget.section_id)
+            column.setParent(None)
+            column.deleteLater()
+        for idx, column in enumerate(self._columns):
+            column.set_index(idx)
+        self._active_columns = target
+        self._sync_column_buttons()
+
+    def _sync_column_buttons(self) -> None:
+        for index, button in enumerate(self._column_buttons, start=1):
+            active = index <= self._active_columns
+            button.setChecked(active)
+            button.setProperty("active", active)
+            button.style().unpolish(button)
+            button.style().polish(button)
+
+    def _get_section_widget(self, section_id: str) -> SectionWidget:
+        widget = self._section_widgets.get(section_id)
+        if widget:
+            return widget
+        definition = self._section_defs[section_id]
+        content = definition.builder()
+        widget = SectionWidget(section_id, definition.title, content, self)
+        self._section_widgets[section_id] = widget
+        return widget
+
+    def _detach_section(self, section_id: str) -> None:
+        widget = self._section_widgets.get(section_id)
+        if not widget:
+            return
+        parent = widget.parentWidget()
+        if isinstance(parent, ColumnArea):
+            parent.remove_section(widget)
+        widget.setParent(None)
+
+    def _update_park_tiles(self) -> None:
+        tiles = [
+            self._park_tiles[section_id]
+            for section_id in self._section_order
+            if self._section_locations.get(section_id) is None
+        ]
+        self._park_grid.set_tiles(tiles)
+
+    def _update_palette_width(self, total_width: int) -> None:
+        palette_width = max(80, int(total_width / 11))
+        palette_width = min(palette_width, total_width)
+        self._palette_frame.setFixedWidth(palette_width)
+        self._apply_palette_scale()
+
+    def _apply_palette_scale(self) -> None:
+        base_width = 220
+        scale = max(0.1, self._palette_frame.width() / base_width)
+        self._palette_scale = scale
+        margin = max(0, int(12 * scale))
+        spacing = max(0, int(12 * scale))
+        self._palette_layout.setContentsMargins(margin, margin, margin, margin)
+        self._palette_layout.setSpacing(spacing)
+        header_font = self._header_label.font()
+        header_font.setPointSize(max(1, int(10 * scale)))
+        self._header_label.setFont(header_font)
+        button_font = self._column_buttons[0].font() if self._column_buttons else QFont()
+        button_font.setPointSize(max(1, int(12 * scale)))
+        button_height = max(12, int(102 * scale))
+        for button in self._column_buttons:
+            button.setFont(button_font)
+            button.setFixedHeight(button_height)
+        self._control_layout.setSpacing(max(0, int(6 * scale)))
+        self._park_grid.set_spacing(max(0, int(8 * scale)))
+
 
