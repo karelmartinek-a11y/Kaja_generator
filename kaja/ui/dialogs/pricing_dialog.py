@@ -55,6 +55,7 @@ class PricingDialog(QDialog):
             ]
         )
         self._price_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self._price_table.horizontalHeader().setMinimumSectionSize(0)
         price_layout.addWidget(self._price_table)
         layout.addWidget(price_group)
 
@@ -72,7 +73,8 @@ class PricingDialog(QDialog):
                 "Status",
             ]
         )
-        self._table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self._table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self._table.horizontalHeader().setMinimumSectionSize(0)
         receipts_layout.addWidget(self._table)
         layout.addWidget(receipts_group)
 

@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
+    QHeaderView,
     QLabel,
     QLineEdit,
     QListWidget,
@@ -34,6 +35,7 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QSpinBox,
     QSplitter,
+    QAbstractScrollArea,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -727,7 +729,8 @@ class MainWindow(QMainWindow):
         self._timeline_table.setHorizontalHeaderLabels(
             ["Step", "Result", "Duration", "Details"]
         )
-        self._timeline_table.horizontalHeader().setStretchLastSection(True)
+        self._timeline_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self._timeline_table.horizontalHeader().setMinimumSectionSize(0)
         layout.addWidget(self._timeline_table)
         self._timeline_status_label = QLabel("Žádná data.")
         layout.addWidget(self._timeline_status_label)
@@ -828,6 +831,8 @@ class MainWindow(QMainWindow):
     def _create_batch_table(self) -> QTableWidget:
         table = QTableWidget(0, 5)
         table.setHorizontalHeaderLabels(["Run", "Status", "Started", "Duration", "Akce"])
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        table.horizontalHeader().setMinimumSectionSize(0)
         table.setMinimumSize(0, 0)
         table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         return table
@@ -835,6 +840,8 @@ class MainWindow(QMainWindow):
     def _create_file_table(self, headers: List[str]) -> QTableWidget:
         table = QTableWidget(0, len(headers))
         table.setHorizontalHeaderLabels(headers)
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        table.horizontalHeader().setMinimumSectionSize(0)
         table.setSelectionBehavior(QTableWidget.SelectRows)
         table.setSelectionMode(QTableWidget.MultiSelection)
         table.verticalHeader().hide()
@@ -2249,10 +2256,11 @@ class SectionWidget(QFrame):
         self.setStyleSheet(
             "QFrame#section_frame { background:#020202; border:1px solid #222; border-radius:10px; }"
         )
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(10, 10, 10, 10)
-        layout.setSpacing(8)
-        layout.setSizeConstraint(QLayout.SetNoConstraint)
+        self._layout = QVBoxLayout(self)
+        self._base_margin = 10
+        self._base_spacing = 8
+        self._apply_section_scale()
+        self._layout.setSizeConstraint(QLayout.SetNoConstraint)
 
         header = QFrame()
         header_layout = QHBoxLayout(header)
@@ -2261,7 +2269,7 @@ class SectionWidget(QFrame):
         self._drag_handle = SectionDragHandle(section_id, title, workspace)
         header_layout.addWidget(self._drag_handle)
         header_layout.addStretch()
-        layout.addWidget(header)
+        self._layout.addWidget(header)
         content.setMinimumSize(0, 0)
         content.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         if content.layout():
@@ -2269,17 +2277,38 @@ class SectionWidget(QFrame):
         self._relax_widget_constraints(content)
         for child in content.findChildren(QWidget):
             self._relax_widget_constraints(child)
-        layout.addWidget(content, 1)
+        self._layout.addWidget(content, 1)
 
     @property
     def section_id(self) -> str:
         return self._section_id
 
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._apply_section_scale()
+
+    def _apply_section_scale(self) -> None:
+        scale = 0.0
+        span = min(self.width(), self.height())
+        if span > 0:
+            scale = min(1.0, span / 400)
+        margin = max(0, int(self._base_margin * scale))
+        spacing = max(0, int(self._base_spacing * scale))
+        self._layout.setContentsMargins(margin, margin, margin, margin)
+        self._layout.setSpacing(spacing)
+
     @staticmethod
     def _relax_widget_constraints(widget: QWidget) -> None:
         widget.setMinimumSize(0, 0)
-        if isinstance(widget, (QPlainTextEdit, QTableWidget, QListWidget, QScrollArea)):
-            widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        policy = widget.sizePolicy()
+        if policy.horizontalPolicy() in (QSizePolicy.Fixed, QSizePolicy.Minimum, QSizePolicy.Maximum):
+            policy.setHorizontalPolicy(QSizePolicy.Expanding)
+        if policy.verticalPolicy() in (QSizePolicy.Fixed, QSizePolicy.Minimum, QSizePolicy.Maximum):
+            policy.setVerticalPolicy(QSizePolicy.Expanding)
+        if isinstance(widget, QAbstractScrollArea):
+            policy.setHorizontalPolicy(QSizePolicy.Expanding)
+            policy.setVerticalPolicy(QSizePolicy.Expanding)
+        widget.setSizePolicy(policy)
 
 
 class ParkTile(QFrame):
@@ -2462,7 +2491,7 @@ class ColumnArea(QFrame):
         self.setMinimumSize(0, 0)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._layout = QVBoxLayout(self)
-        self._layout.setContentsMargins(10, 10, 10, 10)
+        self._base_margin = 10
         self._layout.setSpacing(0)
         self._layout.setSizeConstraint(QLayout.SetNoConstraint)
         self._splitter = QSplitter(Qt.Vertical)
@@ -2470,7 +2499,13 @@ class ColumnArea(QFrame):
         self._splitter.setHandleWidth(6)
         self._splitter.setMinimumSize(0, 0)
         self._splitter.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self._splitter.setStyleSheet(
+            "QSplitter::handle { background:#fff; }"
+            "QSplitter::handle:horizontal { width:6px; }"
+            "QSplitter::handle:vertical { height:6px; }"
+        )
         self._layout.addWidget(self._splitter)
+        self._apply_column_scale()
 
     def set_index(self, index: int) -> None:
         self._index = index
@@ -2484,21 +2519,33 @@ class ColumnArea(QFrame):
         return widgets
 
     def add_section(self, widget: SectionWidget) -> None:
+        sizes = self._splitter.sizes()
         self._splitter.addWidget(widget)
-        self._rebalance_sections()
+        self._sync_section_sizes(sizes)
 
     def remove_section(self, widget: SectionWidget) -> None:
+        sizes = self._splitter.sizes()
         index = self._splitter.indexOf(widget)
         if index < 0:
             return
         widget.setParent(None)
-        self._rebalance_sections()
+        self._sync_section_sizes(sizes, removed_index=index)
 
-    def _rebalance_sections(self) -> None:
+    def _sync_section_sizes(self, previous_sizes: List[int], removed_index: int | None = None) -> None:
+        sizes = list(previous_sizes)
+        if removed_index is not None and 0 <= removed_index < len(sizes):
+            sizes.pop(removed_index)
         count = self._splitter.count()
         if count == 0:
             return
-        self._splitter.setSizes([1] * count)
+        if count > len(sizes):
+            default_size = 1
+            if sizes:
+                default_size = max(1, int(sum(sizes) / len(sizes)))
+            sizes.append(default_size)
+        if len(sizes) != count:
+            sizes = [1] * count
+        self._splitter.setSizes(sizes)
         for index in range(count):
             self._splitter.setStretchFactor(index, 1)
 
@@ -2515,6 +2562,18 @@ class ColumnArea(QFrame):
         if section_id:
             self._workspace.move_section_to_column(section_id, self._index)
             event.acceptProposedAction()
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._apply_column_scale()
+
+    def _apply_column_scale(self) -> None:
+        scale = 0.0
+        span = min(self.width(), self.height())
+        if span > 0:
+            scale = min(1.0, span / 400)
+        margin = max(0, int(self._base_margin * scale))
+        self._layout.setContentsMargins(margin, margin, margin, margin)
 
 
 
@@ -2544,10 +2603,12 @@ class WorkspacePane(QWidget):
         layout.setSpacing(0)
 
         self._columns_splitter = QSplitter(Qt.Horizontal)
-        self._columns_splitter.setHandleWidth(1)
-        self._columns_splitter.setChildrenCollapsible(False)
+        self._columns_splitter.setHandleWidth(6)
+        self._columns_splitter.setChildrenCollapsible(True)
         self._columns_splitter.setStyleSheet(
-            "QSplitter::handle { background:#fff; width:1px; }"
+            "QSplitter::handle { background:#fff; }"
+            "QSplitter::handle:horizontal { width:6px; }"
+            "QSplitter::handle:vertical { height:6px; }"
         )
         layout.addWidget(self._columns_splitter)
 
@@ -2715,14 +2776,14 @@ class WorkspacePane(QWidget):
         self._park_grid.set_tiles(tiles)
 
     def _update_palette_width(self, total_width: int) -> None:
-        palette_width = max(80, int(total_width / 11))
+        palette_width = max(0, int(total_width / 11))
         palette_width = min(palette_width, total_width)
         self._palette_frame.setFixedWidth(palette_width)
         self._apply_palette_scale()
 
     def _apply_palette_scale(self) -> None:
         base_width = 220
-        scale = max(0.1, self._palette_frame.width() / base_width)
+        scale = max(0.0, self._palette_frame.width() / base_width)
         self._palette_scale = scale
         margin = max(0, int(12 * scale))
         spacing = max(0, int(12 * scale))
