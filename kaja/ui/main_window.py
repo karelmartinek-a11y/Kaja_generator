@@ -12,8 +12,18 @@ from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from PySide6.QtCore import Qt, QMimeData, QSize, QTimer
-from PySide6.QtGui import QCursor, QDrag, QFont, QFontMetrics, QGuiApplication, QPixmap
+from PySide6.QtCore import Qt, QMimeData, QSize, QTimer, QPoint, QRect
+from PySide6.QtGui import (
+    QCursor,
+    QDrag,
+    QFont,
+    QFontMetrics,
+    QGuiApplication,
+    QPixmap,
+    QPainter,
+    QPen,
+    QColor,
+)
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -44,6 +54,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
 )
 
+from .. import __version__
 from ..core.log_manager import (
     configure_log_encryption,
     init_run,
@@ -76,6 +87,98 @@ try:
     import winreg
 except ImportError:
     winreg = None
+
+
+class StatusThermometer(QWidget):
+    """Monochrome progress indicator shaped like a thermometer (2.05.000)."""
+
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self._progress = 0.0
+        self.setMinimumHeight(16)
+        self.setMaximumHeight(16)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+    def set_progress(self, ratio: float) -> None:
+        self._progress = max(0.0, min(1.0, ratio))
+        self.update()
+
+    def paintEvent(self, event) -> None:
+        super().paintEvent(event)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        rect = self.rect().adjusted(0, 0, -1, -1)
+        pen = QPen(QColor("#fff"))
+        pen.setWidth(1)
+        painter.setPen(pen)
+        painter.setBrush(Qt.NoBrush)
+        painter.drawRoundedRect(rect, 8, 8)
+        if self._progress:
+            fill_width = max(1, int(rect.width() * self._progress))
+            fill_rect = QRect(rect.left(), rect.top(), fill_width, rect.height())
+            painter.fillRect(fill_rect, QColor("#fff"))
+
+
+class StatusBar(QFrame):
+    """Header status bar that reports time/date plus dynamic progress (5.04.000)."""
+
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setObjectName("status_bar")
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(16, 6, 16, 6)
+        layout.setSpacing(16)
+        self._time_label = QLabel()
+        self._state_label = QLabel("PROGRAM NIC NEDĚLÁ")
+        self._state_label.setAlignment(Qt.AlignCenter)
+        self._countdown_label = QLabel("ETA: N/A")
+        self._progress_label = QLabel("0%")
+        self._thermometer = StatusThermometer(self)
+        layout.addWidget(self._time_label)
+        layout.addWidget(self._state_label, 1)
+        layout.addWidget(self._countdown_label)
+        layout.addWidget(self._progress_label)
+        layout.addWidget(self._thermometer, 2)
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self._refresh_time)
+        self._timer.start(1000)
+        self._progress_start: Optional[datetime] = None
+        self._refresh_time()
+        self.mark_idle()
+
+    def _refresh_time(self) -> None:
+        now = datetime.now()
+        self._time_label.setText(
+            f"ČAS {now.strftime('%H:%M:%S')}   DATUM {now.strftime('%Y-%m-%d')}"
+        )
+
+    def start_progress(self, message: str) -> None:
+        self._progress_start = datetime.utcnow()
+        self.update_progress(message, 0.0)
+
+    def update_progress(self, message: str, ratio: float) -> None:
+        text = (message or "PROCES").upper()
+        self._state_label.setText(text)
+        self._thermometer.set_progress(ratio)
+        percent = int(round(max(0.0, min(1.0, ratio)) * 100))
+        self._progress_label.setText(f"{percent}%")
+        self._countdown_label.setText(self._compute_eta(ratio))
+
+    def mark_idle(self, message: str = "PROGRAM NIC NEDĚLÁ") -> None:
+        self._progress_start = None
+        self._state_label.setText(message.upper())
+        self._thermometer.set_progress(0.0)
+        self._progress_label.setText("0%")
+        self._countdown_label.setText("ETA: N/A")
+
+    def _compute_eta(self, ratio: float) -> str:
+        if not self._progress_start or ratio <= 0 or ratio >= 1:
+            return "ETA: N/A" if ratio < 1 else "ETA: 0s"
+        elapsed = (datetime.utcnow() - self._progress_start).total_seconds()
+        if not ratio:
+            return "ETA: N/A"
+        remaining = elapsed * (1.0 - ratio) / ratio
+        return f"ETA: {int(remaining)} s"
 
 
 class MainWindow(QMainWindow):
@@ -120,6 +223,7 @@ class MainWindow(QMainWindow):
         self._diff_view.setReadOnly(True)
         self._diff_view.setPlainText("Spusťte pipeline pro zobrazení diffu IN ↔ OUT.")
         self._diff_status_label = QLabel("Diff viewer čeká na spuštění runu.")
+        self._status_bar = StatusBar(self)
         self._last_run_ui_state: UiState | None = None
 
         self._init_ui()
@@ -482,31 +586,50 @@ class MainWindow(QMainWindow):
 
     def _build_header(self) -> QWidget:
         header = QFrame()
+        header.setObjectName("app_header")
         header.setFrameShape(QFrame.StyledPanel)
         header.setStyleSheet(
-            "border:2px solid #fff; background:#020202; border-radius:12px;"
+            "QFrame#app_header { border:2px solid #fff; background:#020202; border-radius:12px; }"
         )
         layout = QVBoxLayout(header)
         layout.setContentsMargins(24, 12, 24, 12)
-        layout.setSpacing(6)
-        title = QLabel("K Á J O V O")
-        title_font = QFont("Montserrat", 26, QFont.Bold)
-        title.setFont(title_font)
-        title.setStyleSheet("border:none;")
-        title.setAlignment(Qt.AlignCenter)
-        layout.addWidget(title)
-        button_row = QHBoxLayout()
-        button_row.setSpacing(10)
-        button_row.addWidget(self.settings_button)
-        button_row.addWidget(self.pricing_button)
-        button_row.addWidget(self.save_button)
-        button_row.addWidget(self.load_button)
-        button_row.addWidget(self.load_request_button)
-        button_row.addWidget(self.api_key_button)
-        button_row.addStretch()
-        button_row.addWidget(self.new_button)
-        button_row.addWidget(self.exit_button)
-        layout.addLayout(button_row)
+        layout.setSpacing(10)
+
+        title_block = QWidget()
+        title_layout = QVBoxLayout(title_block)
+        title_layout.setContentsMargins(0, 0, 0, 0)
+        title_layout.setSpacing(2)
+        title_label = QLabel("KÁJOVO")
+        title_font = QFont("Montserrat", 28, QFont.Bold)
+        title_label.setFont(title_font)
+        title_label.setAlignment(Qt.AlignCenter)
+        version_label = QLabel(f"v{__version__}")
+        version_font = QFont("Montserrat", 14, QFont.Bold)
+        version_label.setFont(version_font)
+        version_label.setAlignment(Qt.AlignCenter)
+        title_layout.addWidget(title_label)
+        title_layout.addWidget(version_label)
+
+        controls_row = QWidget()
+        controls_layout = QHBoxLayout(controls_row)
+        controls_layout.setContentsMargins(0, 0, 0, 0)
+        controls_layout.setSpacing(10)
+        for control in (
+            self.settings_button,
+            self.pricing_button,
+            self.save_button,
+            self.load_button,
+            self.load_request_button,
+            self.api_key_button,
+            self.new_button,
+        ):
+            controls_layout.addWidget(control)
+        controls_layout.addStretch(1)
+        controls_layout.addWidget(self.exit_button)
+
+        layout.addWidget(title_block)
+        layout.addWidget(controls_row)
+        layout.addWidget(self._status_bar)
         return header
 
     def _build_workspace(self) -> QWidget:
@@ -1141,6 +1264,8 @@ class MainWindow(QMainWindow):
         self._progress_dialog = ProgressDialog(self)
         self._progress_dialog.stop_requested_changed.connect(lambda _: self._append_log("STOP requested"))
         self._progress_dialog.show()
+        self._status_bar.start_progress("Pipeline připravena")
+        idle_message = "PROGRAM NIC NEDĚLÁ"
 
         try:
             result = executor.execute(
@@ -1157,12 +1282,15 @@ class MainWindow(QMainWindow):
             self._handle_pipeline_result(result)
         except PipelineCancelled:
             self._append_log("Pipeline přerušena")
+            idle_message = "PIPELINE PŘERUŠENA"
         except Exception as exc:  # pragma: no cover - failure paths
             QMessageBox.critical(self, "Chyba běhu", str(exc))
+            idle_message = "CHYBA BĚHU"
         finally:
             if self._progress_dialog:
                 self._progress_dialog.close()
                 self._progress_dialog = None
+            self._status_bar.mark_idle(idle_message)
 
     def _on_new_clicked(self) -> None:
         self._append_log("Nový projekt připraven.")
@@ -1172,6 +1300,7 @@ class MainWindow(QMainWindow):
             self._append_log("Zavření okna bylo zrušeno.")
 
     def _on_pipeline_progress(self, message: str, ratio: float) -> None:
+        self._status_bar.update_progress(message, ratio)
         if self._progress_dialog:
             self._progress_dialog.update_progress(message, ratio)
         QApplication.processEvents()
@@ -2025,43 +2154,88 @@ class MainWindow(QMainWindow):
         if app:
             app.setFont(font)
         style = """
-QMainWindow, QWidget {
-    background: #000;
+QMainWindow, QWidget, QDialog, QScrollArea {
+    background: #010101;
     color: #fff;
     font-family: 'Montserrat';
 }
+QLabel {
+    color: #fff;
+}
 QGroupBox {
     border: 2px solid #fff;
-    border-radius: 12px;
+    border-radius: 14px;
     margin-top: 24px;
     padding: 12px;
+    background: #010101;
+}
+QLineEdit, QPlainTextEdit, QComboBox, QSpinBox, QDoubleSpinBox {
+    background: #010101;
+    color: #fff;
+    border: 1px solid #fff;
+    border-radius: 10px;
+    selection-background-color: #fff;
+    selection-color: #000;
+}
+QPlainTextEdit {
+    border-radius: 12px;
+}
+QTableWidget {
+    border: 1px solid #fff;
+    background: #010101;
+    gridline-color: #fff;
+}
+QHeaderView::section {
+    background: #030303;
+    color: #fff;
+    border: 1px solid #fff;
+    padding: 6px;
+    font-weight: bold;
+}
+QCheckBox::indicator, QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #fff;
+    border-radius: 4px;
+    background: #010101;
+}
+QCheckBox::indicator:checked, QRadioButton::indicator:checked {
+    background: #fff;
+}
+QCheckBox::indicator:disabled, QRadioButton::indicator:disabled {
+    border-color: #f00;
 }
 QPushButton {
     background: #000;
     color: #fff;
     border: 2px solid #fff;
     border-radius: 12px;
-    padding: 6px 12px;
+    padding: 6px 14px;
+    min-height: 30px;
 }
-QPushButton:pressed {
-    background: #fff;
-    color: #000;
-}
-QPushButton[danger="true"] {
-    background: #a00;
-    border-color: #a00;
-    color: #000;
-    font-weight: bold;
-}
-QPushButton[danger="true"]:pressed {
-    background: #000;
-    color: #a00;
-    border-color: #a00;
-}
+QPushButton:pressed,
+QPushButton:checked,
 QPushButton[active="true"] {
     background: #fff;
     color: #000;
-    border-color: #aaa;
+    border-color: #fff;
+}
+QPushButton:disabled {
+    border-color: #f00;
+    color: #888;
+    background: #000;
+}
+QPushButton[danger="true"] {
+    background: #f00;
+    border-color: #f00;
+    color: #000;
+    font-weight: bold;
+}
+QPushButton[danger="true"]:pressed,
+QPushButton[danger="true"][active="true"] {
+    background: #000;
+    color: #f00;
+    border-color: #f00;
 }
 QPushButton[park_control="true"] {
     border: none;
@@ -2074,18 +2248,22 @@ QPushButton[park_control="true"][active="true"] {
     background: #fff;
     color: #000;
 }
-QPushButton:disabled {
-    color: #888;
-    border-color: #a00;
-}
-QTableWidget, QListWidget, QPlainTextEdit, QLabel, QLineEdit, QScrollArea {
-    background: #000;
+QProgressBar {
+    border: 1px solid #fff;
+    border-radius: 10px;
+    background: #010101;
     color: #fff;
-    border: 2px solid #fff;
-    border-radius: 8px;
 }
-QLabel {
-    font-weight: bold;
+QProgressBar::chunk {
+    background: #fff;
+}
+QFrame#status_bar, QStatusBar {
+    border: 1px solid #fff;
+    border-radius: 12px;
+    background: #010101;
+}
+QFrame#status_bar QLabel {
+    color: #fff;
 }
 """
         self.setStyleSheet(style)
@@ -2212,12 +2390,15 @@ class SectionDefinition:
 
 class SectionDragHandle(QLabel):
     def __init__(self, section_id: str, title: str, workspace: "WorkspacePane"):
-        super().__init__(title)
+        super().__init__(title.upper())
         self._section_id = section_id
         self._workspace = workspace
         self._drag_start = None
         self.setCursor(QCursor(Qt.OpenHandCursor))
         self.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        font = QFont("Montserrat", 12, QFont.Bold)
+        self.setFont(font)
+        self.setStyleSheet("color:#fff; border:none;")
 
     def mousePressEvent(self, event) -> None:
         if event.button() == Qt.LeftButton:
@@ -2253,9 +2434,7 @@ class SectionWidget(QFrame):
         self.setObjectName("section_frame")
         self.setMinimumSize(0, 0)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.setStyleSheet(
-            "QFrame#section_frame { background:#020202; border:1px solid #222; border-radius:10px; }"
-        )
+        self._border_radius = 12
         self._layout = QVBoxLayout(self)
         self._base_margin = 10
         self._base_spacing = 8
@@ -2310,6 +2489,41 @@ class SectionWidget(QFrame):
             policy.setVerticalPolicy(QSizePolicy.Expanding)
         widget.setSizePolicy(policy)
 
+    def paintEvent(self, event) -> None:
+        super().paintEvent(event)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        rect = self.rect().adjusted(0, 0, -1, -1)
+        pen = QPen(QColor("#fff"))
+        pen.setWidth(1)
+        painter.setPen(pen)
+        painter.setBrush(Qt.NoBrush)
+        painter.drawRoundedRect(rect, self._border_radius, self._border_radius)
+
+        if not self._drag_handle:
+            return
+        gap = self._gap_width()
+        label_pos = self._drag_handle.mapTo(self, QPoint(0, 0))
+        label_left = label_pos.x()
+        label_right = label_left + self._drag_handle.width()
+        gap_start = max(rect.left() + self._border_radius, label_left - gap)
+        gap_end = min(rect.right() - self._border_radius, label_right + gap)
+
+        if gap_end > gap_start:
+            fill_rect = QRect(gap_start, rect.top(), max(1, gap_end - gap_start), self._border_radius)
+            painter.fillRect(fill_rect, QColor("#010101"))
+        left_end = gap_start
+        right_start = gap_end
+        if left_end > rect.left() + self._border_radius:
+            painter.drawLine(rect.left() + self._border_radius, rect.top(), left_end, rect.top())
+        if right_start < rect.right() - self._border_radius:
+            painter.drawLine(right_start, rect.top(), rect.right() - self._border_radius, rect.top())
+
+    def _gap_width(self) -> int:
+        font = self._drag_handle.font()
+        metrics = QFontMetrics(font)
+        return max(8, metrics.horizontalAdvance("A"))
+
 
 class ParkTile(QFrame):
     def __init__(self, section_id: str, title: str, workspace: "WorkspacePane"):
@@ -2318,7 +2532,9 @@ class ParkTile(QFrame):
         self._workspace = workspace
         self.setObjectName("park_tile")
         self.setFrameShape(QFrame.NoFrame)
-        self.setStyleSheet("background:#fff; border-radius:0px;")
+        self.setStyleSheet(
+            "QFrame#park_tile { background:#010101; border:1px solid #fff; border-radius:12px; }"
+        )
         self.setCursor(QCursor(Qt.OpenHandCursor))
         self.setMinimumSize(0, 0)
         layout = QVBoxLayout(self)
@@ -2327,7 +2543,7 @@ class ParkTile(QFrame):
         self._label = QLabel(title)
         self._label.setAlignment(Qt.AlignCenter)
         self._label.setWordWrap(True)
-        self._label.setStyleSheet("color:#000;")
+        self._label.setStyleSheet("color:#fff; font-weight: bold;")
         self._label.setMinimumSize(0, 0)
         self._label.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         layout.addWidget(self._label, 1)
@@ -2340,7 +2556,7 @@ class ParkTile(QFrame):
         font = self._label.font()
         font.setPointSize(max(1, font_size))
         self._label.setFont(font)
-        self._label.setStyleSheet(f"color:#000; padding:{max(0, padding)}px;")
+        self._label.setStyleSheet(f"color:#fff; padding:{max(0, padding)}px;")
 
     def mousePressEvent(self, event) -> None:
         if event.button() == Qt.LeftButton:
@@ -2487,7 +2703,7 @@ class ColumnArea(QFrame):
         self._index = index
         self.setAcceptDrops(True)
         self.setFrameShape(QFrame.NoFrame)
-        self.setStyleSheet("background:#030303;")
+        self.setStyleSheet("background:#030303; border:1px solid #fff; border-radius:12px;")
         self.setMinimumSize(0, 0)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._layout = QVBoxLayout(self)
