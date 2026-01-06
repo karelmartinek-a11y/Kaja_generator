@@ -44,12 +44,7 @@ class FlowLayout(QLayout):
         return self.minimumSize()
 
     def minimumSize(self):
-        size = QSize()
-        for item in self._items:
-            size = size.expandedTo(item.minimumSize())
-        margins = self.contentsMargins()
-        size += QSize(margins.left() + margins.right(), margins.top() + margins.bottom())
-        return size
+        return QSize(0, 0)
 
     def _do_layout(self, rect: QRect, test_only: bool) -> int:
         x = rect.x()
