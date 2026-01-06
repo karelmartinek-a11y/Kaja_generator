@@ -589,7 +589,7 @@ class MainWindow(QMainWindow):
         header.setObjectName("app_header")
         header.setFrameShape(QFrame.StyledPanel)
         header.setStyleSheet(
-            "QFrame#app_header { border:2px solid #fff; background:#020202; border-radius:12px; }"
+            "QFrame#app_header { border:2px solid #fff; background:#010101; border-radius:12px; }"
         )
         layout = QVBoxLayout(header)
         layout.setContentsMargins(24, 12, 24, 12)
@@ -2119,7 +2119,7 @@ class MainWindow(QMainWindow):
         self._diag_warning_label.setText(
             f"Diagnostické varování {status}; admin: {admin_user}"
         )
-        color = "#0a0" if ack else "#a00"
+        color = "#fff" if ack else "#f00"
         self._diag_warning_label.setStyleSheet(f"color: {color}; font-weight: bold;")
 
     def _update_pricing_status_label(self) -> None:
@@ -2128,8 +2128,9 @@ class MainWindow(QMainWindow):
         source = summary.get("source") or "lokální"
         refreshed = summary.get("last_refreshed") or "nikdy"
         verified = summary.get("verified", False)
-        color = "#0a0" if verified else "#fa0"
-        text = f"Ceník: {status}; Zdroj: {source}; Aktuálně: {refreshed}"
+        color = "#fff" if verified else "#f00"
+        status_text = status.upper()
+        text = f"Ceník: {status_text}; Zdroj: {source}; Aktuálně: {refreshed}"
         self._pricing_status_label.setText(text)
         self._pricing_status_label.setStyleSheet(f"color: {color}; font-weight: bold;")
 
@@ -2489,6 +2490,12 @@ class SectionWidget(QFrame):
             policy.setVerticalPolicy(QSizePolicy.Expanding)
         widget.setSizePolicy(policy)
 
+    def sizeHint(self) -> QSize:
+        return QSize(0, 0)
+
+    def minimumSizeHint(self) -> QSize:
+        return QSize(0, 0)
+
     def paintEvent(self, event) -> None:
         super().paintEvent(event)
         painter = QPainter(self)
@@ -2697,7 +2704,7 @@ class ParkGrid(QWidget):
 
 
 class ColumnArea(QFrame):
-    def __init__(self, workspace: "WorkspacePane", index: int) -> None:
+    def __init__(self, workspace: "WorkspacePane", index: int) -> None:   
         super().__init__()
         self._workspace = workspace
         self._index = index
@@ -2722,6 +2729,12 @@ class ColumnArea(QFrame):
         )
         self._layout.addWidget(self._splitter)
         self._apply_column_scale()
+
+    def sizeHint(self) -> QSize:
+        return QSize(0, 0)
+
+    def minimumSizeHint(self) -> QSize:
+        return QSize(0, 0)
 
     def set_index(self, index: int) -> None:
         self._index = index
@@ -2797,10 +2810,10 @@ class WorkspacePane(QWidget):
     _min_columns = 1
     _max_columns = 4
 
-    def __init__(self, sections: List[SectionDefinition]) -> None:
+    def __init__(self, sections: List[SectionDefinition]) -> None:        
         super().__init__()
         self.setMinimumSize(0, 0)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  
         self._sections = sections
         self._section_order = [section.section_id for section in sections]
         self._section_defs = {section.section_id: section for section in sections}
@@ -2871,6 +2884,12 @@ class WorkspacePane(QWidget):
         self._set_column_count(1)
         self._update_palette_width(self.width() or 800)
         self._update_park_tiles()
+
+    def sizeHint(self) -> QSize:
+        return QSize(0, 0)
+
+    def minimumSizeHint(self) -> QSize:
+        return QSize(0, 0)
 
     def start_section_drag(self, section_id: str, source: QWidget) -> None:
         mime = QMimeData()
