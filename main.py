@@ -21,8 +21,8 @@ def _register_fonts(root: Path) -> None:
 def main() -> int:
     project_root = Path(__file__).resolve().parent
     ensure_settings_file(project_root)
-    _register_fonts(project_root)
     app = QApplication(sys.argv)
+    _register_fonts(project_root)
     window = MainWindow()
     window.showMaximized()
     return app.exec()
