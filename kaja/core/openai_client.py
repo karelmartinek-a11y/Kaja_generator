@@ -47,6 +47,7 @@ class OpenAIClient:
         if OpenAI is None:
             raise RuntimeError("openai library is not available")
         self._client = OpenAI(api_key=api_key)
+        self._capability_probe_cache: Dict[str, Dict[str, Any]] = {}
 
     def list_models(self) -> List[str]:
         models = self._client.models.list()
@@ -122,12 +123,24 @@ class OpenAIClient:
         try:
             response = models_api.retrieve(model_id=model_id)
             return response.model_dump()
+        except TypeError:
+            pass
+        try:
+            response = models_api.retrieve(model=model_id)
+            return response.model_dump()
+        except TypeError:
+            pass
+        try:
+            response = models_api.retrieve(model_id)
+            return response.model_dump()
         except AttributeError:
+            return {}
+        except TypeError:
             return {}
         except Exception:
             raise
 
-    def get_model_capabilities(self, model_id: str) -> Dict[str, Any]:
+    def get_model_capabilities(self, model_id: str, *, probe: bool = False) -> Dict[str, Any]:
         defaults = {
             "supports_temperature": False,
             "supports_file_search": False,
@@ -173,7 +186,7 @@ class OpenAIClient:
                 )
             )
         )
-        return {
+        capabilities = {
             "supports_temperature": supports_temperature,
             "supports_file_search": supports_file_search,
             "supports_vector_store": supports_vector_store,
@@ -182,6 +195,73 @@ class OpenAIClient:
             "resolved": resolved,
             "source": info.get("id") or model_id,
         }
+        if probe and not resolved:
+            probed = self._probe_model_capabilities(model_id)
+            if probed:
+                return probed
+        return capabilities
+
+    def _probe_model_capabilities(self, model_id: str) -> Dict[str, Any]:
+        cached = self._capability_probe_cache.get(model_id)
+        if cached:
+            return dict(cached)
+        supports_temperature = False
+        supports_file_search = False
+        supports_vector_store = False
+        input_payload = [{"role": "user", "content": [{"type": "input_text", "text": "ping"}]}]
+        try:
+            try:
+                self._client.responses.create(
+                    model=model_id,
+                    input=input_payload,
+                    max_output_tokens=16,
+                    temperature=0.1,
+                )
+            except TypeError:
+                self._client.responses.create(
+                    model=model_id,
+                    input=input_payload,
+                    temperature=0.1,
+                )
+            supports_temperature = True
+        except Exception as exc:
+            msg = str(exc).lower()
+            if "temperature" not in msg and "unexpected" not in msg:
+                supports_temperature = True
+        try:
+            try:
+                self._client.responses.create(
+                    model=model_id,
+                    input=input_payload,
+                    max_output_tokens=16,
+                    tools=[{"type": "file_search", "vector_store_ids": ["vs_probe"]}],
+                )
+            except TypeError:
+                self._client.responses.create(
+                    model=model_id,
+                    input=input_payload,
+                    tools=[{"type": "file_search", "vector_store_ids": ["vs_probe"]}],
+                )
+            supports_file_search = True
+            supports_vector_store = True
+        except Exception as exc:
+            msg = str(exc).lower()
+            if "vector" in msg and ("not found" in msg or "no such" in msg or "does not exist" in msg):
+                supports_file_search = True
+                supports_vector_store = True
+            elif "file_search" in msg and "unsupported" not in msg:
+                supports_file_search = True
+        result = {
+            "supports_temperature": supports_temperature,
+            "supports_file_search": supports_file_search,
+            "supports_vector_store": supports_vector_store,
+            "supported_tools": [],
+            "supported_parameters": [],
+            "resolved": True,
+            "source": model_id,
+        }
+        self._capability_probe_cache[model_id] = dict(result)
+        return result
 
     def list_batch_jobs(self) -> List[Dict[str, Any]]:
         for attr in ("batch_jobs", "batches", "jobs"):

@@ -108,7 +108,7 @@ class PricingDialog(QDialog):
         source = summary.get("source") or "lokální"
         refreshed = summary.get("last_refreshed") or "nikdy"
         verified = summary.get("verified", False)
-        color = "#fff" if verified else "#888"
+        color = "#fff" if verified else "#808080"
         self._status_label.setText(
             f"{status} • Zdroj: {source} • Poslední aktualizace: {refreshed}"
         )
@@ -173,7 +173,7 @@ class PricingDialog(QDialog):
             self._table.setItem(row, 6, QTableWidgetItem(actual_text))
             status_text = "ověřeno" if receipt.verified_pricing else "odhad"
             status_item = QTableWidgetItem(status_text)
-            status_color = QColor("#fff") if receipt.verified_pricing else QColor("#888")
+            status_color = QColor("#fff") if receipt.verified_pricing else QColor("#808080")
             status_item.setForeground(status_color)
             self._table.setItem(row, 7, status_item)
         if receipts:

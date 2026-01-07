@@ -295,7 +295,7 @@ class SettingsDialog(QDialog):
             self._diag_warning_status.setStyleSheet("color: #fff; font-weight: bold;")
         else:
             self._diag_warning_status.setText("Varování nepotvrzeno")
-            self._diag_warning_status.setStyleSheet("color: #888; font-weight: bold;")
+            self._diag_warning_status.setStyleSheet("color: #808080; font-weight: bold;")
 
     def _show_diag_warning(self) -> None:
         text = (

@@ -47,6 +47,7 @@ MAX_COMPATIBLE_FILE_BYTES = 5 * 1024 * 1024
 TEXT_SAMPLE_BYTES = 4096
 DEFAULT_CONTEXT_LIMIT = 8192
 PROMPT_TRIM_CONTRACT = "KAJA_PROMPT_SPLIT"
+LONG_PROMPT_CONTRACT = "LONG_PROMPT_COMPRESS"
 FILE_MAP_CONTRACT = "A2X_FILE_MAP"
 
 ProgressCallback = Callable[[str, float], None]
@@ -219,6 +220,8 @@ class PipelineExecutor:
         self._diagnostic_uploads: List[Dict[str, Any]] = []
         self._timeline: List[Dict[str, Any]] = []
         self._request_snapshot: Dict[str, Any] = {}
+        self._progress_callback: ProgressCallback | None = None
+        self._last_progress_ratio = 0.0
         self._expected_a2_paths: List[str] = []
         self._model_capabilities: Dict[str, Any] = {
             "supports_vector_store": False,
@@ -290,6 +293,10 @@ class PipelineExecutor:
             "ids": ids or {},
         }
         self._timeline.append(entry)
+
+    def _notify_progress(self, message: str) -> None:
+        if self._progress_callback:
+            self._progress_callback(message, self._last_progress_ratio)
 
     def _load_request_templates(self) -> None:
         if self._request_templates:
@@ -975,6 +982,166 @@ class PipelineExecutor:
         serialized = json.dumps(payload, ensure_ascii=False, indent=2)
         return f"{label}:\n{serialized}"
 
+    @staticmethod
+    def _split_text_into_chunks(text: str, max_chars: int) -> List[str]:
+        if not text:
+            return [""]
+        if max_chars <= 0:
+            return [text]
+        lines = text.splitlines(keepends=True)
+        chunks: List[str] = []
+        buffer: List[str] = []
+        size = 0
+        for line in lines:
+            line_len = len(line)
+            if size + line_len > max_chars and buffer:
+                chunks.append("".join(buffer))
+                buffer = [line]
+                size = line_len
+                continue
+            buffer.append(line)
+            size += line_len
+        if buffer:
+            chunks.append("".join(buffer))
+        return chunks
+
+    def _build_long_prompt_payload(
+        self,
+        stage: str,
+        label: str,
+        *,
+        chunk_index: int,
+        chunk_count: int,
+        previous_summary: str,
+        chunk_text: str,
+        ui_state: UiState,
+        max_tokens: int,
+    ) -> Dict[str, Any]:
+        contract = {
+            "contract": LONG_PROMPT_CONTRACT,
+            "summary": "string",
+            "chunk_index": "integer",
+            "chunk_count": "integer",
+            "notes": ["string"],
+        }
+        contract_text = json.dumps(contract, ensure_ascii=False)
+        instructions = (
+            "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. "
+            f"KONTRAKT {LONG_PROMPT_CONTRACT}: {contract_text}. "
+            "Zachovej všechna pravidla, kontrakty a význam. "
+            "Výsledek musí být deterministicky použitelný jako vstup pro další kroky. "
+            f"Limit: summary <= {max_tokens} tokenů (1 token ~ 4 znaky)."
+        )
+        input_text = (
+            f"STAGE: {stage}\n"
+            f"LABEL: {label}\n"
+            f"CHUNK_INDEX: {chunk_index + 1}/{chunk_count}\n"
+            f"MAX_TOKENS: {max_tokens}\n\n"
+            "EXISTING_SUMMARY:\n<<<\n"
+            f"{previous_summary or '(empty)'}\n"
+            ">>>\n\n"
+            "CHUNK_TEXT:\n<<<\n"
+            f"{chunk_text}\n"
+            ">>>\n\n"
+            "VÝSTUP (JSON): "
+            f'{{"contract":"{LONG_PROMPT_CONTRACT}","summary":"...","chunk_index":{chunk_index + 1},'
+            f'"chunk_count":{chunk_count},"notes":[...]}}'
+        )
+        return {
+            "model": ui_state.model or "gpt-4o",
+            "temperature": 0.0,
+            "instructions": instructions,
+            "input": [{"role": "user", "content": [{"type": "input_text", "text": input_text}]}],
+        }
+
+    def _parse_long_prompt_response(self, response: Dict[str, Any]) -> str:
+        text = self._extract_response_text(response)
+        payload = self._coerce_json_payload(text, LONG_PROMPT_CONTRACT)
+        if not isinstance(payload, dict):
+            raise ValueError("LONG_PROMPT_COMPRESS response není objekt.")
+        summary = payload.get("summary")
+        if not isinstance(summary, str) or not summary.strip():
+            raise ValueError("LONG_PROMPT_COMPRESS response neobsahuje summary.")
+        return summary.strip()
+
+    def _compress_text_by_chunks(
+        self,
+        stage: str,
+        label: str,
+        text: str,
+        ui_state: UiState,
+        max_tokens: int,
+        *,
+        depth: int = 0,
+    ) -> str:
+        cleaned = text.strip()
+        if not cleaned:
+            return cleaned
+        context_limit = self._model_context_limit(ui_state.model)
+        max_chunk_tokens = max(512, int(context_limit * 0.2))
+        max_chunk_chars = max_chunk_tokens * 4
+        chunks = self._split_text_into_chunks(cleaned, max_chunk_chars)
+        summary = ""
+        chunk_count = len(chunks)
+        for idx, chunk in enumerate(chunks):
+            self._notify_progress(f"{stage}: komprimuji {label} ({idx + 1}/{chunk_count})")
+            payload = self._build_long_prompt_payload(
+                stage,
+                label,
+                chunk_index=idx,
+                chunk_count=chunk_count,
+                previous_summary=summary,
+                chunk_text=chunk,
+                ui_state=ui_state,
+                max_tokens=max_tokens,
+            )
+            if not self._model_capabilities.get("supports_temperature", False):
+                payload.pop("temperature", None)
+            response = self._send_request(
+                f"{stage}_LONG_PROMPT",
+                payload,
+                ui_state,
+                update_response_id=False,
+            )
+            summary = self._parse_long_prompt_response(response)
+        if self._estimate_tokens(summary) > max_tokens and depth < 1:
+            return self._compress_text_by_chunks(
+                stage,
+                f"{label}_reshrink",
+                summary,
+                ui_state,
+                max_tokens,
+                depth=depth + 1,
+            )
+        if self._estimate_tokens(summary) > max_tokens:
+            raise ValueError(
+                f"{stage}: shrnutí je stále příliš dlouhé ({self._estimate_tokens(summary)} tokenů)."
+            )
+        return summary.strip()
+
+    def _prepare_dialog_content(
+        self,
+        stage: str,
+        content: str,
+        ui_state: UiState,
+    ) -> str:
+        dialog = content.strip() or "(není zadáno)"
+        max_tokens = self._max_request_tokens(ui_state.model)
+        max_dialog_tokens = max(128, int(max_tokens * 0.5))
+        if self._estimate_tokens(dialog) <= max_dialog_tokens:
+            return dialog
+        self._log(
+            f"{stage}: zadání je dlouhé ({self._estimate_tokens(dialog)} tokenů); "
+            "komprimuji po chunkech."
+        )
+        return self._compress_text_by_chunks(
+            stage,
+            "dialog",
+            dialog,
+            ui_state,
+            max_dialog_tokens,
+        )
+
     def _extract_response_text(self, response: Dict[str, Any]) -> str:
         if not response:
             raise ValueError("Response je prázdná.")
@@ -1508,6 +1675,7 @@ class PipelineExecutor:
         if not self._client:
             raise RuntimeError("OpenAI client není nakonfigurován.")
         request_id = uuid.uuid4().hex[:8]
+        self._notify_progress(f"{stage}: sestavuji request")
         payload_json = _ensure_json_serializable(payload)
         payload_json["ui_state_snapshot"] = self._request_snapshot or {}
         request_log = log_request(
@@ -1525,6 +1693,7 @@ class PipelineExecutor:
         api_payload = {k: v for k, v in payload.items() if k in allowed_keys}
         temp_adjusted = False
         tools_adjusted = False
+        self._notify_progress(f"{stage}: odesílám request")
         while True:
             try:
                 response = self._client.create_response(api_payload)
@@ -1559,6 +1728,7 @@ class PipelineExecutor:
             or self._response_id
         )
         self._response_id = current_response_id
+        self._notify_progress(f"{stage}: odpověď přijata")
         response_log = log_response(
             self._run,
             response,
@@ -1962,8 +2132,10 @@ class PipelineExecutor:
         base_callback = progress_callback or (lambda *_: None)
         def progress_wrapper(message: str, ratio: float) -> None:
             self._last_progress_update = time.time()
+            self._last_progress_ratio = ratio
             base_callback(message, ratio)
         progress_callback = progress_wrapper
+        self._progress_callback = progress_wrapper
         self._ensure_not_cancelled(stop_check)
         self._timeline.clear()
         self._pricing_steps.clear()
@@ -2191,7 +2363,7 @@ class PipelineExecutor:
         self._load_request_templates()
         progress_callback("A1: plán projektu", 0.1)
         self._ensure_not_cancelled(stop_check)
-        dialog_content = user_spec.strip() or "(není zadáno)"
+        dialog_content = self._prepare_dialog_content("A1", user_spec, ui_state)
         a1_payload = self._build_request_payload(
             "A1",
             {"<USER_SPEC>": dialog_content},
@@ -2444,7 +2616,7 @@ class PipelineExecutor:
         self._load_request_templates()
         progress_callback("B1: plán změn", 0.1)
         self._ensure_not_cancelled(stop_check)
-        dialog_content = user_spec.strip() or "(není zadáno)"
+        dialog_content = self._prepare_dialog_content("B1", user_spec, ui_state)
         b1_payload = self._build_request_payload(
             "B1",
             {"<USER_TASK>": dialog_content},
@@ -2589,7 +2761,7 @@ class PipelineExecutor:
         self._log("Spouštím QA požadavek")
         progress_callback("QA: kontrola odpovědi", 0.5)
         self._ensure_not_cancelled(stop_check)
-        dialog_content = user_spec.strip() or "(není zadáno)"
+        dialog_content = self._prepare_dialog_content("QA", user_spec, ui_state)
         dialog_block = self._format_dialog_block("ÚKOL", dialog_content)
         base_instructions = "QA režim: očekává se pouze textová odpověď, žádný soubor. Nepoužívej IN/OUT."
         base_input = f"ÚKOL: {dialog_content}\nOčekává se pouze textová odpověď, žádný soubor."
@@ -2650,7 +2822,7 @@ class PipelineExecutor:
         self._load_request_templates()
         progress_callback("C: dávkový export", 0.3)
         self._ensure_not_cancelled(stop_check)
-        dialog_content = user_spec.strip() or "(není zadáno)"
+        dialog_content = self._prepare_dialog_content("C", user_spec, ui_state)
         dialog_block = self._format_dialog_block("ZADÁNÍ PROGRAMU", dialog_content)
         core_instructions = (
             "OUTPUT: VRAŤ POUZE validní JSON. ŽÁDNÝ markdown, žádné komentáře, žádný další text.\n"
@@ -2818,7 +2990,7 @@ class PipelineExecutor:
             return capabilities
         if hasattr(self._client, "get_model_capabilities"):
             try:
-                resolved = self._client.get_model_capabilities(model)
+                resolved = self._client.get_model_capabilities(model, probe=True)
             except Exception as exc:
                 self._log(f"Nelze načíst metadata modelu {model}: {exc}")
                 return capabilities

@@ -340,6 +340,8 @@ class MainWindow(QMainWindow):
         dialog = ProgressDialog(self)
         dialog.setWindowTitle("Inicializace OpenAI")
         dialog.update_progress("Připravuji spojení…", 0.1)
+        self._status_bar.start_progress("Inicializace OpenAI")
+        self._status_bar.update_progress("Připravuji spojení…", 0.1)
         dialog.show()
         QApplication.processEvents()
         try:
@@ -349,6 +351,7 @@ class MainWindow(QMainWindow):
             client = OpenAIClient(key)
             self._openai_client = client
             dialog.update_progress("Načítám modely…", 0.25)
+            self._status_bar.update_progress("Načítám modely z OpenAI…", 0.25)
             QApplication.processEvents()
             models = client.list_models()
             if models:
@@ -356,10 +359,12 @@ class MainWindow(QMainWindow):
                 self.model_combo.addItems(models)
             self._update_model_capabilities()
             dialog.update_progress("Načítám soubory Files API…", 0.45)
+            self._status_bar.update_progress("Načítám Files API…", 0.45)
             QApplication.processEvents()
             files = client.list_files()
             self._file_api_records = self._build_file_api_records(files)
             dialog.update_progress("Načítám vector store…", 0.65)
+            self._status_bar.update_progress("Načítám vector store…", 0.65)
             QApplication.processEvents()
             stores = client.list_vector_stores()
             self._vector_stores = [
@@ -371,6 +376,7 @@ class MainWindow(QMainWindow):
                 for item in stores
             ]
             dialog.update_progress("Načítám batch joby…", 0.85)
+            self._status_bar.update_progress("Načítám batch joby…", 0.85)
             QApplication.processEvents()
             batches = client.list_batch_jobs()
             self._batch_jobs = [
@@ -395,6 +401,7 @@ class MainWindow(QMainWindow):
         finally:
             dialog.close()
             self._auto_init_done = True
+            self._status_bar.mark_idle()
 
     def _init_controls(self) -> None:
         if self._controls_initialized:
@@ -682,7 +689,7 @@ class MainWindow(QMainWindow):
         header.setFrameShape(QFrame.StyledPanel)
         header.setAttribute(Qt.WA_StyledBackground, True)
         header.setStyleSheet(
-            "QFrame#app_header { border:2px solid #fff; background:#010101; border-radius:12px; }"
+            "QFrame#app_header { border:2px solid #fff; background:#000; border-radius:12px; }"
         )
         layout = QVBoxLayout(header)
         layout.setContentsMargins(24, 12, 24, 12)
@@ -945,7 +952,7 @@ class MainWindow(QMainWindow):
             return
         try:
             capabilities = (
-                client.get_model_capabilities(model_id)
+                client.get_model_capabilities(model_id, probe=True)
                 if hasattr(client, "get_model_capabilities")
                 else {}
             )
@@ -1465,10 +1472,13 @@ class MainWindow(QMainWindow):
 
     def _on_refresh_file_api(self) -> None:
         self._append_log("FILE API: refresh spuštěn")
+        self._status_bar.start_progress("Načítám Files API")
         client = self._ensure_openai_client()
         if not client:
+            self._status_bar.mark_idle()
             return
         try:
+            self._status_bar.update_progress("Stahuji seznam souborů…", 0.4)
             files = client.list_files()
         except Exception as exc:
             hint = ""
@@ -1476,10 +1486,14 @@ class MainWindow(QMainWindow):
                 hint = "\nDNS chyba: nastavte DNS např. na 1.1.1.1 nebo 8.8.8.8."
             self._append_log(f"FILE API refresh selhal: {exc}{(' '+hint).strip()}")
             QMessageBox.warning(self, "FILE API", f"Nelze načíst soubory: {exc}{hint}")
+            self._status_bar.mark_idle()
             return
         self._file_api_records = self._build_file_api_records(files)
         self._refresh_file_api_table()
         self._append_log(f"FILE API: aktualizováno ({len(self._file_api_records)})")
+        self._status_bar.update_progress("Files API aktualizováno", 1.0)
+        self._status_bar.mark_idle()
+
 
     def _refresh_file_api_table(self) -> None:
         self._file_api_table.setRowCount(0)
@@ -1549,10 +1563,13 @@ class MainWindow(QMainWindow):
 
     def _on_fetch_models(self) -> None:
         self._append_log("GET MODELS spuštěno")
+        self._status_bar.start_progress("Získávám modely z OpenAI")
         client = self._ensure_openai_client()
         if not client:
+            self._status_bar.mark_idle()
             return
         try:
+            self._status_bar.update_progress("Načítám seznam modelů…", 0.4)
             models = client.list_models()
         except Exception as exc:
             hint = ""
@@ -1560,6 +1577,7 @@ class MainWindow(QMainWindow):
                 hint = "\nDNS chyba: nastavte DNS např. na 1.1.1.1 nebo 8.8.8.8."
             self._append_log(f"GET MODELS selhalo: {exc}{(' '+hint).strip()}")
             QMessageBox.warning(self, "GET MODELS", f"Nelze načíst modely: {exc}{hint}")
+            self._status_bar.mark_idle()
             return
         if not models:
             models = ["gpt-4o", "gpt-4o-mini", "gpt-4o-mini-transcribe"]
@@ -1568,6 +1586,9 @@ class MainWindow(QMainWindow):
         self.model_combo.addItems(models)
         self._append_log(f"Modely aktualizovány ({len(models)})")
         self._update_model_capabilities()
+        self._status_bar.update_progress("Modely aktualizovány", 1.0)
+        self._status_bar.mark_idle()
+
 
     def _on_go_clicked(self) -> None:
         mode = "C" if self.send_as_c_checkbox.isChecked() else self.mode_combo.currentText()
@@ -2463,7 +2484,7 @@ class MainWindow(QMainWindow):
         self._diag_warning_label.setText(
             f"Diagnostické varování {status}; admin: {admin_user}"
         )
-        color = "#fff" if ack else "#f00"
+        color = "#fff" if ack else "#ff0000"
         self._diag_warning_label.setStyleSheet(f"color: {color}; font-weight: bold;")
 
     def _update_pricing_status_label(self) -> None:
@@ -2472,7 +2493,7 @@ class MainWindow(QMainWindow):
         source = summary.get("source") or "lokální"
         refreshed = summary.get("last_refreshed") or "nikdy"
         verified = summary.get("verified", False)
-        color = "#fff" if verified else "#f00"
+        color = "#fff" if verified else "#ff0000"
         status_text = status.upper()
         text = f"Ceník: {status_text}; Zdroj: {source}; Aktuálně: {refreshed}"
         self._pricing_status_label.setText(text)
@@ -2499,21 +2520,21 @@ class MainWindow(QMainWindow):
         if app:
             app.setFont(font)
             palette = app.palette()
-            palette.setColor(QPalette.ColorRole.Window, QColor("#010101"))
-            palette.setColor(QPalette.ColorRole.Base, QColor("#010101"))
-            palette.setColor(QPalette.ColorRole.AlternateBase, QColor("#010101"))
-            palette.setColor(QPalette.ColorRole.Button, QColor("#010101"))
+            palette.setColor(QPalette.ColorRole.Window, QColor("#000"))
+            palette.setColor(QPalette.ColorRole.Base, QColor("#000"))
+            palette.setColor(QPalette.ColorRole.AlternateBase, QColor("#000"))
+            palette.setColor(QPalette.ColorRole.Button, QColor("#000"))
             palette.setColor(QPalette.ColorRole.ButtonText, QColor("#fff"))
             palette.setColor(QPalette.ColorRole.Text, QColor("#fff"))
             palette.setColor(QPalette.ColorRole.WindowText, QColor("#fff"))
-            palette.setColor(QPalette.ColorRole.ToolTipBase, QColor("#010101"))
+            palette.setColor(QPalette.ColorRole.ToolTipBase, QColor("#000"))
             palette.setColor(QPalette.ColorRole.ToolTipText, QColor("#fff"))
             palette.setColor(QPalette.ColorRole.Highlight, QColor("#fff"))
             palette.setColor(QPalette.ColorRole.HighlightedText, QColor("#000"))
             app.setPalette(palette)
         style = """
 QMainWindow, QWidget, QDialog, QScrollArea {
-    background: #010101;
+    background: #000;
     color: #fff;
     font-family: 'Montserrat';
 }
@@ -2525,10 +2546,10 @@ QGroupBox {
     border-radius: 14px;
     margin-top: 24px;
     padding: 12px;
-    background: #010101;
+    background: #000;
 }
 QLineEdit, QPlainTextEdit, QComboBox, QSpinBox, QDoubleSpinBox {
-    background: #010101;
+    background: #000;
     color: #fff;
     border: 1px solid #fff;
     border-radius: 10px;
@@ -2540,11 +2561,11 @@ QPlainTextEdit {
 }
 QTableWidget {
     border: 1px solid #fff;
-    background: #010101;
+    background: #000;
     gridline-color: #fff;
 }
 QHeaderView::section {
-    background: #030303;
+    background: #000;
     color: #fff;
     border: 1px solid #fff;
     padding: 6px;
@@ -2555,13 +2576,13 @@ QCheckBox::indicator, QRadioButton::indicator {
     height: 16px;
     border: 1px solid #fff;
     border-radius: 4px;
-    background: #010101;
+    background: #000;
 }
 QCheckBox::indicator:checked, QRadioButton::indicator:checked {
     background: #fff;
 }
 QCheckBox::indicator:disabled, QRadioButton::indicator:disabled {
-    border-color: #f00;
+    border-color: #ff0000;
 }
 QPushButton {
     background: #000;
@@ -2579,26 +2600,26 @@ QPushButton[active="true"] {
     border-color: #fff;
 }
 QPushButton:disabled {
-    border-color: #f00;
-    color: #888;
+    border-color: #ff0000;
+    color: #808080;
     background: #000;
 }
 QPushButton[danger="true"] {
-    background: #f00;
-    border-color: #f00;
+    background: #ff0000;
+    border-color: #ff0000;
     color: #000;
     font-weight: bold;
 }
 QPushButton[danger="true"]:pressed,
 QPushButton[danger="true"][active="true"] {
     background: #000;
-    color: #f00;
-    border-color: #f00;
+    color: #ff0000;
+    border-color: #ff0000;
 }
 QPushButton[park_control="true"] {
     border: none;
     border-radius: 14px;
-    background: #030303;
+    background: #000;
     color: #fff;
     padding: 0;
 }
@@ -2609,7 +2630,7 @@ QPushButton[park_control="true"][active="true"] {
 QProgressBar {
     border: 1px solid #fff;
     border-radius: 10px;
-    background: #010101;
+    background: #000;
     color: #fff;
 }
 QProgressBar::chunk {
@@ -2618,7 +2639,7 @@ QProgressBar::chunk {
 QFrame#status_bar, QStatusBar {
     border: 1px solid #fff;
     border-radius: 12px;
-    background: #010101;
+    background: #000;
 }
 QFrame#status_bar QLabel {
     color: #fff;
@@ -2758,7 +2779,7 @@ class SectionDragHandle(QLabel):
         self.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         font = QFont("Montserrat", 12, QFont.Bold)
         self.setFont(font)
-        self.setStyleSheet("color:#fff; border:none;")
+        self.setStyleSheet("color:#fff; border:none; background:#000; padding:0;")
 
     def mousePressEvent(self, event) -> None:
         if event.button() == Qt.LeftButton:
@@ -2793,7 +2814,7 @@ class SectionWidget(QFrame):
         self._workspace = workspace
         self.setObjectName("section_frame")
         self.setAttribute(Qt.WA_StyledBackground, True)
-        self.setStyleSheet("background:#010101;")
+        self.setStyleSheet("background:#000;")
         self.setMinimumSize(0, 0)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._border_radius = 12
@@ -2804,6 +2825,8 @@ class SectionWidget(QFrame):
         self._layout.setSizeConstraint(QLayout.SetNoConstraint)
 
         header = QFrame()
+        header.setFrameShape(QFrame.NoFrame)
+        header.setStyleSheet("border:none; background:transparent;")
         header_layout = QHBoxLayout(header)
         header_layout.setContentsMargins(0, 0, 0, 0)
         header_layout.setSpacing(6)
@@ -2879,7 +2902,7 @@ class SectionWidget(QFrame):
 
         if gap_end > gap_start:
             fill_rect = QRect(gap_start, rect.top(), max(1, gap_end - gap_start), self._border_radius)
-            painter.fillRect(fill_rect, QColor("#010101"))
+            painter.fillRect(fill_rect, QColor("#000"))
         left_end = gap_start
         right_start = gap_end
         if left_end > rect.left() + self._border_radius:
@@ -2901,7 +2924,7 @@ class ParkTile(QFrame):
         self.setObjectName("park_tile")
         self.setFrameShape(QFrame.NoFrame)
         self.setStyleSheet(
-            "QFrame#park_tile { background:#010101; border:1px solid #fff; border-radius:12px; }"
+            "QFrame#park_tile { background:#000; border:1px solid #fff; border-radius:12px; }"
         )
         self.setCursor(QCursor(Qt.OpenHandCursor))
         self.setMinimumSize(0, 0)
@@ -3071,7 +3094,7 @@ class ColumnArea(QFrame):
         self._index = index
         self.setAcceptDrops(True)
         self.setFrameShape(QFrame.NoFrame)
-        self.setStyleSheet("background:#030303; border:1px solid #fff; border-radius:12px;")
+        self.setStyleSheet("background:#000; border:1px solid #fff; border-radius:12px;")
         self.setMinimumSize(0, 0)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._layout = QVBoxLayout(self)
@@ -3084,7 +3107,7 @@ class ColumnArea(QFrame):
         self._splitter.setMinimumSize(0, 0)
         self._splitter.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._splitter.setStyleSheet(
-            "QSplitter::handle { background:#777; }"
+            "QSplitter::handle { background:#808080; }"
             "QSplitter::handle:horizontal { width:1px; }"
             "QSplitter::handle:vertical { height:1px; }"
         )
@@ -3216,7 +3239,7 @@ class WorkspacePane(QWidget):
         self._columns_splitter.setHandleWidth(1)
         self._columns_splitter.setChildrenCollapsible(True)
         self._columns_splitter.setStyleSheet(
-            "QSplitter::handle { background:#777; }"
+            "QSplitter::handle { background:#808080; }"
             "QSplitter::handle:horizontal { width:1px; }"
             "QSplitter::handle:vertical { height:1px; }"
         )
@@ -3226,7 +3249,7 @@ class WorkspacePane(QWidget):
         self._palette_frame.setObjectName("park_panel")
         self._palette_frame.setFrameShape(QFrame.NoFrame)
         self._palette_frame.setStyleSheet(
-            "QFrame#park_panel { border:2px solid #fff; border-radius:12px; background:#010101; }"
+            "QFrame#park_panel { border:2px solid #fff; border-radius:12px; background:#000; }"
             "QFrame#park_panel * { border: none; }"
         )
         self._palette_layout = QVBoxLayout(self._palette_frame)

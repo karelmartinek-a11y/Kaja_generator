@@ -10,7 +10,7 @@ class SectionCard(QFrame):
         super().__init__(parent)
         self.setObjectName("sectionCard")
         self.setAttribute(Qt.WA_StyledBackground, True)
-        self.setStyleSheet("background:#010101;")
+        self.setStyleSheet("background:#000;")
         self._border_radius = 12
         layout = QVBoxLayout(self)
         header_row = QHBoxLayout()
@@ -19,7 +19,7 @@ class SectionCard(QFrame):
         self._header_label = QLabel(title.upper())
         self._header_label.setObjectName("sectionTitle")
         self._header_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        self._header_label.setStyleSheet("color:#fff; border:none;")
+        self._header_label.setStyleSheet("color:#fff; border:none; background:#000; padding:0;")
         self._header_label.setFont(QFont("Montserrat", 12, QFont.Bold))
         header_row.addWidget(self._header_label)
         header_row.addStretch()
@@ -55,7 +55,7 @@ class SectionCard(QFrame):
                 max(1, gap_end - gap_start),
                 self._border_radius,
             )
-            painter.fillRect(fill_rect, QColor("#010101"))
+            painter.fillRect(fill_rect, QColor("#000"))
         left_end = gap_start
         right_start = gap_end
         if left_end > rect.left() + self._border_radius:
