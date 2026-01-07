@@ -42,7 +42,7 @@ DEFAULT_PRICE_TABLE: Dict[str, Any] = {
     "verified": False,
 }
 
-OFFICIAL_OPENAI_PRICING_URL = "https://pricing.openai.com/pricing.json"
+OFFICIAL_OPENAI_PRICING_URL = "https://openai.com/pricing"
 
 
 class PriceCatalog:
@@ -98,13 +98,16 @@ class PriceCatalog:
         return merged
 
     def _fetch_remote_pricing(self, url: str) -> Optional[Dict[str, Any]]:
+        if not url:
+            self._last_error = "Pricing URL není nastaveno."
+            return None
         try:
             response = httpx.get(url, timeout=15.0)
             response.raise_for_status()
             if self._is_json_response(response):
                 return response.json()
             return self._extract_pricing_from_html(response.text)
-        except (httpx.HTTPError, ValueError) as exc:
+        except (httpx.HTTPError, httpx.RequestError, ValueError) as exc:
             self._last_error = str(exc)
         return None
 

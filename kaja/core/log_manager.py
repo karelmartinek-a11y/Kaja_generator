@@ -121,6 +121,8 @@ def log_request(
     stage: str = "",
     project_name: str = "",
     response_id: str = "",
+    request_id: str = "",
+    suffix: str = "",
 ) -> Path:
     metadata = {
         "run_id": run.run_id,
@@ -129,16 +131,25 @@ def log_request(
         "response_id": response_id,
         "logged_at": datetime.utcnow().isoformat(),
     }
+    if request_id:
+        metadata["request_id"] = request_id
     payload_with_meta = {
         "metadata": metadata,
         "payload": _to_json(payload),
     }
+    suffix_parts = []
+    if suffix:
+        suffix_parts.append(suffix)
+    if request_id:
+        suffix_parts.append(f"req_{request_id}")
+    suffix_value = "_".join(suffix_parts)
     name = _build_log_filename(
         run,
         "request",
         stage=stage,
         project_name=project_name,
         response_id=response_id or run.run_id,
+        suffix=suffix_value,
     )
     path = Path(run.log_dir) / name
     write_json(path, payload_with_meta)
@@ -152,6 +163,8 @@ def log_response(
     stage: str = "",
     project_name: str = "",
     response_id: str = "",
+    request_id: str = "",
+    suffix: str = "",
 ) -> Path:
     metadata = {
         "run_id": run.run_id,
@@ -160,16 +173,25 @@ def log_response(
         "response_id": response_id,
         "logged_at": datetime.utcnow().isoformat(),
     }
+    if request_id:
+        metadata["request_id"] = request_id
     payload_with_meta = {
         "metadata": metadata,
         "payload": _to_json(payload),
     }
+    suffix_parts = []
+    if suffix:
+        suffix_parts.append(suffix)
+    if request_id:
+        suffix_parts.append(f"req_{request_id}")
+    suffix_value = "_".join(suffix_parts)
     name = _build_log_filename(
         run,
         "response",
         stage=stage,
         project_name=project_name,
         response_id=response_id or run.run_id,
+        suffix=suffix_value,
     )
     path = Path(run.log_dir) / name
     write_json(path, payload_with_meta)

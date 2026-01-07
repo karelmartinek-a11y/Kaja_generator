@@ -26,5 +26,47 @@
     "timeline": "RUN_040120261548_3af0_timeline_040120261548.json",
     "log_dir": "LOG\\RUN_040120261548_3af0",
     "diagnostics": []
+  },
+  {
+    "run_id": "RUN_070120260113_b3ae",
+    "project": "Kajovo",
+    "mode": "GENERATE",
+    "response_id": "GENERATE_d3b011",
+    "status": "completed",
+    "start": "2026-01-07T00:13:04.268912",
+    "end": "2026-01-07T00:16:10.123766",
+    "duration_s": 185.832,
+    "manifest": "Kajovo_GENERATE_d3b011_run_manifest_070120260116.json",
+    "timeline": "RUN_070120260113_b3ae_timeline_070120260116.json",
+    "log_dir": "LOG\\RUN_070120260113_b3ae",
+    "diagnostics": []
+  },
+  {
+    "run_id": "RUN_070120261346_84bd",
+    "project": "Kajovo",
+    "mode": "GENERATE",
+    "response_id": "resp_0c08a12b94e2bb5d00695e561008fc81908c8fe24b7f4d81e1",
+    "status": "completed",
+    "start": "2026-01-07T12:46:48.207171",
+    "end": "2026-01-07T12:48:20.327817",
+    "duration_s": 92.112,
+    "manifest": "Kajovo_resp_0c08a12b94e2bb5d00695e561008fc81908c8fe24b7f4d81e1_run_manifest_070120261348.json",
+    "timeline": "RUN_070120261346_84bd_timeline_070120261348.json",
+    "log_dir": "LOG\\RUN_070120261346_84bd",
+    "diagnostics": []
+  },
+  {
+    "run_id": "RUN_070120261935_09e1",
+    "project": "KAJOVO",
+    "mode": "GENERATE",
+    "response_id": "resp_0a9d3b88a4a4fa3700695ea7b774348191a36e945885a55934",
+    "status": "completed",
+    "start": "2026-01-07T18:35:10.199790",
+    "end": "2026-01-07T18:36:47.894443",
+    "duration_s": 97.685,
+    "manifest": "KAJOVO_resp_0a9d3b88a4a4fa3700695ea7b774348191a36e945885a55934_run_manifest_070120261936.json",
+    "timeline": "RUN_070120261935_09e1_timeline_070120261936.json",
+    "log_dir": "LOG\\RUN_070120261935_09e1",
+    "diagnostics": []
   }
 ]

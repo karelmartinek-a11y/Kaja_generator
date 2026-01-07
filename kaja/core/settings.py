@@ -45,6 +45,7 @@ class Settings:
     dry_run_modify: bool = False
     local_post_hooks: List[str] = field(default_factory=list)
     ssh_post_hooks: List[str] = field(default_factory=list)
+    workspace_layout: Dict[str, Any] = field(default_factory=dict)
 
 
 class SettingsStore:

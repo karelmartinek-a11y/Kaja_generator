@@ -61,7 +61,7 @@ class PricingDialog(QDialog):
 
         receipts_group = QGroupBox("Účtenky")
         receipts_layout = QVBoxLayout(receipts_group)
-        self._table = QTableWidget(0, 7)
+        self._table = QTableWidget(0, 8)
         self._table.setHorizontalHeaderLabels(
             [
                 "Run ID",
@@ -69,7 +69,8 @@ class PricingDialog(QDialog):
                 "Model",
                 "Mode",
                 "Response ID",
-                "Total",
+                "Estimated",
+                "Actual",
                 "Status",
             ]
         )
@@ -138,17 +139,43 @@ class PricingDialog(QDialog):
         self._receipts = [receipt for receipt in receipts]
         self._table.setRowCount(len(receipts))
         for row, receipt in enumerate(receipts):
+            details: Dict[str, Any] | None = None
+            estimated = None
+            actual = None
+            try:
+                details = json.loads(receipt.details_json)
+            except Exception:
+                details = None
+            if isinstance(details, dict):
+                estimated = details.get("run_estimated_total_cost")
+                if not isinstance(estimated, (int, float)):
+                    estimated = details.get("total_cost")
+                actual = details.get("run_actual_total_cost")
+                if not isinstance(actual, (int, float)):
+                    per_call = details.get("per_call_pricing")
+                    if isinstance(per_call, dict):
+                        totals = per_call.get("totals")
+                        if isinstance(totals, dict):
+                            actual_summary = totals.get("actual")
+                            if isinstance(actual_summary, dict):
+                                actual = actual_summary.get("total_cost")
+            if not isinstance(estimated, (int, float)) and not isinstance(actual, (int, float)):
+                if isinstance(receipt.total_cost, (int, float)):
+                    estimated = receipt.total_cost
             self._table.setItem(row, 0, QTableWidgetItem(receipt.run_id))
             self._table.setItem(row, 1, QTableWidgetItem(receipt.project))
             self._table.setItem(row, 2, QTableWidgetItem(receipt.model))
             self._table.setItem(row, 3, QTableWidgetItem(receipt.mode))
             self._table.setItem(row, 4, QTableWidgetItem(receipt.response_id))
-            self._table.setItem(row, 5, QTableWidgetItem(f"{receipt.total_cost:.6f}"))
+            estimated_text = f"{estimated:.6f}" if isinstance(estimated, (int, float)) else "-"
+            actual_text = f"{actual:.6f}" if isinstance(actual, (int, float)) else "-"
+            self._table.setItem(row, 5, QTableWidgetItem(estimated_text))
+            self._table.setItem(row, 6, QTableWidgetItem(actual_text))
             status_text = "ověřeno" if receipt.verified_pricing else "odhad"
             status_item = QTableWidgetItem(status_text)
             status_color = QColor("#fff") if receipt.verified_pricing else QColor("#888")
             status_item.setForeground(status_color)
-            self._table.setItem(row, 6, status_item)
+            self._table.setItem(row, 7, status_item)
         if receipts:
             self._table.selectRow(0)
             self._update_details_view(0)

@@ -6,19 +6,21 @@ import math
 import os
 import shutil
 import uuid
+import socket
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from PySide6.QtCore import Qt, QMimeData, QSize, QTimer, QPoint, QRect
+from PySide6.QtCore import QEvent, QObject, Qt, QMimeData, QSize, QTimer, QPoint, QRect
 from PySide6.QtGui import (
     QCursor,
     QDrag,
     QFont,
     QFontMetrics,
     QGuiApplication,
+    QPalette,
     QPixmap,
     QPainter,
     QPen,
@@ -83,6 +85,26 @@ from .dialogs.api_key_dialog import ApiKeyDialog
 from .dialogs.pricing_dialog import PricingDialog
 from .dialogs.settings_dialog import SettingsDialog
 from .section_card import SectionCard
+
+
+class ButtonActiveFilter(QObject):
+    def eventFilter(self, obj: QObject, event) -> bool:
+        if isinstance(obj, QPushButton):
+            if event.type() == QEvent.MouseButtonPress:
+                self._set_active(obj, True)
+            elif event.type() in {
+                QEvent.MouseButtonRelease,
+                QEvent.MouseButtonDblClick,
+                QEvent.Leave,
+            }:
+                self._set_active(obj, False)
+        return super().eventFilter(obj, event)
+
+    @staticmethod
+    def _set_active(button: QPushButton, active: bool) -> None:
+        button.setProperty("active", active)
+        button.style().unpolish(button)
+        button.style().polish(button)
 try:
     import winreg
 except ImportError:
@@ -184,7 +206,13 @@ class StatusBar(QFrame):
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
+        self._button_active_filter = ButtonActiveFilter(self)
+        app = QApplication.instance()
+        if app:
+            app.installEventFilter(self._button_active_filter)
+        self._click_handlers: List[QPushButton] = []
         self.setWindowTitle("Kája – SuperCodex")
+        self.setAttribute(Qt.WA_StyledBackground, True)
         self.setMinimumSize(0, 0)
         self._root_dir = Path(__file__).resolve().parents[2]
         self._settings_store = SettingsStore(self._root_dir)
@@ -197,6 +225,12 @@ class MainWindow(QMainWindow):
         self._apply_security_settings()
         self._openai_client: Optional[OpenAIClient] = None
         self._auto_init_done = False
+        self._workspace_pane: WorkspacePane | None = None
+        self._model_capabilities_cache: Dict[str, Dict[str, Any]] = {}
+        self._model_capabilities: Dict[str, Any] = {}
+        self._model_capabilities_label: QLabel | None = None
+        self._vector_store_status_label: QLabel | None = None
+        self._vector_store_controls: List[QWidget] = []
 
         self._batch_table = self._create_batch_table()
         self._attached_table = self._create_file_table(["Name", "Purpose", "Size"])
@@ -228,13 +262,37 @@ class MainWindow(QMainWindow):
 
         self._init_ui()
         self._apply_manifest_styles()
+        self._restore_workspace_layout()
         self._ensure_api_key_loaded()
         self._refresh_batch_monitor()
         self._refresh_file_api_table()
         self._refresh_attached_table()
         self._refresh_vector_store_view()
         self._apply_settings_to_ssh_fields()
+        self._update_model_capabilities()
         QTimer.singleShot(200, self._auto_initialize_api_state)
+
+    def _register_button(
+        self,
+        button: QPushButton,
+        *,
+        danger: bool = False,
+        park_control: bool = False,
+        checkable: bool = False,
+    ) -> None:
+        button.setCursor(QCursor(Qt.PointingHandCursor))
+        if danger:
+            button.setProperty("danger", True)
+        if park_control:
+            button.setProperty("park_control", True)
+        if checkable:
+            button.setCheckable(True)
+        button.setProperty("active", False)
+        button.pressed.connect(lambda b=button: ButtonActiveFilter._set_active(b, True))
+        button.released.connect(lambda b=button: ButtonActiveFilter._set_active(b, False))
+        if button.isCheckable():
+            button.toggled.connect(lambda state, b=button: ButtonActiveFilter._set_active(b, state))
+        self._click_handlers.append(button)
 
     def minimumSizeHint(self) -> QSize:
         return QSize(0, 0)
@@ -242,6 +300,7 @@ class MainWindow(QMainWindow):
     def _init_ui(self) -> None:
         self._init_controls()
         central = QWidget()
+        central.setAttribute(Qt.WA_StyledBackground, True)
         self.setCentralWidget(central)
         root_layout = QVBoxLayout(central)
         root_layout.setContentsMargins(0, 0, 0, 0)
@@ -249,6 +308,30 @@ class MainWindow(QMainWindow):
         root_layout.setSizeConstraint(QLayout.SetNoConstraint)
         root_layout.addWidget(self._build_header())
         root_layout.addWidget(self._build_workspace(), 1)
+
+    def closeEvent(self, event) -> None:
+        self._persist_workspace_layout()
+        super().closeEvent(event)
+
+    def _restore_workspace_layout(self) -> None:
+        if not self._workspace_pane:
+            return
+        layout = self._settings.workspace_layout
+        if not isinstance(layout, dict) or not layout:
+            return
+        try:
+            self._workspace_pane.apply_layout(layout)
+        except Exception as exc:
+            self._append_log(f"Obnova rozvržení selhala: {exc}")
+
+    def _persist_workspace_layout(self) -> None:
+        if not self._workspace_pane:
+            return
+        try:
+            self._settings.workspace_layout = self._workspace_pane.serialize_layout()
+            self._settings_store.save(self._settings)
+        except Exception as exc:
+            self._append_log(f"Uložení rozvržení selhalo: {exc}")
 
     def _auto_initialize_api_state(self) -> None:
         if self._auto_init_done:
@@ -271,18 +354,11 @@ class MainWindow(QMainWindow):
             if models:
                 self.model_combo.clear()
                 self.model_combo.addItems(models)
+            self._update_model_capabilities()
             dialog.update_progress("Načítám soubory Files API…", 0.45)
             QApplication.processEvents()
             files = client.list_files()
-            self._file_api_records = [
-                FileRecord(
-                    file_id=item.get("id") or item.get("file_id") or str(uuid.uuid4())[:8],
-                    filename=item.get("filename") or item.get("name") or "file",
-                    purpose=item.get("purpose") or "user data",
-                    size_bytes=int(item.get("size") or item.get("bytes") or 0),
-                )
-                for item in files
-            ]
+            self._file_api_records = self._build_file_api_records(files)
             dialog.update_progress("Načítám vector store…", 0.65)
             QApplication.processEvents()
             stores = client.list_vector_stores()
@@ -335,14 +411,18 @@ class MainWindow(QMainWindow):
         self.response_id_edit = QLineEdit()
         self.api_key_edit = QLineEdit()
         self.api_key_edit.setPlaceholderText("API Key")
+        self.api_key_edit.editingFinished.connect(self._on_api_key_changed)
         self.model_combo = QComboBox()
         self.model_combo.addItems(["gpt-4o", "gpt-4o-mini", "gpt-4o-mini-transcribe"])
+        self.model_combo.currentTextChanged.connect(self._on_model_changed)
         self.temperature_spin = QSpinBox()
         self.temperature_spin.setRange(0, 20)
         self.temperature_spin.setValue(2)
         self.temperature_spin.setSuffix(" ×0.1")
         self.get_models_button = QPushButton("GET MODELS")
+        self._register_button(self.get_models_button)
         self.go_button = QPushButton("KÁJA GO")
+        self._register_button(self.go_button)
         self.log_edit = QPlainTextEdit()
         self.log_edit.setReadOnly(True)
         self.windows_in_checkbox = QCheckBox("WINDOWS IN")
@@ -366,34 +446,42 @@ class MainWindow(QMainWindow):
         self.ssh_password_edit.setEchoMode(QLineEdit.Password)
         self.in_dir_button = QPushButton("VSTUP")
         self.in_dir_button.clicked.connect(self._pick_in_dir)
-        self.in_dir_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self._register_button(self.in_dir_button)
         self.out_dir_button = QPushButton("Výstup")
         self.out_dir_button.clicked.connect(self._pick_out_dir)
-        self.out_dir_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self._register_button(self.out_dir_button)
         self.in_equals_out_button = QPushButton("IN=OUT")
         self.in_equals_out_button.clicked.connect(self._on_in_equals_out)
-        self.in_equals_out_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self._register_button(self.in_equals_out_button)
         self.versing_button = QPushButton("VERSING")
         self.versing_button.setCheckable(True)
         self.versing_button.setEnabled(False)
-        self.versing_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self._register_button(self.versing_button, checkable=True)
         self.versing_button.toggled.connect(self._on_versing_toggled)
         self.api_key_button = QPushButton("API-KEY")
+        self._register_button(self.api_key_button)
         self.api_key_button.clicked.connect(self._open_api_key_dialog)
         self.pricing_button = QPushButton("$")
+        self._register_button(self.pricing_button)
         self.pricing_button.clicked.connect(self._show_pricing)
         self.settings_button = QPushButton("NASTAVENÍ")
+        self._register_button(self.settings_button)
         self.settings_button.clicked.connect(self._open_settings)
         self.save_button = QPushButton("SAVE")
+        self._register_button(self.save_button)
         self.save_button.clicked.connect(self._on_save_state)
         self.load_button = QPushButton("LOAD")
+        self._register_button(self.load_button)
         self.load_button.clicked.connect(self._on_load_state)
         self.load_request_button = QPushButton("LOAD REQUEST")
+        self._register_button(self.load_request_button)
         self.load_request_button.clicked.connect(self._on_load_request)
         self.new_button = QPushButton("NEW")
+        self._register_button(self.new_button)
         self.new_button.clicked.connect(self._on_new_clicked)
         self.exit_button = QPushButton("EXIT")
         self.exit_button.setProperty("danger", True)
+        self._register_button(self.exit_button, danger=True)
         self.exit_button.clicked.connect(self._on_exit_clicked)
         for control in (
             self.api_key_button,
@@ -415,6 +503,10 @@ class MainWindow(QMainWindow):
         self._pricing_status_label = QLabel()
         self._pricing_status_label.setWordWrap(True)
         self._pricing_status_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self._model_capabilities_label = QLabel()
+        self._model_capabilities_label.setWordWrap(True)
+        self._vector_store_status_label = QLabel()
+        self._vector_store_status_label.setWordWrap(True)
         self._diag_warning_label = QLabel()
         self._diag_warning_label.setWordWrap(True)
 
@@ -588,6 +680,7 @@ class MainWindow(QMainWindow):
         header = QFrame()
         header.setObjectName("app_header")
         header.setFrameShape(QFrame.StyledPanel)
+        header.setAttribute(Qt.WA_StyledBackground, True)
         header.setStyleSheet(
             "QFrame#app_header { border:2px solid #fff; background:#010101; border-radius:12px; }"
         )
@@ -653,7 +746,8 @@ class MainWindow(QMainWindow):
             SectionDefinition("timeline", "TIMELINE", self._build_timeline_widget),
             SectionDefinition("diff_viewer", "DIFF VIEWER", self._build_diff_view_widget),
         ]
-        return WorkspacePane(sections)
+        self._workspace_pane = WorkspacePane(sections)
+        return self._workspace_pane
 
     def _build_assignment_section(self) -> QWidget:
         box = QWidget()
@@ -693,6 +787,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.model_combo)
         layout.addWidget(QLabel("Temperature"))
         layout.addWidget(self.temperature_spin)
+        layout.addWidget(self._model_capabilities_label)
         layout.addWidget(self.get_models_button)
         layout.addWidget(QLabel("API Key"))
         layout.addWidget(self.api_key_edit)
@@ -745,11 +840,15 @@ class MainWindow(QMainWindow):
     def _build_local_files_widget(self) -> QWidget:
         box = QWidget()
         layout = QVBoxLayout(box)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._local_files_table)
         buttons = QHBoxLayout()
+        buttons.setContentsMargins(0, 0, 0, 0)
         add_button = QPushButton("VLOŽ")
+        self._register_button(add_button)
         add_button.clicked.connect(self._add_local_files)
         upload_button = QPushButton("UPLOAD")
+        self._register_button(upload_button)
         upload_button.clicked.connect(self._upload_local_files)
         buttons.addWidget(add_button)
         buttons.addWidget(upload_button)
@@ -770,6 +869,140 @@ class MainWindow(QMainWindow):
         if reg_key:
             os.environ["OPENAI_API_KEY"] = reg_key
             self.api_key_edit.setText(reg_key)
+
+    def _on_api_key_changed(self) -> None:
+        key = self.api_key_edit.text().strip()
+        self._openai_client = None
+        self._model_capabilities_cache.clear()
+        if not key:
+            self._model_capabilities = self._default_model_capabilities()
+            self._apply_model_capabilities()
+            return
+        self._update_model_capabilities()
+
+    def _ensure_openai_client(self) -> OpenAIClient | None:
+        """Create OpenAI client from the current API key if missing."""
+        if self._openai_client:
+            return self._openai_client
+        self._ensure_api_key_loaded()
+        key = self.api_key_edit.text().strip()
+        if not key:
+            self._append_log("OpenAI klient: API key chybí.")
+            QMessageBox.warning(self, "OpenAI", "Vyplňte API key pro OpenAI.")
+            return None
+        try:
+            socket.getaddrinfo("api.openai.com", 443)
+        except OSError as exc:
+            msg = (
+                f"DNS pro api.openai.com selhalo: {exc}. "
+                "Nastavte funkční DNS (např. 1.1.1.1 nebo 8.8.8.8) a zkuste znovu."
+            )
+            self._append_log(msg)
+            QMessageBox.warning(self, "DNS", msg)
+            return None
+        try:
+            self._openai_client = OpenAIClient(key)
+            return self._openai_client
+        except Exception as exc:
+            self._append_log(f"Nelze inicializovat OpenAI klienta: {exc}")
+            QMessageBox.warning(self, "OpenAI", f"Klient nelze inicializovat: {exc}")
+            return None
+
+    def _default_model_capabilities(self) -> Dict[str, Any]:
+        return {
+            "supports_temperature": False,
+            "supports_file_search": False,
+            "supports_vector_store": False,
+            "supported_tools": [],
+            "supported_parameters": [],
+            "resolved": False,
+            "source": "defaults",
+        }
+
+    def _update_model_capabilities(self, model: str | None = None) -> None:
+        model_id = (model or self.model_combo.currentText() or "").strip()
+        if not model_id:
+            self._model_capabilities = self._default_model_capabilities()
+            self._apply_model_capabilities()
+            return
+        cached = self._model_capabilities_cache.get(model_id)
+        if cached and cached.get("resolved", True):
+            self._model_capabilities = dict(cached)
+            self._apply_model_capabilities()
+            return
+        if not (self.api_key_edit.text().strip() or os.environ.get("OPENAI_API_KEY")):
+            fallback = self._default_model_capabilities()
+            fallback["source"] = model_id or fallback["source"]
+            self._model_capabilities = fallback
+            self._apply_model_capabilities()
+            return
+        client = self._openai_client or self._ensure_openai_client()
+        if not client:
+            fallback = self._default_model_capabilities()
+            fallback["source"] = model_id or fallback["source"]
+            self._model_capabilities = fallback
+            self._apply_model_capabilities()
+            return
+        try:
+            capabilities = (
+                client.get_model_capabilities(model_id)
+                if hasattr(client, "get_model_capabilities")
+                else {}
+            )
+        except Exception as exc:
+            self._append_log(f"Nelze načíst metadata modelu {model_id}: {exc}")
+            capabilities = {}
+        if not isinstance(capabilities, dict) or not capabilities:
+            capabilities = self._default_model_capabilities()
+            capabilities["source"] = model_id or capabilities["source"]
+        if "source" not in capabilities:
+            capabilities["source"] = model_id
+        if capabilities.get("resolved", False):
+            self._model_capabilities_cache[model_id] = dict(capabilities)
+        self._model_capabilities = dict(capabilities)
+        self._apply_model_capabilities()
+
+    def _apply_model_capabilities(self) -> None:
+        capabilities = self._model_capabilities or self._default_model_capabilities()
+        supports_temperature = bool(capabilities.get("supports_temperature", False))
+        supports_file_search = bool(capabilities.get("supports_file_search", False))
+        supports_vector_store = bool(capabilities.get("supports_vector_store", False))
+        source = capabilities.get("source", "unknown")
+
+        self.temperature_spin.setEnabled(supports_temperature)
+        self.temperature_spin.setToolTip(
+            "" if supports_temperature else "Model nepodporuje temperature."
+        )
+
+        vector_enabled = supports_file_search and supports_vector_store
+        for control in self._vector_store_controls:
+            control.setEnabled(vector_enabled)
+        if self._vector_store_status_label:
+            if vector_enabled:
+                status_text = "Vector store: podpora aktivní."
+            else:
+                missing = []
+                if not supports_file_search:
+                    missing.append("file_search")
+                if not supports_vector_store:
+                    missing.append("vector_store")
+                missing_text = ", ".join(missing) if missing else "neznámá"
+                status_text = (
+                    f"Vector store: model nepodporuje {missing_text}; funkce jsou deaktivované."
+                )
+            self._vector_store_status_label.setText(status_text)
+
+        if self._model_capabilities_label:
+            temp_text = "ANO" if supports_temperature else "NE"
+            fs_text = "ANO" if supports_file_search else "NE"
+            vs_text = "ANO" if supports_vector_store else "NE"
+            self._model_capabilities_label.setText(
+                f"Podpora modelu ({source}): temperature={temp_text}, "
+                f"file_search={fs_text}, vector_store={vs_text}"
+            )
+
+    def _on_model_changed(self, model: str) -> None:
+        self._update_model_capabilities(model)
 
     def _read_user_env(self, name: str) -> str | None:
         return self._read_registry_value(winreg.HKEY_CURRENT_USER, name)
@@ -831,8 +1064,11 @@ class MainWindow(QMainWindow):
     def _build_batch_monitor_widget(self) -> QWidget:
         box = QWidget()
         layout = QVBoxLayout(box)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
         refresh_button = QPushButton("REFRESH")
         refresh_button.clicked.connect(self._refresh_batch_monitor)
+        self._register_button(refresh_button)
         layout.addWidget(refresh_button)
         layout.addWidget(self._batch_table)
         return box
@@ -840,12 +1076,15 @@ class MainWindow(QMainWindow):
     def _build_timeline_widget(self) -> QWidget:
         box = QWidget()
         layout = QVBoxLayout(box)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
         header = QHBoxLayout()
+        header.setContentsMargins(0, 0, 0, 0)
         header.addWidget(QLabel("Run timeline"))
         header.addStretch()
         self._timeline_export_button = QPushButton("EXPORT")
+        self._register_button(self._timeline_export_button)
         self._timeline_export_button.clicked.connect(self._on_export_timeline)
-        self._timeline_export_button.setCursor(QCursor(Qt.PointingHandCursor))
         header.addWidget(self._timeline_export_button)
         layout.addLayout(header)
         self._timeline_table = QTableWidget(0, 4)
@@ -862,11 +1101,14 @@ class MainWindow(QMainWindow):
     def _build_diff_view_widget(self) -> QWidget:
         box = QWidget()
         layout = QVBoxLayout(box)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
         header = QHBoxLayout()
+        header.setContentsMargins(0, 0, 0, 0)
         header.addWidget(QLabel("IN ↔ OUT diff"))
         header.addStretch()
         refresh_button = QPushButton("REFRESH")
-        refresh_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self._register_button(refresh_button)
         refresh_button.clicked.connect(lambda: self._refresh_diff_view(self._last_run_ui_state))
         header.addWidget(refresh_button)
         layout.addLayout(header)
@@ -877,10 +1119,15 @@ class MainWindow(QMainWindow):
     def _build_attached_files_widget(self) -> QWidget:
         box = QWidget()
         layout = QVBoxLayout(box)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
         controls = QHBoxLayout()
+        controls.setContentsMargins(0, 0, 0, 0)
         add_button = QPushButton("PŘIDEJ")
+        self._register_button(add_button)
         add_button.clicked.connect(self._add_attachment)
         remove_button = QPushButton("ODSTRAŇ")
+        self._register_button(remove_button)
         remove_button.clicked.connect(self._remove_attachment)
         controls.addWidget(add_button)
         controls.addWidget(remove_button)
@@ -892,13 +1139,23 @@ class MainWindow(QMainWindow):
     def _build_file_api_widget(self) -> QWidget:
         box = QWidget()
         layout = QVBoxLayout(box)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
         controls = QHBoxLayout()
+        controls.setContentsMargins(0, 0, 0, 0)
+        refresh_button = QPushButton("REFRESH")
+        self._register_button(refresh_button)
+        refresh_button.clicked.connect(self._on_refresh_file_api)
         attach_button = QPushButton("PŘIPOJ")
+        self._register_button(attach_button)
         attach_button.clicked.connect(self._attach_selected_file_api)
         delete_button = QPushButton("SMAŽ")
+        self._register_button(delete_button)
         delete_button.clicked.connect(self._delete_selected_file_api)
         delete_all_button = QPushButton("DEL ALL")
+        self._register_button(delete_all_button)
         delete_all_button.clicked.connect(self._delete_all_file_api)
+        controls.addWidget(refresh_button)
         controls.addWidget(attach_button)
         controls.addWidget(delete_button)
         controls.addWidget(delete_all_button)
@@ -910,18 +1167,34 @@ class MainWindow(QMainWindow):
     def _build_vector_store_widget(self) -> QWidget:
         box = QWidget()
         layout = QVBoxLayout(box)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
+        self._vector_store_controls = []
+        if self._vector_store_status_label:
+            layout.addWidget(self._vector_store_status_label)
         refresh_button = QPushButton("REFRESH")
+        self._register_button(refresh_button)
         refresh_button.clicked.connect(self._refresh_vector_store_view)
         add_file_button = QPushButton("PŘIDEJ SOUBOR")
+        self._register_button(add_file_button)
         add_file_button.clicked.connect(self._add_file_to_vector_store)
         remove_button = QPushButton("ODSTRAŇ SOUBOR")
+        self._register_button(remove_button)
         remove_button.clicked.connect(self._remove_file_from_vector_store)
         expiry_layout = QHBoxLayout()
+        expiry_layout.setContentsMargins(0, 0, 0, 0)
         self._expiry_edit = QLineEdit()
         expiry_button = QPushButton("SET EXPIRY")
+        self._register_button(expiry_button)
         expiry_button.clicked.connect(self._set_vector_expiry)
         expiry_layout.addWidget(self._expiry_edit)
         expiry_layout.addWidget(expiry_button)
+        self._vector_store_controls = [
+            add_file_button,
+            remove_button,
+            self._expiry_edit,
+            expiry_button,
+        ]
         layout.addWidget(refresh_button)
         layout.addWidget(self._vector_list)
         layout.addWidget(self._vector_detail)
@@ -930,6 +1203,7 @@ class MainWindow(QMainWindow):
         layout.addLayout(expiry_layout)
         self._vector_detail.setReadOnly(True)
         self._vector_list.currentRowChanged.connect(lambda _: self._update_vector_detail())
+        self._apply_model_capabilities()
         return box
 
     def _build_answare_section(self) -> QWidget:
@@ -938,10 +1212,13 @@ class MainWindow(QMainWindow):
         self._answare_view.setReadOnly(True)
         button_layout = QHBoxLayout()
         copy_button = QPushButton("CTRL+C")
+        self._register_button(copy_button)
         copy_button.clicked.connect(self._copy_answare)
         response_button = QPushButton("RESPONSE")
+        self._register_button(response_button)
         response_button.clicked.connect(self._copy_response_id)
         script_button = QPushButton("SCRIPT")
+        self._register_button(script_button)
         script_button.clicked.connect(self._run_script_workflow)
         button_layout.addWidget(copy_button)
         button_layout.addWidget(response_button)
@@ -952,8 +1229,9 @@ class MainWindow(QMainWindow):
         return group
 
     def _create_batch_table(self) -> QTableWidget:
-        table = QTableWidget(0, 5)
-        table.setHorizontalHeaderLabels(["Run", "Status", "Started", "Duration", "Akce"])
+        headers = ["Run", "Status", "Started", "Duration", "Akce"]
+        table = QTableWidget(0, len(headers))
+        table.setHorizontalHeaderLabels([label.upper() for label in headers])
         table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         table.horizontalHeader().setMinimumSectionSize(0)
         table.setMinimumSize(0, 0)
@@ -962,7 +1240,8 @@ class MainWindow(QMainWindow):
 
     def _create_file_table(self, headers: List[str]) -> QTableWidget:
         table = QTableWidget(0, len(headers))
-        table.setHorizontalHeaderLabels(headers)
+        labels = [header.upper() for header in headers]
+        table.setHorizontalHeaderLabels(labels)
         table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         table.horizontalHeader().setMinimumSectionSize(0)
         table.setSelectionBehavior(QTableWidget.SelectRows)
@@ -981,6 +1260,7 @@ class MainWindow(QMainWindow):
             table.setItem(row, 0, QTableWidgetItem(path.name))
             table.setItem(row, 1, QTableWidgetItem(str(path)))
             remove_button = QPushButton("X")
+            self._register_button(remove_button)
             remove_button.clicked.connect(lambda _, p=path: self._remove_local_file(p))
             table.setCellWidget(row, 2, remove_button)
 
@@ -1015,11 +1295,11 @@ class MainWindow(QMainWindow):
         uploaded = []
         for path in list(self._local_files):
             try:
-                response = self._openai_client.upload_file(path, "user data")
+                response = self._openai_client.upload_file(path, "user_data")
                 record = FileRecord(
                     file_id=response.get("id") or response.get("file_id") or str(uuid.uuid4())[:8],
                     filename=response.get("filename") or path.name,
-                    purpose=response.get("purpose") or "user data",
+                    purpose=response.get("purpose") or "user_data",
                     size_bytes=int(response.get("bytes") or path.stat().st_size),
                 )
                 self._file_api_records.append(record)
@@ -1038,7 +1318,7 @@ class MainWindow(QMainWindow):
             record = FileRecord(
                 file_id=f"ATT_{uuid.uuid4().hex[:6]}",
                 filename=path,
-                purpose="user data",
+                purpose="user_data",
                 size_bytes=Path(path).stat().st_size if Path(path).exists() else 0,
             )
             self._attached_files.append(record)
@@ -1159,6 +1439,48 @@ class MainWindow(QMainWindow):
             self._attached_table.setItem(row, 1, QTableWidgetItem(record.purpose))
             self._attached_table.setItem(row, 2, QTableWidgetItem(f"{record.size_bytes} B"))
 
+    def _build_file_api_records(self, files: List[Dict[str, Any]]) -> List[FileRecord]:
+        records: List[FileRecord] = []
+        if not files:
+            return records
+        for item in files:
+            if not isinstance(item, dict):
+                continue
+            try:
+                records.append(
+                    FileRecord(
+                        file_id=item.get("id")
+                        or item.get("file_id")
+                        or str(uuid.uuid4())[:8],
+                        filename=item.get("filename")
+                        or item.get("name")
+                        or "file",
+                        purpose=item.get("purpose") or "user_data",
+                        size_bytes=int(item.get("size") or item.get("bytes") or 0),
+                    )
+                )
+            except Exception:
+                continue
+        return records
+
+    def _on_refresh_file_api(self) -> None:
+        self._append_log("FILE API: refresh spuštěn")
+        client = self._ensure_openai_client()
+        if not client:
+            return
+        try:
+            files = client.list_files()
+        except Exception as exc:
+            hint = ""
+            if "getaddrinfo" in str(exc).lower():
+                hint = "\nDNS chyba: nastavte DNS např. na 1.1.1.1 nebo 8.8.8.8."
+            self._append_log(f"FILE API refresh selhal: {exc}{(' '+hint).strip()}")
+            QMessageBox.warning(self, "FILE API", f"Nelze načíst soubory: {exc}{hint}")
+            return
+        self._file_api_records = self._build_file_api_records(files)
+        self._refresh_file_api_table()
+        self._append_log(f"FILE API: aktualizováno ({len(self._file_api_records)})")
+
     def _refresh_file_api_table(self) -> None:
         self._file_api_table.setRowCount(0)
         for record in self._file_api_records:
@@ -1226,11 +1548,26 @@ class MainWindow(QMainWindow):
         self._update_vector_detail()
 
     def _on_fetch_models(self) -> None:
-        self._append_log("GET MODELS triggered")
-        models = ["gpt-4o", "gpt-4o-mini", "gpt-4o-mini-transcribe"]
+        self._append_log("GET MODELS spuštěno")
+        client = self._ensure_openai_client()
+        if not client:
+            return
+        try:
+            models = client.list_models()
+        except Exception as exc:
+            hint = ""
+            if "getaddrinfo" in str(exc).lower():
+                hint = "\nDNS chyba: nastavte DNS např. na 1.1.1.1 nebo 8.8.8.8."
+            self._append_log(f"GET MODELS selhalo: {exc}{(' '+hint).strip()}")
+            QMessageBox.warning(self, "GET MODELS", f"Nelze načíst modely: {exc}{hint}")
+            return
+        if not models:
+            models = ["gpt-4o", "gpt-4o-mini", "gpt-4o-mini-transcribe"]
+            self._append_log("Modely z API prázdné, použit fallback seznam.")
         self.model_combo.clear()
         self.model_combo.addItems(models)
-        self._append_log("Modely aktualizovány")
+        self._append_log(f"Modely aktualizovány ({len(models)})")
+        self._update_model_capabilities()
 
     def _on_go_clicked(self) -> None:
         mode = "C" if self.send_as_c_checkbox.isChecked() else self.mode_combo.currentText()
@@ -1245,6 +1582,9 @@ class MainWindow(QMainWindow):
         if not self.api_key_edit.text().strip():
             QMessageBox.warning(self, "Chyba", "API key je povinný")
             return
+        client = self._ensure_openai_client()
+        if not client:
+            return
         request_snapshot = self._build_request_snapshot(ui_state)
         run_artifacts = init_run(self._root_dir)
         response_id = PipelineExecutor.generate_response_id(mode)
@@ -1254,12 +1594,12 @@ class MainWindow(QMainWindow):
             run_artifacts,
             self._append_log,
             settings=self._settings,
-            client=self._openai_client,
+            client=client,
             initial_logs=[(ui_state_log, "ui_state")],
             security_policy=self._security_policy_for("diagnostics"),
             dry_run_confirmation=self._on_dry_run_summary,
         )
-        attachments = [Path(record.filename) for record in self._attached_files]
+        attachments = list(self._attached_files)
         vector_ids = [store.store_id for store in self._vector_stores]
         self._progress_dialog = ProgressDialog(self)
         self._progress_dialog.stop_requested_changed.connect(lambda _: self._append_log("STOP requested"))
@@ -1826,6 +2166,8 @@ class MainWindow(QMainWindow):
     def _open_api_key_dialog(self) -> None:
         dialog = ApiKeyDialog(self)
         dialog.exec()
+        self.api_key_edit.setText(os.environ.get("OPENAI_API_KEY", ""))
+        self._on_api_key_changed()
 
     def _on_save_state(self) -> None:
         ui_state = self._build_ui_state(self.mode_combo.currentText())
@@ -1932,6 +2274,7 @@ class MainWindow(QMainWindow):
         self._refresh_file_api_table()
         self._refresh_vector_store_view()
         self._refresh_batch_monitor()
+        self._update_model_capabilities()
         self._append_log("Stav obnoven ze souboru.")
 
     def _file_records_from_list(self, data: List[Dict[str, Any]]) -> List[FileRecord]:
@@ -2029,6 +2372,7 @@ class MainWindow(QMainWindow):
             out_dir=self.out_dir_edit.text().strip(),
             mode=mode,
             model=self.model_combo.currentText(),
+            response_id=self.response_id_edit.text().strip(),
             diagnostics=diagnostics,
             versing_enabled=self.versing_button.isChecked(),
             attached_file_ids=[record.file_id for record in self._attached_files],
@@ -2154,6 +2498,19 @@ class MainWindow(QMainWindow):
         app = QApplication.instance()
         if app:
             app.setFont(font)
+            palette = app.palette()
+            palette.setColor(QPalette.ColorRole.Window, QColor("#010101"))
+            palette.setColor(QPalette.ColorRole.Base, QColor("#010101"))
+            palette.setColor(QPalette.ColorRole.AlternateBase, QColor("#010101"))
+            palette.setColor(QPalette.ColorRole.Button, QColor("#010101"))
+            palette.setColor(QPalette.ColorRole.ButtonText, QColor("#fff"))
+            palette.setColor(QPalette.ColorRole.Text, QColor("#fff"))
+            palette.setColor(QPalette.ColorRole.WindowText, QColor("#fff"))
+            palette.setColor(QPalette.ColorRole.ToolTipBase, QColor("#010101"))
+            palette.setColor(QPalette.ColorRole.ToolTipText, QColor("#fff"))
+            palette.setColor(QPalette.ColorRole.Highlight, QColor("#fff"))
+            palette.setColor(QPalette.ColorRole.HighlightedText, QColor("#000"))
+            app.setPalette(palette)
         style = """
 QMainWindow, QWidget, QDialog, QScrollArea {
     background: #010101;
@@ -2267,6 +2624,8 @@ QFrame#status_bar QLabel {
     color: #fff;
 }
 """
+        if app:
+            app.setStyleSheet(style)
         self.setStyleSheet(style)
 
     def _security_policy_for(self, context: str) -> security.SecurityPolicy | None:
@@ -2433,11 +2792,13 @@ class SectionWidget(QFrame):
         self._section_id = section_id
         self._workspace = workspace
         self.setObjectName("section_frame")
+        self.setAttribute(Qt.WA_StyledBackground, True)
+        self.setStyleSheet("background:#010101;")
         self.setMinimumSize(0, 0)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._border_radius = 12
         self._layout = QVBoxLayout(self)
-        self._base_margin = 10
+        self._base_margin = 0
         self._base_spacing = 8
         self._apply_section_scale()
         self._layout.setSizeConstraint(QLayout.SetNoConstraint)
@@ -2719,13 +3080,13 @@ class ColumnArea(QFrame):
         self._layout.setSizeConstraint(QLayout.SetNoConstraint)
         self._splitter = QSplitter(Qt.Vertical)
         self._splitter.setChildrenCollapsible(True)
-        self._splitter.setHandleWidth(6)
+        self._splitter.setHandleWidth(1)
         self._splitter.setMinimumSize(0, 0)
         self._splitter.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._splitter.setStyleSheet(
-            "QSplitter::handle { background:#fff; }"
-            "QSplitter::handle:horizontal { width:6px; }"
-            "QSplitter::handle:vertical { height:6px; }"
+            "QSplitter::handle { background:#777; }"
+            "QSplitter::handle:horizontal { width:1px; }"
+            "QSplitter::handle:vertical { height:1px; }"
         )
         self._layout.addWidget(self._splitter)
         self._apply_column_scale()
@@ -2746,6 +3107,26 @@ class ColumnArea(QFrame):
             if isinstance(widget, SectionWidget):
                 widgets.append(widget)
         return widgets
+
+    def section_ids(self) -> List[str]:
+        return [widget.section_id for widget in self.section_widgets()]
+
+    def splitter_sizes(self) -> List[int]:
+        return list(self._splitter.sizes())
+
+    def set_splitter_sizes(self, sizes: List[int]) -> None:
+        if len(sizes) != self._splitter.count():
+            return
+        normalized: List[int] = []
+        for value in sizes:
+            try:
+                size = int(value)
+            except (TypeError, ValueError):
+                size = 1
+            normalized.append(max(1, size))
+        self._splitter.setSizes(normalized)
+        for index in range(self._splitter.count()):
+            self._splitter.setStretchFactor(index, 1)
 
     def add_section(self, widget: SectionWidget) -> None:
         sizes = self._splitter.sizes()
@@ -2832,12 +3213,12 @@ class WorkspacePane(QWidget):
         layout.setSpacing(0)
 
         self._columns_splitter = QSplitter(Qt.Horizontal)
-        self._columns_splitter.setHandleWidth(6)
+        self._columns_splitter.setHandleWidth(1)
         self._columns_splitter.setChildrenCollapsible(True)
         self._columns_splitter.setStyleSheet(
-            "QSplitter::handle { background:#fff; }"
-            "QSplitter::handle:horizontal { width:6px; }"
-            "QSplitter::handle:vertical { height:6px; }"
+            "QSplitter::handle { background:#777; }"
+            "QSplitter::handle:horizontal { width:1px; }"
+            "QSplitter::handle:vertical { height:1px; }"
         )
         layout.addWidget(self._columns_splitter)
 
@@ -2913,6 +3294,82 @@ class WorkspacePane(QWidget):
         if section_id not in self._section_defs:
             return None
         return section_id
+
+    def serialize_layout(self) -> Dict[str, Any]:
+        columns_payload = []
+        for column in self._columns:
+            columns_payload.append(
+                {
+                    "sections": column.section_ids(),
+                    "sizes": column.splitter_sizes(),
+                }
+            )
+        return {
+            "version": 1,
+            "column_count": len(self._columns),
+            "columns": columns_payload,
+            "column_sizes": list(self._columns_splitter.sizes()),
+            "park": [
+                section_id
+                for section_id in self._section_order
+                if self._section_locations.get(section_id) is None
+            ],
+        }
+
+    def apply_layout(self, layout: Dict[str, Any]) -> None:
+        if not isinstance(layout, dict):
+            return
+        columns_data = layout.get("columns")
+        if not isinstance(columns_data, list) or not columns_data:
+            return
+        target_count = layout.get("column_count")
+        if not isinstance(target_count, int):
+            target_count = len(columns_data)
+        target_count = max(self._min_columns, min(self._max_columns, target_count))
+        self._set_column_count(target_count)
+        for section_id in self._section_order:
+            if self._section_locations.get(section_id) is None:
+                continue
+            self._detach_section(section_id)
+            widget = self._section_widgets.get(section_id)
+            if widget:
+                widget.hide()
+            self._section_locations[section_id] = None
+        placed: set[str] = set()
+        for index, column_data in enumerate(columns_data[: len(self._columns)]):
+            if not isinstance(column_data, dict):
+                continue
+            sections = column_data.get("sections", [])
+            if not isinstance(sections, list):
+                continue
+            for section_id in sections:
+                if not isinstance(section_id, str):
+                    continue
+                if section_id in placed or section_id not in self._section_defs:
+                    continue
+                widget = self._get_section_widget(section_id)
+                self._columns[index].add_section(widget)
+                widget.show()
+                self._section_locations[section_id] = index
+                placed.add(section_id)
+        column_sizes = self._normalize_sizes(
+            layout.get("column_sizes"), len(self._columns)
+        )
+        if column_sizes:
+            self._columns_splitter.setSizes(column_sizes)
+            for index in range(len(self._columns)):
+                self._columns_splitter.setStretchFactor(index, 1)
+        for index, column in enumerate(self._columns):
+            column_info = None
+            if index < len(columns_data) and isinstance(columns_data[index], dict):
+                column_info = columns_data[index]
+            sizes = self._normalize_sizes(
+                column_info.get("sizes") if column_info else None,
+                len(column.section_widgets()),
+            )
+            if sizes:
+                column.set_splitter_sizes(sizes)
+        self._update_park_tiles()
 
     def move_section_to_column(self, section_id: str, column_index: int) -> None:
         if section_id not in self._section_defs:
@@ -3015,6 +3472,19 @@ class WorkspacePane(QWidget):
         palette_width = min(palette_width, total_width)
         self._palette_frame.setFixedWidth(palette_width)
         self._apply_palette_scale()
+
+    @staticmethod
+    def _normalize_sizes(payload: Any, count: int) -> Optional[List[int]]:
+        if not isinstance(payload, list) or len(payload) != count:
+            return None
+        normalized: List[int] = []
+        for value in payload:
+            try:
+                size = int(value)
+            except (TypeError, ValueError):
+                size = 1
+            normalized.append(max(1, size))
+        return normalized
 
     def _apply_palette_scale(self) -> None:
         base_width = 220
