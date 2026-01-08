@@ -13,7 +13,7 @@ from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from PySide6.QtCore import QEvent, QObject, Qt, QMimeData, QSize, QTimer, QPoint, QRect
+from PySide6.QtCore import QEvent, QObject, Qt, QMimeData, QSize, QTimer, QPoint, QRect, QMargins
 from PySide6.QtGui import (
     QCursor,
     QDrag,
@@ -128,8 +128,8 @@ class StatusThermometer(QWidget):
         self._progress = 0.0
         self._pulse_offset = 0.0
         self._pulse_active = False
-        self.setMinimumHeight(16)
-        self.setMaximumHeight(16)
+        self.setMinimumHeight(18)
+        self.setMaximumHeight(18)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
     def set_progress(self, ratio: float) -> None:
@@ -154,21 +154,28 @@ class StatusThermometer(QWidget):
         super().paintEvent(event)
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-        rect = self.rect().adjusted(0, 0, -1, -1)
-        pen = QPen(QColor(PALETTE_WHITE))
-        pen.setWidth(KJA_BORDER_PX)
-        painter.setPen(pen)
+        outer = self.rect().adjusted(0, 0, -1, -1)
+        outer_pen = QPen(QColor(PALETTE_WHITE))
+        outer_pen.setWidth(2)
+        painter.setPen(outer_pen)
         painter.setBrush(Qt.NoBrush)
-        painter.drawRoundedRect(rect, KJA_RADIUS, KJA_RADIUS)
+        painter.drawRoundedRect(outer, KJA_RADIUS, KJA_RADIUS)
+
+        inner = outer.adjusted(2, 2, -2, -2)
+        inner_pen = QPen(QColor(PALETTE_BLACK))
+        inner_pen.setWidth(KJA_BORDER_PX)
+        painter.setPen(inner_pen)
+        painter.drawRoundedRect(inner, max(0, KJA_RADIUS - 2), max(0, KJA_RADIUS - 2))
+
         if self._progress:
-            fill_width = max(1, int(rect.width() * self._progress))
-            fill_rect = QRect(rect.left(), rect.top(), fill_width, rect.height())
+            fill_width = max(1, int(inner.width() * self._progress))
+            fill_rect = QRect(inner.left(), inner.top(), fill_width, inner.height())
             painter.fillRect(fill_rect, QColor(PALETTE_WHITE))
         if self._pulse_active:
-            pulse_width = max(8, int(rect.width() * 0.08))
-            travel = rect.width() + pulse_width
-            pulse_x = rect.left() + int(travel * self._pulse_offset) - pulse_width
-            pulse_rect = QRect(pulse_x, rect.top(), pulse_width, rect.height())
+            pulse_width = max(8, int(inner.width() * 0.08))
+            travel = inner.width() + pulse_width
+            pulse_x = inner.left() + int(travel * self._pulse_offset) - pulse_width
+            pulse_rect = QRect(pulse_x, inner.top(), pulse_width, inner.height())
             pulse_color = QColor(PALETTE_GRAY)
             pulse_color.setAlpha(160)
             painter.fillRect(pulse_rect, pulse_color)
@@ -183,11 +190,21 @@ class StatusBar(QFrame):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(16, 6, 16, 6)
         layout.setSpacing(16)
+        font_regular = QFont("Montserrat", 12, QFont.Normal)
+        font_bold = QFont("Montserrat", 12, QFont.Bold)
         self._time_label = QLabel()
+        self._time_label.setFont(font_regular)
+        self._time_label.setStyleSheet(f"color:{PALETTE_WHITE};")
         self._state_label = QLabel("PROGRAM NIC NEDĚLÁ")
         self._state_label.setAlignment(Qt.AlignCenter)
+        self._state_label.setFont(font_bold)
+        self._state_label.setStyleSheet(f"color:{PALETTE_WHITE};")
         self._countdown_label = QLabel("ETA: N/A")
+        self._countdown_label.setFont(font_regular)
+        self._countdown_label.setStyleSheet(f"color:{PALETTE_WHITE};")
         self._progress_label = QLabel("0%")
+        self._progress_label.setFont(font_regular)
+        self._progress_label.setStyleSheet(f"color:{PALETTE_WHITE};")
         self._thermometer = StatusThermometer(self)
         layout.addWidget(self._time_label)
         layout.addWidget(self._state_label, 1)
@@ -748,19 +765,17 @@ class MainWindow(QMainWindow):
         layout.setSpacing(10)
 
         title_block = QWidget()
-        title_layout = QVBoxLayout(title_block)
+        title_layout = QHBoxLayout(title_block)
         title_layout.setContentsMargins(0, 0, 0, 0)
-        title_layout.setSpacing(2)
-        title_label = QLabel("KÁJOVO")
-        title_font = QFont("Montserrat", 28, QFont.Bold)
+        title_layout.setSpacing(6)
+        title_layout.addStretch(1)
+        title_label = QLabel(f"KÁJOVO v{__version__}".upper())
+        title_font = QFont("Montserrat", 24, QFont.Bold)
         title_label.setFont(title_font)
         title_label.setAlignment(Qt.AlignCenter)
-        version_label = QLabel(f"v{__version__}")
-        version_font = QFont("Montserrat", 14, QFont.Bold)
-        version_label.setFont(version_font)
-        version_label.setAlignment(Qt.AlignCenter)
-        title_layout.addWidget(title_label)
-        title_layout.addWidget(version_label)
+        title_label.setStyleSheet(f"color:{PALETTE_WHITE};")
+        title_layout.addWidget(title_label, 0, Qt.AlignCenter)
+        title_layout.addStretch(1)
 
         controls_row = QWidget()
         controls_layout = QHBoxLayout(controls_row)
@@ -2985,22 +3000,16 @@ class SectionWidget(QFrame):
         self.setMinimumSize(0, 0)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._border_radius = KJA_RADIUS
+        self._drag_handle = SectionDragHandle(section_id, title, workspace)
+        self._drag_handle.setParent(self)
+        self._drag_handle.raise_()
+        self._title_band = self._drag_handle.sizeHint().height()
+
         self._layout = QVBoxLayout(self)
         self._base_margin = 0
         self._base_spacing = 8
         self._apply_section_scale()
         self._layout.setSizeConstraint(QLayout.SetNoConstraint)
-
-        header = QFrame()
-        header.setFrameShape(QFrame.NoFrame)
-        header.setStyleSheet("border:none; background:transparent;")
-        header_layout = QHBoxLayout(header)
-        header_layout.setContentsMargins(0, 0, 0, 0)
-        header_layout.setSpacing(6)
-        self._drag_handle = SectionDragHandle(section_id, title, workspace)
-        header_layout.addWidget(self._drag_handle)
-        header_layout.addStretch()
-        self._layout.addWidget(header)
         content.setMinimumSize(0, 0)
         content.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         if content.layout():
@@ -3009,6 +3018,7 @@ class SectionWidget(QFrame):
         for child in content.findChildren(QWidget):
             self._relax_widget_constraints(child)
         self._layout.addWidget(content, 1)
+        self._position_title()
 
     @property
     def section_id(self) -> str:
@@ -3017,6 +3027,7 @@ class SectionWidget(QFrame):
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
         self._apply_section_scale()
+        self._position_title()
 
     def _apply_section_scale(self) -> None:
         scale = 0.0
@@ -3025,7 +3036,8 @@ class SectionWidget(QFrame):
             scale = min(1.0, span / 400)
         margin = max(0, int(self._base_margin * scale))
         spacing = max(0, int(self._base_spacing * scale))
-        self._layout.setContentsMargins(margin, margin, margin, margin)
+        top_margin = self._title_band + spacing
+        self._layout.setContentsMargins(margin, top_margin, margin, margin)
         self._layout.setSpacing(spacing)
 
     @staticmethod
@@ -3051,7 +3063,8 @@ class SectionWidget(QFrame):
         super().paintEvent(event)
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-        rect = self.rect().adjusted(0, 0, -1, -1)
+        title_mid = self._title_band // 2
+        rect = QRect(0, title_mid, self.width() - 1, self.height() - title_mid - 1)
         pen = QPen(QColor(PALETTE_WHITE))
         pen.setWidth(KJA_BORDER_PX)
         painter.setPen(pen)
@@ -3067,7 +3080,7 @@ class SectionWidget(QFrame):
         if not self._drag_handle:
             return
         gap = self._gap_width()
-        label_pos = self._drag_handle.mapTo(self, QPoint(0, 0))
+        label_pos = self._drag_handle.pos()
         label_left = label_pos.x()
         label_right = label_left + self._drag_handle.width()
         gap_start = max(rect.left() + self._border_radius, label_left - gap)
@@ -3087,6 +3100,19 @@ class SectionWidget(QFrame):
         font = self._drag_handle.font()
         metrics = QFontMetrics(font)
         return metrics.horizontalAdvance("A")
+
+    def _position_title(self) -> None:
+        if not self._drag_handle:
+            return
+        margins = self._layout.contentsMargins() if self._layout else QMargins()
+        left_margin = max(self._border_radius, margins.left())
+        right_margin = max(self._border_radius, margins.right())
+        available = max(0, self.width() - left_margin - right_margin)
+        hint = self._drag_handle.sizeHint()
+        width = min(hint.width(), available)
+        height = hint.height()
+        y = max(0, (self._title_band // 2) - height // 2)
+        self._drag_handle.setGeometry(left_margin, y, width, height)
 
 
 class ParkTile(QFrame):
