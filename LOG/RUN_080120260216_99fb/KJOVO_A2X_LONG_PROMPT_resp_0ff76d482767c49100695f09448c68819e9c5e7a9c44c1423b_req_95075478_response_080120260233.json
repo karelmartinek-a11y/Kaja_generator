@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260216_99fb",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_0ff76d482767c49100695f09448c68819e9c5e7a9c44c1423b",
+    "logged_at": "2026-01-08T01:33:20.536075",
+    "request_id": "95075478"
+  },
+  "payload": {
+    "id": "resp_0ff76d482767c49100695f09448c68819e9c5e7a9c44c1423b",
+    "created_at": 1767835972.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0ff76d482767c49100695f0945446c819e93cb4ac9e7c8e17f",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Plán A1_PLAN pro projekt \\\"CrossPlatformDiagSuite\\\" pokračuje v definici architektury, konkrétně v sekci `architecture.modules`, kde rozepisuje jednotlivé moduly, jejich odpovědnosti, exportované API a vazby na ostatní části systému. Navazuje na předchozí chunk, který začal modulem `core.shared_models`.\\n\\n`core.shared_models`:\\n- Odpovědnost: definice sdílených datových modelů pro diagnostiku.\\n- Exporty: dataclasses `SystemInfo`, `CpuInfo`, `MemoryInfo`, `DiskInfo`, `NetworkInterfaceInfo`, `ProcessInfo`, `ServiceInfo`, `EventLogEntry`, `DiagnosticModuleResult`, `DiagnosticRunSummary`, `DiagnosticScenarioDefinition`, `DiagnosticErrorInfo`.\\n- Vazby: používán všemi diagnostickými moduly (`linux.*`, `windows.*`), `core.manifest`, `core.runner`, `serializers.*`, `gui.viewmodels`.\\n\\n`core.runner`:\\n- Odpovědnost: orchestrace běhu diagnostických scénářů.\\n- Exporty: třída `DiagnosticRunner` s metodami `run_full() -> DiagnosticRunSummary`, `run_scenario(name: str) -> DiagnosticRunSummary`, `list_scenarios() -> list[DiagnosticScenarioDefinition]`; funkce `discover_modules() -> dict[str, Callable]`, `register_module(name: str, callable) -> None`.\\n- Vazby: používá `core.manifest`, `core.shared_models`, `modules.registry`, `serializers.logger` a OS-specifické moduly `linux.*` a `windows.*`.\\n\\n`core.config`:\\n- Odpovědnost: konfigurace běhu diagnostiky.\\n- Exporty: dataclass `AppConfig` (např. `output_dir: str`, `log_level: str`, `scenarios_enabled: list[str]`), funkce `load_config(path: str | None) -> AppConfig`, `resolve_output_dir(config: AppConfig) -> str`.\\n- Vazby: používán `cli.main`, `gui.app`, `core.runner`.\\n\\n`serializers.logger`:\\n- Odpovědnost: centralizované logování.\\n- Exporty: `init_logging(output_dir: str, level: str) -> None`, `get_logger(name: str)`, `log_run_summary(summary: DiagnosticRunSummary) -> None`.\\n- Vazby: používán všemi moduly, `core.runner`, `cli.main`, `gui.app`.\\n\\n`serializers.json_serializer`:\\n- Odpovědnost: serializace datových modelů do JSON.\\n- Exporty: `to_json(obj: Any) -> str`, `write_json(obj: Any, path: str) -> None`.\\n- Vazby: používán diagnostickými moduly, `core.runner`, `core.manifest`.\\n\\n`serializers.text_report`:\\n- Odpovědnost: generování textových reportů (souhrnné přehledy).\\n- Exporty: `generate_summary_report(summary: DiagnosticRunSummary) -> str`, `write_summary_report(summary: DiagnosticRunSummary, path: str) -> None`.\\n- Vazby: používán `core.runner`, `cli.main`, `gui.controllers`.\\n\\n`modules.registry`:\\n- Odpovědnost: registr diagnostických modulů a scénářů.\\n- Exporty: třída `ModuleRegistry` (`register_module(name: str, func: Callable)`, `get_module(name: str) -> Callable`, `list_modules() -> list[str]`), třída `ScenarioRegistry` (`register_scenario(defn: DiagnosticScenarioDefinition)`, `get_scenario(name: str) -> DiagnosticScenarioDefinition`, `list_scenarios() -> list[DiagnosticScenarioDefinition]`).\\n- Vazby: používán `core.runner`, moduly `linux.*` a `windows.*` při registraci.\\n\\nLinux moduly:\\n- `modules.linux.system_info`:\\n  - Odpovědnost: sběr základních systémových informací na Linuxu.\\n  - Exporty: `collect_linux_system_info() -> DiagnosticModuleResult[SystemInfo]`.\\n  - Vazby: používán `core.runner` přes `modules.registry`, využívá `core.shared_models`.\\n\\n- `modules.linux.hardware`:\\n  - Odpovědnost: sběr informací o CPU, paměti a discích na Linuxu.\\n  - Exporty: `collect_linux_cpu_info() -> DiagnosticModuleResult[CpuInfo]`, `collect_linux_memory_info() -> DiagnosticModuleResult[MemoryInfo]`, `collect_linux_disk_info() -> DiagnosticModuleResult[list[DiskInfo]]`.\\n  - Vazby: používán `core.runner`, využívá `core.shared_models`.\\n\\n- `modules.linux.network`:\\n  - Odpovědnost: sběr informací o síťových rozhraních a konfiguraci na Linuxu.\\n  - Exporty: `collect_linux_network_info() -> DiagnosticModuleResult[list[NetworkInterfaceInfo]]`.\\n  - Vazby: používán `core.runner`.\\n\\n- `modules.linux.processes`:\\n  - Odpovědnost: sběr informací o běžících procesech a službách na Linuxu.\\n  - Exporty: `collect_linux_process_list() -> DiagnosticModuleResult[list[ProcessInfo]]`, `collect_linux_services() -> DiagnosticModuleResult[list[ServiceInfo]]`.\\n  - Vazby: používán `core.runner`.\\n\\n- `modules.linux.logs`:\\n  - Odpovědnost: sběr logů dle specifikace (např. syslog, journal).\\n  - Exporty: `collect_linux_logs() -> DiagnosticModuleResult[None]` (výstupem jsou soubory v definovaných cestách).\\n  - Vazby: používán `core.runner`, `serializers.logger`.\\n\\nWindows moduly:\\n- `modules.windows.system_info`:\\n  - Odpovědnost: sběr základních systémových informací na Windows.\\n  - Exporty: `collect_windows_system_info() -> DiagnosticModuleResult[SystemInfo]`.\\n  - Vazby: používán `core.runner`, využívá WinAPI/pywin32 dle původního zadání.\\n\\n- `modules.windows.hardware`:\\n  - Odpovědnost: sběr informací o CPU, paměti, discích a síti na Windows.\\n  - Exporty: `collect_windows_cpu_info() -> DiagnosticModuleResult[CpuInfo]`, `collect_windows_memory_info() -> DiagnosticModuleResult[MemoryInfo]`, `collect_windows_disk_info() -> DiagnosticModuleResult[list[DiskInfo]]`, `collect_windows_network_info() -> DiagnosticModuleResult[list[NetworkInterfaceInfo]]`.\\n  - Vazby: používán `core.runner`.\\n\\n- `modules.windows.processes_services`:\\n  - Odpovědnost: sběr informací o procesech a službách na Windows.\\n  - Exporty: `collect_windows_process_list() -> DiagnosticModuleResult[list[ProcessInfo]]`, `collect_windows_services() -> DiagnosticModuleResult[list[ServiceInfo]]`.\\n  - Vazby: používán `core.runner`.\\n\\n- `modules.windows.event_logs`:\\n  - Odpovědnost: sběr záznamů z Windows Event Log dle specifikace.\\n  - Exporty: `collect_windows_event_logs() -> DiagnosticModuleResult[list[EventLogEntry]]` nebo zápis do souborů.\\n  - Vazby: používán `core.runner`.\\n\\n`modules.archive`:\\n- Odpovědnost: balení výstupů diagnostiky do archivu.\\n- Exporty: `create_output_archive(output_dir: str, summary: DiagnosticRunSummary) -> str`.\\n- Vazby: používán `core.runner`, `cli.main`, `gui.controllers`.\\n\\n`cli.main`:\\n- Odpovědnost: vstupní bod CLI aplikace.\\n- Exporty: `main(argv: list[str]) -> int`, příkazy `run-full`, `run-scenario`, `list-scenarios`, `show-manifest`, `version`.\\n- Vazby: používá `core.config`, `core.runner`, `core.manifest`, `serializers.logger`, `serializers.text_report`.\\n\\nChunk končí u začátku definice modulu `gui.app`, který bude dále rozveden v následujícím chunku. Tento úsek tak doplňuje architektonický přehled o konkrétní moduly pro orchestraci, konfiguraci, logování, serializaci, registraci modulů, OS-specifické sběrače dat, archivaci výstupů a CLI vstupní bod. Vše je navrženo v souladu s dříve popsanými funkčními a nefunkčními požadavky (determinismus, jednotný datový model, centralizovaná serializace, robustnost vůči chybám modulů, přenositelnost mezi Linux/Windows).\",\"chunk_index\":3,\"chunk_count\":10,\"notes\":[\"Zachovat názvy modulů, tříd, funkcí a signatur přesně, protože tvoří kontrakt API mezi částmi systému.\",\"`core.shared_models` je centrální místo pro datové typy; všechny moduly musí používat tyto dataclasses pro konzistentní datový model.\",\"`core.runner` a `modules.registry` společně definují mechanismus objevování a spouštění diagnostických modulů a scénářů; implementace musí respektovat, že moduly se registrují přes registry a runner je volá nepřímo.\",\"Linux/Windows moduly jsou pouze architektonicky naznačeny; konkrétní systémové příkazy a volání jsou delegovány na původní zadání a nesmí být svévolně měněny.\",\"`serializers.*` moduly centralizují logování, JSON serializaci a textové reporty; jednotlivé diagnostické moduly nesmí implementovat vlastní formáty mimo tento kontrakt.\",\"`modules.archive` musí pracovat s výstupním adresářem a `DiagnosticRunSummary` v souladu s požadavky na distribuci jako jeden archiv (ZIP).\",\"`cli.main` definuje sadu příkazů CLI, které musí být implementovány tak, aby odpovídaly popsaným funkcím a využívaly jádrové moduly (config, runner, manifest, serializers).\",\"Následující chunk bude pokračovat definicí GUI části (`gui.app` a souvisejících modulů), která musí respektovat Kájovo UI Design Standard a dříve popsané UI/UX kontrakty.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4842,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2394,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 7236
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767835999,
+    "store": true
+  }
+}

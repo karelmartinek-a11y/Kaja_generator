@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_09e7bfcc9ed782d800695f9ca1f6148194960e4ba0cf58a401",
+    "logged_at": "2026-01-08T12:02:05.996961",
+    "request_id": "6a715276"
+  },
+  "payload": {
+    "id": "resp_09e7bfcc9ed782d800695f9ca1f6148194960e4ba0cf58a401",
+    "created_at": 1767873697.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_09e7bfcc9ed782d800695f9ca291908194b0dd4c1eb5652e1a",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk dokončuje A2_STRUCTURE/A2X_FILE_MAP pro projekt „diagmaster“ a přidává zbývající soubory: OS-specifické kroky pro Windows a základní testovací moduly. Závěrem konstatuje, že MASTER zadání je ukončeno a nepřidává žádné další technické požadavky.\\n\\nNově popsané soubory:\\n\\n1) diagmaster/os_windows/__init__.py\\n- path: \\\"diagmaster/os_windows/__init__.py\\\".\\n- purpose: Inicializační soubor pro OS-specifický podbalíček pro Windows. Zpřístupňuje definice a běh kroků přes jednotné API, analogicky k `diagmaster/os_linux/__init__.py`.\\n- EXPORTS:\\n  - `__all__ = ['get_windows_step_definitions', 'run_windows_steps']` – reexportuje funkce z `os_windows.steps`.\\n  - Reexportované symboly (konceptuálně, v A2X_FILE_MAP budou jako exports tohoto souboru):\\n    - `get_windows_step_definitions` – vrací seznam definic kroků pro Windows.\\n    - `run_windows_steps` – spustí všechny relevantní kroky pro Windows a vrátí jejich výsledky.\\n- IMPORTS:\\n  - `from .steps import get_windows_step_definitions, run_windows_steps` – interní import z modulu `steps` ve stejném balíčku.\\n- language: python.\\n- generated_in_phase: A3.\\n\\n2) diagmaster/os_windows/steps.py\\n- path: \\\"diagmaster/os_windows/steps.py\\\".\\n- purpose: Definice a implementace diagnostických kroků pro Windows FULL diagnostiku dle MASTER zadání. Je analogický k `diagmaster/os_linux/steps.py`, ale pro Windows. Obsahuje konkrétní příkazy a logiku pro sběr systémových informací, síťové diagnostiky, storage, procesů, služeb a logů na Windows, s důrazem na read-only chování a deterministické výstupy.\\n- EXPORTS:\\n  - `function get_windows_step_definitions() -> list[DiagnosticStepDefinition]` – vrátí seznam definic všech kroků pro Windows, včetně jejich ID, názvů, sekcí, příkazových šablon a timeoutů.\\n  - `function run_windows_steps(layout: FsLayout, config: DiagnosticConfig) -> list[DiagnosticStepResult]` – na základě layoutu a konfigurace spustí jednotlivé kroky (typicky přes `core.exec.run_command`), uloží výstupy do správných adresářů (pomocí `path_for_step_output`) a vrátí seznam výsledků kroků.\\n- IMPORTS:\\n  - `from typing import List` – typové anotace.\\n  - `from ..core.models import DiagnosticStepDefinition, DiagnosticStepResult, StepStatus` – datové modely kroků a jejich stavů.\\n  - `from ..core.fs_layout import FsLayout, path_for_step_output` – layout a generování cest k výstupům.\\n  - `from ..core.exec import run_command, ExecResult, format_command_for_manifest` – spouštění příkazů a formátování příkazů pro manifest.\\n  - `from ..core.logging import log_info, log_debug, log_error` – logování průběhu kroků.\\n  - `from ..core.config import DiagnosticConfig` – konfigurace (např. které sekce/kroky jsou povolené, timeouty, kritičnost).\\n  - `import platform` – pro zjištění verze/edice Windows nebo ověření, že běžíme na Windows.\\n  - `import os` – práce s cestami, prostředím a případnými systémovými voláními.\\n- language: python.\\n- generated_in_phase: A3.\\n\\n3) tests/__init__.py\\n- path: \\\"tests/__init__.py\\\".\\n- purpose: Inicializační soubor testovacího balíčku, který označuje adresář `tests` jako Python balíček. Umožňuje strukturované spouštění testů a případné sdílení helperů mezi testy (i když zde nejsou explicitně popsány).\\n- EXPORTS:\\n  - Žádné specifické symboly; soubor slouží pouze k označení balíčku.\\n- IMPORTS:\\n  - Žádné importy; konkrétní testy jsou v podmodulech.\\n- language: python.\\n- generated_in_phase: A3.\\n\\n4) tests/test_cli.py\\n- path: \\\"tests/test_cli.py\\\".\\n- purpose: Jednotkové testy pro modul `diagmaster.core.cli`. Ověřují parsování argumentů, mapování na `CLIArguments` a chování `run_from_cli` v základních scénářích (validní/invalidní vstupy, různé kombinace přepínačů, návratové kódy při chybné konfiguraci apod.).\\n- EXPORTS:\\n  - Testovací funkce používané testovacím frameworkem (např. pytest), typicky:\\n    - `test_parse_cli_args_full_linux` – ověřuje, že CLI argumenty pro plnou Linux diagnostiku jsou správně parsovány.\\n    - `test_run_from_cli_invalid_args` – ověřuje chování při nevalidních argumentech (např. chybějící povinné parametry) a že je vrácen `EXIT_CONFIG_ERROR`.\\n  - V A2X_FILE_MAP budou tyto testovací funkce reprezentovány jako exports typu `function`, i když v praxi je pytest detekuje podle názvu.\\n- IMPORTS:\\n  - `import pytest` – testovací framework.\\n  - `from diagmaster.core.cli import parse_cli_args, CLIArguments, run_from_cli` – testované funkce a datová struktura.\\n  - `from diagmaster.core.return_code import EXIT_CONFIG_ERROR, EXIT_SUCCESS` – očekávané návratové kódy.\\n- language: python.\\n- generated_in_phase: A3.\\n\\n5) tests/test_runner.py\\n- path: \\\"tests/test_runner.py\\\".\\n- purpose: Jednotkové a integrační testy pro modul `diagmaster.core.runner`. Ověřují správnou orchestraci běhu, volání OS-specifických kroků (Linux/Windows) a generování návratového kódu podle výsledků kroků a konfigurace.\\n- EXPORTS:\\n  - Testovací funkce, např.:\\n    - `test_determine_os_target_linux` – ověřuje, že `determine_os_target` správně vybere Linux podle CLI/config.\\n    - `test_execute_run_creates_layout` – ověřuje, že `execute_run` vytvoří adresářovou strukturu a manifesty.\\n    - `test_run_diagnostics_exit_code` – ověřuje, že `run_diagnostics` vrací správný návratový kód pro různé kombinace výsledků kroků.\\n- IMPORTS:\\n  - `import pytest` – testovací framework.\\n  - `from diagmaster.core.runner import run_diagnostics, execute_run, determine_os_target` – testované funkce.\\n  - `from diagmaster.core.cli import CLIArguments` – datová struktura CLI argumentů.\\n  - `from diagmaster.core.config import DiagnosticConfig` – konfigurace běhu.\\n  - `from diagmaster.core.return_code import EXIT_SUCCESS, EXIT_PARTIAL_FAILURE, EXIT_CRITICAL_FAILURE` – návratové kódy, které se mají ověřovat.\\n- language: python.\\n- generated_in_phase: A3.\\n\\n6) tests/test_manifest.py\\n- path: \\\"tests/test_manifest.py\\\".\\n- purpose: Jednotkové testy pro modul `diagmaster.core.manifest`. Ověřují sestavování objektů `ManifestRoot` a `ManifestSection`, jejich strukturu, obsah a zápis do JSON souborů, včetně správného mapování kroků na soubory a sekce.\\n- EXPORTS:\\n  - Testovací funkce, např.:\\n    - `test_build_root_manifest_structure` – ověřuje, že root manifest obsahuje správná metadata běhu, odkazy na sekční manifesty a schéma.\\n    - `test_build_section_manifest_steps` – ověřuje, že sekční manifest správně reprezentuje kroky a jejich výsledky.\\n    - `test_write_manifest_files` – ověřuje, že funkce pro zápis manifestů vytvoří validní JSON soubory na očekávaných cestách.\\n- IMPORTS:\\n  - `import json` – pro čtení/ověření obsahu manifestů.\\n  - `import tempfile` – pro práci s dočasnými adresáři/soubory při testech.\\n  - `from pathlib import Path` – práce s cestami.\\n  - `from diagmaster.core.manifest import build_root_manifest, build_section_manifest, write_root_manifest, write_section_manifest, collect_manifest_file_entries` – testované funkce.\\n  - `from diagmaster.core.models import DiagnosticRun, RunId, ManifestSectionRef, DiagnosticStepResult, StepStatus, ManifestFileEntry` – datové modely používané v testech.\\n  - `from diagmaster.core.fs_layout import FsLayout` – layout pro generování cest.\\n- language: python.\\n- generated_in_phase: A3.\\n\\nZávěrečné konstatování MASTER zadání:\\n- Tento chunk explicitně říká, že jde o „Konec MASTER zadání“. Neobsahuje žádné nové technické požadavky, soubory ani změny struktury.\\n- Celé MASTER zadání již dříve definovalo Linux a Windows FULL diagnostiku, adresářovou strukturu, MANIFESTy, obsah podsložek a důraz na rekonstruovatelnost konfigurace bez ZIP archivace.\\n- Všechna globální pravidla zůstávají v platnosti: nástroj je read-only, deterministický, s manifest-based rekonstruovatelností a bez modifikace systému.\\n\\nTento chunk tedy pouze doplňuje A2_STRUCTURE o poslední soubory (Windows kroky a testy) a formálně uzavírá specifikaci, aniž by ji měnil nebo rozšiřoval o nové funkční požadavky.\",\"chunk_index\":7,\"chunk_count\":7,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 5814,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2330,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 8144
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767873725,
+    "store": true
+  }
+}

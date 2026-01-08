@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261617_314b",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_01b0072b3fce029200695fccb42f4481938cde55d9e2a86b0a",
+    "logged_at": "2026-01-08T15:27:27.176845",
+    "request_id": "df5e234e"
+  },
+  "payload": {
+    "id": "resp_01b0072b3fce029200695fccb42f4481938cde55d9e2a86b0a",
+    "created_at": 1767886004.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_01b0072b3fce029200695fccb4aa9c8193b040caa873d5ab16",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk pokračuje konkrétní implementací FULL Ubuntu (Web Server) Diagnostics v rámci bash skriptu vkládaného z PowerShell here-stringu (varianta B s heslem přes sshpass). Navazuje na předchozí části skriptu a doplňuje sběr dat pro firewall, uživatele a oprávnění, procesy a služby, balíčky, web, nginx, aplikace, Python, databázi, certifikáty, cron, logy a virtualizaci/kontejnery. Na konci skriptu se vypíše REMOTE_ROOT a PowerShell pomocí sshpass provede vzdálené spuštění a následné stažení adresáře s diagnostikou.\\n\\nV rámci firewall/ sekce skript:\\n- `mkdir -p \\\"$remote_root/firewall\\\"`\\n- `(nft list ruleset) > \\\"$remote_root/firewall/nft_ruleset.txt\\\" 2>&1` – uloží kompletní nftables ruleset (včetně chybového výstupu) do souboru nft_ruleset.txt.\\n\\nSekce users_permissions/:\\n- `mkdir -p \\\"$remote_root/users_permissions\\\"`\\n- `(getent passwd && getent group) > \\\"$remote_root/users_permissions/users_groups.txt\\\" 2>&1` – exportuje seznam uživatelů a skupin z NSS (passwd, group) do jednoho souboru.\\n- `mkdir -p \\\"$remote_root/users_permissions\\\"`\\n- `(cat /etc/sudoers && ls /etc/sudoers.d 2>/dev/null) > \\\"$remote_root/users_permissions/sudoers_listing.txt\\\" 2>&1` – vypíše obsah /etc/sudoers a seznam souborů v /etc/sudoers.d (může obsahovat citlivé informace o oprávněních, ale ne hesla).\\n- `mkdir -p \\\"$remote_root/users_permissions\\\"`\\n- `(umask) > \\\"$remote_root/users_permissions/umask.txt\\\" 2>&1` – uloží aktuální výchozí umask procesu (informace o výchozích oprávněních nových souborů).\\n\\nSekce processes_services/:\\n- `mkdir -p \\\"$remote_root/processes_services\\\"`\\n- `(ps -ef) > \\\"$remote_root/processes_services/process_list.txt\\\" 2>&1` – kompletní seznam běžících procesů (užitečné pro korelaci služeb, workerů, databází atd.).\\n- `mkdir -p \\\"$remote_root/processes_services\\\"`\\n- `(systemctl list-units --type=service --all) > \\\"$remote_root/processes_services/services_state.txt\\\" 2>&1` – stav všech systemd služeb (aktivní, neaktivní, failed, atd.).\\n- `mkdir -p \\\"$remote_root/processes_services\\\"`\\n- `(systemctl list-unit-files --state=enabled) > \\\"$remote_root/processes_services/startup_items.txt\\\" 2>&1` – seznam všech povolených (enabled) unit souborů, tedy služeb startujících při bootu.\\n\\nSekce packages/:\\n- `mkdir -p \\\"$remote_root/packages\\\"`\\n- `(dpkg -l) > \\\"$remote_root/packages/dpkg_list.txt\\\" 2>&1` – kompletní seznam nainstalovaných balíčků (název, verze, stav).\\n- `mkdir -p \\\"$remote_root/packages\\\"`\\n- `(apt-cache policy nginx openssl python3 certbot postgresql redis) > \\\"$remote_root/packages/apt_policy_key_pkgs.txt\\\" 2>&1` – detailní informace o verzích a repozitářích pro klíčové balíčky (nginx, openssl, python3, certbot, postgresql, redis).\\n- `mkdir -p \\\"$remote_root/packages\\\"`\\n- `(snap list) > \\\"$remote_root/packages/snap_list.txt\\\" 2>&1` – seznam nainstalovaných snap balíčků.\\n\\nSekce web/:\\n- `mkdir -p \\\"$remote_root/web\\\"`\\n- `(find /var/www /srv/www -maxdepth 3 -type d -print 2>/dev/null) > \\\"$remote_root/web/web_root_overview.txt\\\" 2>&1` – přehled adresářové struktury web rootů (do hloubky 3), pouze cesty.\\n- `mkdir -p \\\"$remote_root/web\\\"`\\n- `(du -h --max-depth=2 /var/www /srv/www 2>/dev/null | sort -hr) > \\\"$remote_root/web/static_assets_sizes.csv\\\" 2>&1` – velikostní přehled (du) webových adresářů, seřazený sestupně; název souboru *.csv, ale obsah je textový výpis.\\n- `mkdir -p \\\"$remote_root/web\\\"`\\n- `(curl -I http://127.0.0.1 2>&1 || true) > \\\"$remote_root/web/web_server_headers_hint.txt\\\" 2>&1` – HTTP HEAD požadavek na localhost (port 80) pro zjištění HTTP hlaviček a základního chování web serveru; případné chyby jsou zachyceny.\\n\\nSekce nginx/:\\n- `mkdir -p \\\"$remote_root/nginx\\\"`\\n- `(nginx -V) > \\\"$remote_root/nginx/nginx_version.txt\\\" 2>&1` – verze nginxu včetně build parametrů a modulů (výstup na stderr je přesměrován do souboru).\\n- `mkdir -p \\\"$remote_root/nginx\\\"`\\n- `(nginx -t) > \\\"$remote_root/nginx/nginx_test.txt\\\" 2>&1` – test konfigurace nginxu (syntaxe, validita), výsledek a případné chyby.\\n- `mkdir -p \\\"$remote_root/nginx\\\"`\\n- `(find /etc/nginx -maxdepth 4 -print 2>/dev/null) > \\\"$remote_root/nginx/nginx_conf_tree.txt\\\" 2>&1` – strom konfiguračních souborů nginxu (pouze cesty, ne obsah).\\n\\nSekce app/ (aplikace):\\n- `mkdir -p \\\"$remote_root/app\\\"`\\n- `(find /srv /opt /var/www ~/apps -maxdepth 2 -type d -print 2>/dev/null) > \\\"$remote_root/app/app_dirs_overview.txt\\\" 2>&1` – přehled aplikačních adresářů v typických cestách.\\n- `mkdir -p \\\"$remote_root/app\\\"`\\n- `(systemctl list-unit-files | grep -E 'gunicorn|uvicorn|celery|worker' || true) > \\\"$remote_root/app/systemd_units_related.txt\\\" 2>&1` – seznam systemd unit souborů souvisejících s typickými Python web/workers službami.\\n- `mkdir -p \\\"$remote_root/app\\\"`\\n- `(find /srv /opt /var/www ~/apps -type f \\\\( -name '*.env' -o -name 'config*.yml' -o -name 'settings.py' \\\\) -print -exec ls -l {} \\\\; 2>/dev/null) > \\\"$remote_root/app/app_env_files_found.txt\\\" 2>&1` – inventář potenciálně citlivých konfiguračních/env souborů (pouze cesty a metadata přes ls -l, ne obsah), v souladu se zásadou neexportovat tajemství.\\n\\nSekce python/:\\n- `mkdir -p \\\"$remote_root/python\\\"`\\n- `(which python && which python3) > \\\"$remote_root/python/where_python.txt\\\" 2>&1` – umístění interpreterů python a python3.\\n- `mkdir -p \\\"$remote_root/python\\\"`\\n- `(python3 -m pip --version && pip3 --version) > \\\"$remote_root/python/py_launcher_list.txt\\\" 2>&1` – verze pipu a jeho vazba na python3.\\n- `mkdir -p \\\"$remote_root/python\\\"`\\n- `(python3 -c \\\"import json,sys; print(json.dumps({'python': sys.executable, 'paths': sys.path}))\\\") > \\\"$remote_root/python/interpreters_inventory.csv\\\" 2>&1` – JSON s cestou k aktuálnímu interpreteru a sys.path (soubor se jmenuje *.csv, ale obsah je JSON); slouží k inventarizaci Python prostředí bez úniku tajemství.\\n\\nSekce database/ (PostgreSQL):\\n- `mkdir -p \\\"$remote_root/database\\\"`\\n- `(psql --version) > \\\"$remote_root/database/postgres_version.txt\\\" 2>&1` – verze klienta psql.\\n- `mkdir -p \\\"$remote_root/database\\\"`\\n- `(systemctl status postgresql --no-pager) > \\\"$remote_root/database/postgres_service_status.txt\\\" 2>&1` – stav systemd služby postgresql.\\n- `mkdir -p \\\"$remote_root/database\\\"`\\n- `(find /etc/postgresql -name 'postgresql.conf' -o -name 'pg_hba.conf' -print 2>/dev/null) > \\\"$remote_root/database/postgres_conf_locations.txt\\\" 2>&1` – cesty ke konfiguračním souborům PostgreSQL (bez obsahu).\\n\\nSekce certs/:\\n- `mkdir -p \\\"$remote_root/certs\\\"`\\n- `(find /etc/letsencrypt /etc/ssl /etc/pki -maxdepth 3 -type f \\\\( -name '*.pem' -o -name '*.crt' \\\\) -print 2>/dev/null) > \\\"$remote_root/certs/cert_locations.txt\\\" 2>&1` – inventář certifikačních souborů (PEM, CRT) v typických cestách, pouze cesty.\\n- `mkdir -p \\\"$remote_root/certs\\\"`\\n- `(certbot certificates || echo 'certbot missing') > \\\"$remote_root/certs/certbot_status.txt\\\" 2>&1` – informace o certifikátech spravovaných certbotem nebo zpráva, že certbot není k dispozici.\\n- `mkdir -p \\\"$remote_root/certs\\\"`\\n- `(for cert in /etc/letsencrypt/live/*/cert.pem; do echo CERT: $cert; openssl x509 -enddate -noout -in \\\"$cert\\\"; done 2>/dev/null) > \\\"$remote_root/certs/cert_expiry_report.txt\\\" 2>&1` – pro každý Let’s Encrypt cert.pem vypíše cestu a datum expirace (bez privátních klíčů).\\n\\nSekce cron_webhooks/ (cron diagnostika):\\n- `mkdir -p \\\"$remote_root/cron_webhooks\\\"`\\n- `(crontab -l) > \\\"$remote_root/cron_webhooks/crontab_root.txt\\\" 2>&1` – aktuální crontab uživatele (typicky root, protože skript běží jako root).\\n- `mkdir -p \\\"$remote_root/cron_webhooks\\\"`\\n- `(ls /var/spool/cron/crontabs 2>/dev/null) > \\\"$remote_root/cron_webhooks/crontab_users_listing.txt\\\" 2>&1` – seznam souborů s crontaby jednotlivých uživatelů.\\n- `mkdir -p \\\"$remote_root/cron_webhooks\\\"`\\n- `(ls /etc/cron.* 2>/dev/null) > \\\"$remote_root/cron_webhooks/system_cron_dirs_tree.txt\\\" 2>&1` – výpis systémových cron adresářů /etc/cron.*.\\n\\nSekce logs/ (omezené logy):\\n- `mkdir -p \\\"$remote_root/logs\\\"`\\n- `(journalctl -u nginx -n 500 --no-pager) > \\\"$remote_root/logs/journal_nginx_last500.txt\\\" 2>&1` – posledních 500 záznamů journald pro nginx.\\n- `mkdir -p \\\"$remote_root/logs\\\"`\\n- `(journalctl -n 500 --no-pager) > \\\"$remote_root/logs/journal_app_last500.txt\\\" 2>&1` – posledních 500 záznamů journald obecně (v této ukázce generický tail, dříve zamýšleno cílit na konkrétní aplikační unit).\\n- `mkdir -p \\\"$remote_root/logs\\\"`\\n- `(journalctl -u postgresql -n 500 --no-pager) > \\\"$remote_root/logs/journal_db_last500.txt\\\" 2>&1` – posledních 500 záznamů pro postgresql.\\n- `mkdir -p \\\"$remote_root/logs\\\"`\\n- `(tail -n 200 /var/log/syslog) > \\\"$remote_root/logs/syslog_tail.txt\\\" 2>&1` – posledních 200 řádků syslogu.\\n- `mkdir -p \\\"$remote_root/logs\\\"`\\n- `(tail -n 200 /var/log/auth.log) > \\\"$remote_root/logs/auth_log_tail.txt\\\" 2>&1` – posledních 200 řádků auth.log (citlivé údaje – IP, uživatelé – nutno sdílet opatrně).\\n- `mkdir -p \\\"$remote_root/logs\\\"`\\n- `(journalctl -k -n 400 --no-pager) > \\\"$remote_root/logs/kernel_log_tail.txt\\\" 2>&1` – posledních 400 kernelových zpráv.\\n\\nSekce virtualization_containers/:\\n- `mkdir -p \\\"$remote_root/virtualization_containers\\\"`\\n- `(docker info) > \\\"$remote_root/virtualization_containers/docker_info.txt\\\" 2>&1` – detailní informace o Dockeru (pokud není nainstalován, uloží se chybový výstup).\\n- `mkdir -p \\\"$remote_root/virtualization_containers\\\"`\\n- `(docker ps -a) > \\\"$remote_root/virtualization_containers/docker_ps.txt\\\" 2>&1` – seznam všech kontejnerů (běžících i zastavených).\\n- `mkdir -p \\\"$remote_root/virtualization_containers\\\"`\\n- `(find /srv /opt /etc -name 'docker-compose*.yml' -print 2>/dev/null) > \\\"$remote_root/virtualization_containers/docker_compose_files_found.txt\\\" 2>&1` – inventář docker-compose*.yml souborů (pouze cesty, ne obsah).\\n\\nNa konci bash skriptu se vypíše:\\n- `echo \\\"REMOTE_ROOT=$remote_root\\\"`\\n\\nPowerShell část (varianta B s heslem) pak:\\n- používá here-string `@' ... '@` obsahující celý bash skript,\\n- proměnné `$ip`, `$user`, `$pw` definují IP adresu, uživatele (typicky root) a heslo,\\n- skript se spouští přes `sshpass -p $pw ssh -o StrictHostKeyChecking=no \\\"$user@$ip\\\" \\\"bash -s\\\"`, do kterého je pipován obsah `$script`,\\n- výstup se filtruje přes `Select-String -Pattern '^REMOTE_ROOT=' | Select-Object -First 1 | ForEach-Object { $_.Line -replace '^REMOTE_ROOT=' }` a výsledná hodnota se uloží do `$remoteRoot`,\\n- následně `sshpass -p $pw scp -o StrictHostKeyChecking=no -r \\\"$user@$ip:$remoteRoot\\\" .` stáhne celý diagnostický adresář Diag_YYYYMMDD-HHMMSS/ do aktuálního adresáře na Windows.\\n\\nNa konci chunku je naznačen přechod k části 28.23 MANIFEST.md (šablona), která definuje strukturu souboru MANIFEST.md (Markdown) s metadaty o běhu diagnostiky (timestamp, hostname, uživatel, OS, kernel, uptime, output_root) a stručným popisem účelu a přehledem složek (system/, hardware/, storage/, network/, firewall/, users_permissions/, processes_services/, packages/, web/ atd.). Tato šablona slouží jako lidsky čitelný index k vygenerovanému diagnostickému stromu.\\n\\nCelkově tento chunk doplňuje praktickou implementaci sběru diagnostických dat pro firewall, uživatele, služby, balíčky, web stack, nginx, aplikace, Python, databázi, certifikáty, cron, logy a kontejnery v rámci varianty B (sshpass + heslo), přičemž stále platí globální zásady: strukturovaný výstup do Diag_YYYYMMDD-HHMMSS/, minimalizace úniku tajemství (obsahy env/config souborů se neexportují), omezené logy (tail) a bezpečnostní opatrnost při sdílení výstupů.\",\"chunk_index\":13,\"chunk_count\":15,\"notes\":[\"Zachovat, že jde o pokračování jednoho bash skriptu vloženého v PowerShell here-stringu (varianta B s heslem přes sshpass).\",\"Důležité je, že echo REMOTE_ROOT=$remote_root je klíčové pro následné parsování v PowerShellu a stažení adresáře přes scp.\",\"Zachovat rozdělení do podsložek firewall/, users_permissions/, processes_services/, packages/, web/, nginx/, app/, python/, database/, certs/, cron_webhooks/, logs/, virtualization_containers/ a význam jednotlivých příkazů (inventarizace, neobsah citlivých souborů).\",\"Zmínit, že následuje šablona MANIFEST.md, která popisuje účel a strukturu diagnostického balíčku.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4620,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3920,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 8540
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767886046,
+    "store": true
+  }
+}

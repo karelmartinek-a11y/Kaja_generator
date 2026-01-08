@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261657_c5d0",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_01b309e38820d54700695fd4097ef0819fb3a6a1bf37839a81",
+    "logged_at": "2026-01-08T15:58:49.526704",
+    "request_id": "1d26009f"
+  },
+  "payload": {
+    "id": "resp_01b309e38820d54700695fd4097ef0819fb3a6a1bf37839a81",
+    "created_at": 1767887881.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_01b309e38820d54700695fd409ffa8819fb348fbd2bcfdf590",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Specifikace dále rozvádí integrační body na OpenAI API a UI/UX chování aplikace „Kája“.\\n\\nAPI integrace a schopnosti modelu:\\n- Aplikace používá:\\n  - Responses API pro generování odpovědí, včetně řetězení přes `previous_response_id` (pro režimy A/B/QA).\\n  - Files API pro upload, list a delete souborů.\\n  - Models endpoint pro získání seznamu modelů.\\n  - Vector store + `file_search` (pouze pokud je zvolen vhodný IN režim a model tuto schopnost podporuje).\\n  - Batch API pro režim C a sledování batch jobů.\\n- Program MUSÍ umět detekovat capabilities modelu a podle toho:\\n  - nepoužít nepodporované tooly (zejména `file_search`),\\n  - přepnout se do definovaného a bezpečného fallback režimu dle pravidel v sekci 11.3.1 (detail bude v jiných částech zadání) a pouze tam, kde je fallback výslovně definován.\\n\\nAssets a povinné soubory:\\n\\n4.1 Fonty – kritický kontrakt:\\n- Povinné TTF soubory:\\n  - `resources/montserrat_bold.ttf` (Montserrat Bold),\\n  - `resources/montserrat_regular.ttf` (Montserrat Regular).\\n- Při startu aplikace se MUSÍ oba fonty načíst/registrovat z lokálních assets a MUSÍ být použity pro celé UI.\\n- Aplikace NESMÍ spoléhat na systémovou instalaci fontů a NESMÍ používat jiné fonty nebo řezy.\\n- Pokud fonty nelze načíst/registrovat, aplikace MUSÍ zobrazit chybový dialog ve stylu „Kájovo“ a poté se korektně ukončit.\\n- Build proces by MĚL kontrolovat hash souborů fontů (např. SHA-256), aby se zajistila neměnnost/verze.\\n\\n4.2 Degradovaný režim pro chybějící soubory (mimo fonty):\\n- Pokud chybí jiný povinný soubor než fonty, program:\\n  - MUSÍ uživateli jasně sdělit, co chybí,\\n  - MUSÍ pokračovat v „degradovaném režimu“, pokud je to bezpečné a dává to smysl,\\n  - MUSÍ vše zalogovat, včetně:\\n    - přesného seznamu chybějících souborů,\\n    - dopadu na funkčnost,\\n    - aktivovaných omezení.\\n\\nStart aplikace, hlavní okno a automatická inicializace:\\n\\n5.1 Hlavní okno:\\n- Program se po spuštění MUSÍ otevřít v maximalizovaném okně na hlavním monitoru.\\n- Program NESMÍ znemožnit ovládání systému (žádné chování blokující OS). Dialogy a overlaye jsou pouze v rámci aplikace a zůstávají ovladatelné.\\n\\n5.2 Jedna pracovní plocha, responsivní rozvržení 1–3 sloupce:\\n- Hlavní plocha je jedna scrollovatelná pracovní plocha („workspace“).\\n- Všechny funkční sekce existují jako karty/sekce na této jediné ploše (žádné oddělené taby pro hlavní workflow).\\n- Layout MUSÍ být responsivní:\\n  - při velké šířce okna se sekce automaticky skládají do 3 sloupců,\\n  - při menší šířce do 2 sloupců,\\n  - při malé šířce do 1 sloupce.\\n- Nesmí existovat pevné, neresponsivní rozdělení na konkrétní sloupce.\\n- Na úrovni celé pracovní plochy NESMÍ být horizontální scroll; horizontální scroll je povolen pouze v konkrétních multiline polích, kde je explicitně požadován.\\n\\n5.3 Automatická inicializace po startu:\\n- Před zobrazením UI program na pozadí (asynchronně, s progress dialogem) automaticky provede:\\n  - načtení aktuálního seznamu OpenAI modelů pro uložený API key,\\n  - načtení aktuálního seznamu souborů z Files API,\\n  - načtení aktuálního seznamu existujících Vector Stores,\\n  - načtení stavu všech rozpracovaných Batch jobů a jejich zobrazení v „Batch monitoru“.\\n- Pokud API key chybí:\\n  - automatická inicializace se neprovede,\\n  - zobrazí se jasná informace, že inicializace není možná,\\n  - uživateli se nabídne otevření dialogu API-KEY.\\n\\nZáhlaví (toolbar) – tlačítka a chování:\\n\\n6) Toolbar v záhlaví obrazovky:\\n- Vlevo jsou tlačítka v pořadí:\\n  1. API-KEY\\n  2. $ (CENY / ÚČTENKY / CENÍK)\\n  3. SETTINGS\\n  4. SAVE\\n  5. LOAD\\n  6. LOAD REQUEST\\n- Vpravo je tlačítko:\\n  7. EXIT\\n- Tato tlačítka otevírají příslušné dialogy/obrazovky, přičemž hlavní pracovní plocha zůstává konceptuálně jedna.\\n\\nDialog „API-KEY“:\\n\\n7) Po stisknutí API-KEY:\\n- Otevře se vyskakovací dialog s jedním dlouhým jednořádkovým textovým polem pro zadání OpenAI API key.\\n- Pod tímto polem jsou tlačítka/volby:\\n\\n7.1 Uložit:\\n- Uloží API key do systémových proměnných prostředí (environment variables).\\n- Po uložení MUSÍ být aktuální běh programu schopen key okamžitě používat bez restartu.\\n\\n7.2 Zobraz:\\n- Zobrazí API key v textovém poli, pokud je uložen v systémových proměnných (tj. přepne z maskovaného na viditelný režim).\\n\\n7.3 Smazat:\\n- Smaže uložený API key ze systémových proměnných.\\n\\n7.4 STORNO:\\n- Zavře dialog bez jakýchkoli změn (žádné uložení ani mazání).\\n\\nSETTINGS – samostatné okno:\\n\\n8) Tlačítko SETTINGS:\\n- Otevře samostatné okno (mimo hlavní pracovní plochu).\\n- SETTINGS slouží výhradně k nastavení chodu programu, nikoli k nastavování obsahu jednotlivých requestů.\\n- Minimální obsah SETTINGS:\\n  - Lokace lokální databáze (default v adresáři programu).\\n  - Limity logování (rotace, maximální velikost, maximální počet runů v historii apod.).\\n  - Politika retry/backoff (limity, jitter, maximální počet pokusů, circuit breaker).\\n  - Ceník:\\n    - zdroj (URL / lokální soubor),\\n    - nastavení refresh,\\n    - cache TTL,\\n    - volba auto-refresh při startu.\\n  - Bezpečnost:\\n    - volitelné maskování tajemství v logu (default OFF, ale MUSÍ existovat varování o riziku),\\n    - volitelné šifrování logů (default OFF),\\n    - „panic wipe“ lokální cache (tlačítko pro nouzové smazání lokálních dat/cache).\\n  - Batch polling interval a timeouty.\\n  - Výchozí model a defaultní teploty dle definované politiky.\\n  - Povolení/konfigurace post-run hooks (lokální/SSH skripty po běhu).\\n  - Allow/deny list přípon a cest (glob patterns) zvlášť pro IN mirror a diagnostické snapshoty.\\n  - Volitelný dry-run režim pro MODIFY (provádí simulaci bez skutečných změn).\\n\\n$ (CENY) – samostatná obrazovka:\\n\\n9) Tlačítko $:\\n- Otevře samostatnou obrazovku (mimo hlavní workspace) pro práci s cenami a účtenkami.\\n- Ceny se NESMÍ zobrazovat na hlavní ploše a NESMÍ ovlivňovat hlavní workflow; řeší se pouze zde.\\n\\n9.1 Přehled ceníku:\\n- Zobrazuje tabulku cen pro jednotlivé modely, obsahující minimálně:\\n  - cenu za input token,\\n  - cenu za output token,\\n  - batch pricing (pokud je pro model relevantní),\\n  - náklady na tooly (zejména `file_search`),\\n  - náklady na storage (vector store).\\n- Zobrazuje datum poslední aktualizace ceníku.\\n- Obsahuje tlačítko „REFRESH CENÍK“ pro ruční aktualizaci.\\n- Umožňuje nastavit zdroj ceníku a TTL (přes SETTINGS, ale zde je přehled a ovládací prvky mohou odkazovat na SETTINGS).\\n\\n9.2 Účtenky (evidence):\\n- Umožňuje filtrování účtenek podle:\\n  - data (od–do),\\n  - projektu,\\n  - modelu,\\n  - režimu (GENERATE / MODIFY / QA / C),\\n  - ResponseID / BatchID,\\n  - fulltextového textu (v zadání / notes).\\n- Detail účtenky obsahuje:\\n  - rozpad tokenů a ceny (input/output),\\n  - rozpad nákladů na tooly a storage,\\n  - čas běhu, počty requestů, počty souborů,\\n  - příznak „odhad / neověřeno“, pokud v době výpočtu nebyl ceník aktuální.\\n- Akce nad účtenkami:\\n  - export (JSON / CSV),\\n  - smazání vybraných účtenek,\\n  - sumarizace za zvolené období.\\n\\n9.3 Vazba na LOG:\\n- Každá účtenka MUSÍ obsahovat přímý odkaz na příslušné LOG soubory na disku (lokální path), aby bylo možné snadno dohledat podrobné logy.\\n\\nEXIT – potvrzení ukončení:\\n\\n10) Tlačítko EXIT:\\n- Po stisknutí se zobrazí potvrzovací dialog s upozorněním, že uživatel přijde o neuloženou práci, pokud předtím nepoužil SAVE.\\n- Pokud uživatel ukončení potvrdí, program se korektně ukončí.\\n- Pokud nepotvrdí, dialog se zavře a program pokračuje v běhu.\\n\\nSAVE / LOAD / LOAD REQUEST – persistování stavu:\\n\\n11.1 SAVE:\\n- Uloží aktuální mapu nastavení (celý stav UI) do souboru.\\n- Po stisknutí se zobrazí dialog pro výběr adresáře a jména souboru.\\n- Formát uloženého souboru MUSÍ být JSON.\\n- Strukturu JSON určuje program, ale MUSÍ obsahovat všechny volby a stav UI tak, aby bylo možné stav plně obnovit.\\n\\n11.2 LOAD:\\n- Umožní vybrat dříve uložený JSON soubor.\\n- Po načtení se UI přepne do stavu odpovídajícího uloženému souboru (kompletní rekonstrukce nastavení).\\n\\n11.3 LOAD REQUEST:\\n- Umožní vybrat request uložený v adresáři LOG/.\\n- Po načtení se v programu nastaví všechna zadání a dialogová okna přesně tak, jak byla nastavena při původním odeslání requestu.\\n- Uživatel může provést drobné úpravy a request znovu odeslat.\\n\\nTento chunk doplňuje předchozí shrnutí o: povinné fonty a chování při jejich chybě, degradovaný režim pro jiné chybějící soubory, startovací chování a automatickou inicializaci, strukturu toolbaru, detailní chování dialogu API-KEY, obsah a roli SETTINGS, samostatnou obrazovku pro ceny a účtenky, potvrzovací ukončení aplikace a mechanismy SAVE/LOAD/LOAD REQUEST pro persistenci a obnovu stavu, včetně vazby na LOG a účtenky.\",\"chunk_index\":2,\"chunk_count\":15,\"notes\":[\"Zachovat striktní kontrakt na fonty Montserrat (lokální assets, žádná závislost na systémových fontech, při selhání ukončit aplikaci).\",\"Zajistit responsivní layout 1–3 sloupce bez horizontálního scrollu na úrovni celé pracovní plochy.\",\"Automatická inicializace (modely, Files, Vector Stores, Batch joby) musí běžet asynchronně s progress dialogem a reagovat na chybějící API key jasnou hláškou.\",\"Toolbar a jednotlivá tlačítka (API-KEY, $, SETTINGS, SAVE, LOAD, LOAD REQUEST, EXIT) mají přesně definované dialogy/obrazovky a chování, které je nutné implementovat beze změn.\",\"SETTINGS slouží pouze pro systémová/nastavovací témata (DB, logování, retry/backoff, ceník, bezpečnost, batch, default modely, hooks, allow/deny listy, dry-run).\",\"Obrazovka $ je jediným místem, kde se pracuje s cenami a účtenkami; hlavní workflow nesmí být cenami zatěžováno.\",\"SAVE/LOAD pracuje s obecnou konfigurací UI, LOAD REQUEST s konkrétním requestem z LOG/ a musí obnovit stav přesně tak, jak byl při odeslání.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4340,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3247,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 7587
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767887929,
+    "store": true
+  }
+}

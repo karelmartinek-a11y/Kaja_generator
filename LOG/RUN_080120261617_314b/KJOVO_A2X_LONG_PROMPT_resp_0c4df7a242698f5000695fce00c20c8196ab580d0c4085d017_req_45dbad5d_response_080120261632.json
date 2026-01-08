@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261617_314b",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_0c4df7a242698f5000695fce00c20c8196ab580d0c4085d017",
+    "logged_at": "2026-01-08T15:32:39.961150",
+    "request_id": "45dbad5d"
+  },
+  "payload": {
+    "id": "resp_0c4df7a242698f5000695fce00c20c8196ab580d0c4085d017",
+    "created_at": 1767886336.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0c4df7a242698f5000695fce012698819696b72984afe4cfad",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk navazuje na předchozí popis architektury a doplňuje zejména:\\n\\n1) Verifikační kroky (verification) pro hotovou diagnostickou sadu\\n- Po spuštění diagnostiky musí v cílovém adresáři vzniknout kompletní struktura složek a souborů přesně dle návrhu pro danou platformu (Ubuntu / Windows). Struktura je deterministická a definovaná v path_layout a manifest_writer.\\n- V kořeni výstupu musí existovat MANIFEST.md, který obsahuje index všech souborů. Odkazy v manifestu musí odpovídat reálně existujícím souborům (žádné mrtvé odkazy).\\n- Pokud některé subsystémy na dané platformě neexistují (např. WSL na Windows), musí být příslušné sekce v datech a/nebo manifestu označeny jako NOT PRESENT. Diagnostika v takovém případě nesmí spadnout, ale má tuto skutečnost konzistentně reflektovat v datech.\\n- Pokud diagnostika narazí na nedostatečná oprávnění (např. při čtení logů, registru, systémových souborů), musí být příslušné položky označeny jako ACCESS DENIED. Zároveň se tato chyba musí objevit v errors.log, který je generován modulem error_reporting.\\n- Ve výstupních souborech se nesmí objevit zjevná tajemství (privátní klíče, hesla, tokeny, API klíče apod.). Je nutné ověřit, že modul redaction funguje dle očekávání – tj. že citlivé hodnoty jsou nahrazeny placeholderem (např. [REDACTED]) a že heuristiky jsou konzervativní (raději více redigovat než méně).\\n- Opakované spuštění diagnostiky na stejném systému se stejnými parametry musí generovat deterministickou strukturu a obsah (s výjimkou časových razítek a jiných dynamických hodnot). To znamená, že pořadí souborů, názvy, struktura adresářů a obsah, který není časově nebo jinak dynamicky závislý, musí být stabilní.\\n\\n2) Zobrazení nápovědy\\n- Uveden je příklad příkazu pro zobrazení nápovědy CLI: \\\"python diagnostics_main.py --help\\\". To navazuje na modul cli_interface, který zajišťuje parsování argumentů a tisk nápovědy.\\n\\n3) Deliverable policy – strategie generování souborů v dalších fázích\\n- file_generation_strategy: \\\"PLAN->STRUCTURE->FILE_CONTENT\\\" – proces tvorby výsledného projektu má probíhat ve třech krocích:\\n  1) PLAN – nejprve se vytvoří plán (návrh) toho, jaké soubory a moduly budou existovat, jaké budou mít role a závislosti.\\n  2) STRUCTURE – poté se vytvoří samotná adresářová a souborová struktura (prázdné nebo částečně naplněné soubory) podle plánu.\\n  3) FILE_CONTENT – nakonec se doplní konkrétní implementace obsahu jednotlivých souborů.\\n- max_lines_per_chunk: 500 – při generování obsahu souborů v dalších fázích je nutné respektovat limit maximálně 500 řádků na jeden generovaný chunk. To ovlivňuje způsob, jakým se bude kód rozdělovat a postupně generovat.\\n\\n4) A2_STRUCTURE – začátek detailní struktury projektu\\nChunk obsahuje začátek objektu A2_STRUCTURE, který definuje cílovou strukturu repozitáře a souborů. Klíčové body:\\n- contract: \\\"A2_STRUCTURE\\\" – jde o formální kontrakt pro popis struktury.\\n- root: \\\"CrossPlatformDiagnosticsSuite\\\" – název kořenového adresáře projektu.\\n- files: pole objektů, kde každý objekt popisuje jeden soubor (path, purpose, language, generated_in_phase).\\n\\nZde jsou shrnuty soubory, které se v tomto chunku explicitně objevují (další budou pokračovat v následujícím chunku):\\n\\n1) diagnostics_main.py\\n- Účel: hlavní entrypoint CLI aplikace, orchestruje běh diagnostiky podle argumentů a detekovaného OS.\\n- EXPORTS:\\n  - main(argv: list[str]) -> int – hlavní funkce, která zpracuje argumenty, spustí diagnostiku a vrátí návratový kód.\\n  - run_from_cli() -> None – obal pro přímé spuštění z příkazové řádky (typicky volá main(sys.argv[1:]) a ukončí proces s návratovým kódem).\\n- IMPORTS:\\n  - parse_args z cli_interface.py – parsování argumentů.\\n  - detect_platform, get_os_version z os_detection.py – detekce OS a verze.\\n  - run_ubuntu_diagnostics z ubuntu_diagnostics_runner.py – runner pro Ubuntu.\\n  - run_windows_diagnostics z windows_diagnostics_runner.py – runner pro Windows.\\n  - setup_logging, get_logger z logging_setup.py – nastavení logování a získání loggeru.\\n  - ensure_empty_dir z io_safety.py – bezpečná příprava výstupního adresáře.\\n  - write_error_report, get_errors z error_reporting.py – zápis errors.log a zjištění chyb pro návratový kód.\\n  - sys modul ze standardní knihovny.\\n- Jazyk: Python.\\n- generated_in_phase: \\\"A3\\\" – implementace bude vytvořena ve fázi A3.\\n\\n2) cli_interface.py\\n- Účel: parsování a validace argumentů příkazové řádky.\\n- EXPORTS:\\n  - parse_args(argv: list[str]) -> argparse.Namespace – vrací objekt s parametry (platforma, output dir, log level, volitelné vypnutí sekcí atd., dle širší specifikace).\\n  - print_help() -> None – explicitní tisk nápovědy.\\n- IMPORTS:\\n  - argparse – standardní knihovna pro CLI argumenty.\\n  - sys – pro přístup k argv a případné ukončení s chybovým kódem.\\n- Jazyk: Python.\\n- generated_in_phase: \\\"A3\\\".\\n\\n3) os_detection.py\\n- Účel: detekce platformy a verze OS.\\n- EXPORTS:\\n  - detect_platform() -> Literal['ubuntu','windows','unknown'] – vrací identifikátor platformy.\\n  - get_os_version() -> str – vrací lidsky čitelný popis verze OS.\\n- IMPORTS:\\n  - platform – standardní knihovna pro informace o OS.\\n  - sys – případně pro doplňkové informace.\\n  - typing.Literal – pro typovou anotaci návratové hodnoty detect_platform.\\n- Jazyk: Python.\\n- generated_in_phase: \\\"A3\\\".\\n\\n4) ubuntu_diagnostics_runner.py\\n- Účel: orchestrace běhu všech Ubuntu collectors a zápis výstupů dle definované struktury a manifestu.\\n- EXPORTS:\\n  - run_ubuntu_diagnostics(output_dir: str) -> None – hlavní funkce pro Ubuntu diagnostiku.\\n- IMPORTS:\\n  - get_ubuntu_output_layout, UbuntuLayout z path_layout.py – deterministická struktura výstupu pro Ubuntu.\\n  - collect_ubuntu_system_info, collect_ubuntu_web_server_config, collect_ubuntu_network, collect_ubuntu_logs, collect_ubuntu_packages, collect_ubuntu_services, collect_ubuntu_filesystem z ubuntu_collectors.py – jednotlivé sběrné funkce.\\n  - create_manifest, write_manifest, add_manifest_item z manifest_writer.py – tvorba a zápis manifestu.\\n  - safe_mkdirs, safe_write_text, safe_write_binary z io_safety.py – bezpečné operace se souborovým systémem.\\n  - redact_secrets z redaction.py – redakce citlivých údajů před zápisem.\\n  - setup_logging, get_logger z logging_setup.py – logování.\\n  - record_error z error_reporting.py – evidence chyb.\\n  - datové modely SystemInfo, WebServerConfigSummary, NetworkEndpoint, LogFileSummary, PackageInfo, ServiceStatus, FilesystemEntry, DiagnosticSectionSummary z data_models.py – strukturovaná data pro výstupy.\\n  - os modul ze standardní knihovny.\\n- Jazyk: Python.\\n- generated_in_phase: \\\"A3\\\".\\n\\n5) windows_diagnostics_runner.py\\n- Účel: orchestrace běhu všech Windows collectors a zápis výstupů dle struktury FULL Windows Diagnostics a manifestu.\\n- EXPORTS:\\n  - run_windows_diagnostics(output_dir: str) -> None – hlavní funkce pro Windows diagnostiku.\\n- IMPORTS:\\n  - get_windows_output_layout, WindowsLayout z path_layout.py – deterministická struktura výstupu pro Windows.\\n  - collect_windows_system, collect_windows_registry, collect_windows_filesystem, collect_windows_python, collect_windows_processes_services, collect_windows_network, collect_windows_security, collect_windows_hardware, collect_windows_storage, collect_windows_drivers, collect_windows_devtools, collect_windows_virtualization, collect_windows_wsl, collect_windows_logs z windows_collectors.py – sběrné funkce pro jednotlivé oblasti.\\n  - create_manifest, write_manifest, add_manifest_item z manifest_writer.py – manifest.\\n  - safe_mkdirs, safe_write_text, safe_write_binary z io_safety.py – bezpečné IO.\\n  - redact_secrets z redaction.py – redakce tajemství.\\n  - setup_logging, get_logger z logging_setup.py – logování.\\n  - record_error z error_reporting.py – evidence chyb.\\n  - datové modely SystemInfo, RegistrySummary, FilesystemEntry, PythonEnvironmentSummary, ProcessesServicesSummary, SecuritySummary, HardwareSummary, StorageSummary, DriversSummary, DevToolsSummary, VirtualizationSummary, WslSummary, LogFileSummary, DiagnosticSectionSummary z data_models.py.\\n  - os modul ze standardní knihovny.\\n- Jazyk: Python.\\n- generated_in_phase: \\\"A3\\\".\\n\\n6) ubuntu_collectors.py\\n- Účel: implementace sběrných funkcí pro Ubuntu (zejména web server) vracejících datové modely nebo textová shrnutí.\\n- EXPORTS:\\n  - collect_ubuntu_system_info() -> SystemInfo.\\n  - collect_ubuntu_web_server_config() -> WebServerConfigSummary.\\n  - collect_ubuntu_network() -> list[NetworkEndpoint].\\n  - collect_ubuntu_logs(limit_bytes: int) -> list[LogFileSummary].\\n  - collect_ubuntu_packages() -> list[PackageInfo].\\n  - collect_ubuntu_services() -> list[ServiceStatus].\\n  - collect_ubuntu_filesystem() -> list[FilesystemEntry].\\n- IMPORTS:\\n  - subprocess – pro volání systémových příkazů.\\n  - os – práce se souborovým systémem.\\n  - typing.List – typové anotace.\\n  - datové modely SystemInfo, WebServerConfigSummary, NetworkEndpoint, LogFileSummary, PackageInfo, ServiceStatus, FilesystemEntry z data_models.py.\\n  - redact_secrets z redaction.py – redakce citlivých údajů v textech.\\n  - get_logger z logging_setup.py – logování.\\n  - record_error z error_reporting.py – evidence chyb.\\n- Jazyk: Python.\\n- generated_in_phase: \\\"A3\\\".\\n\\n7) windows_collectors.py (začátek definice)\\n- Chunk končí u položky \\\"{\\\\n      \\\\\\\"path\\\\\\\": \\\\\\\"windows_collectors.py\\\\\\\",\\\" bez dalšího popisu. Je zřejmé, že v následujícím chunku bude pokračovat detailní specifikace tohoto souboru (účel, exportované funkce, importy, jazyk, fáze generování).\\n\\nCelkově tento chunk:\\n- Dokončuje část specifikace A2_STRUCTURE pro klíčové orchestrátory (diagnostics_main, ubuntu_diagnostics_runner, windows_diagnostics_runner) a základní collectors pro Ubuntu.\\n- Přidává formální verifikační kritéria pro hotovou diagnostickou sadu (struktura výstupu, manifest, označování NOT PRESENT/ACCESS DENIED, absence tajemství, determinismus).\\n- Uvádí strategii generování souborů (PLAN->STRUCTURE->FILE_CONTENT) a limit 500 řádků na chunk, které budou závazné pro další fáze (A3 a dál).\\n- Potvrzuje, že všechny názvy souborů, modulů, funkcí a datových modelů uvedené v této struktuře jsou závazné a musí být zachovány pro konzistenci s předchozími částmi návrhu (io_safety, logging_setup, error_reporting, path_layout, summary_report, data_models, redaction, manifest_writer atd.).\",\"chunk_index\":4,\"chunk_count\":6,\"notes\":[\"Pokračování specifikace souboru windows_collectors.py (účel, exporty, importy) se očekává v následujícím chunku a musí být sloučeno s tímto shrnutím.\",\"Verifikační kroky (verification) a deliverable_policy jsou globálně platné pro celý projekt CrossPlatformDiagnosticsSuite a musí být respektovány při návrhu i implementaci.\",\"Struktura A2_STRUCTURE je závazná – zejména názvy souborů, exportovaných funkcí a jejich signatury, aby navazovaly na dříve popsané moduly (io_safety, logging_setup, error_reporting, path_layout, summary_report, data_models, redaction, manifest_writer).\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4740,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3124,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 7864
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767886359,
+    "store": true
+  }
+}

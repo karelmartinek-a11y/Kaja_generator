@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261657_c5d0",
+    "project": "KJOVO",
+    "stage": "A1_PLAN",
+    "response_id": "resp_0cf6aad5f58c43d600695fd672a73c81909c5173bcaefad873",
+    "event": "response_json_validated",
+    "sequence": 236,
+    "logged_at": "2026-01-08T16:08:45.948556"
+  },
+  "details": {
+    "event": "response_json_validated",
+    "level": "info",
+    "details": {
+      "expected_contract": "A1_PLAN"
+    },
+    "timestamp": "2026-01-08T16:08:45.948550"
+  }
+}

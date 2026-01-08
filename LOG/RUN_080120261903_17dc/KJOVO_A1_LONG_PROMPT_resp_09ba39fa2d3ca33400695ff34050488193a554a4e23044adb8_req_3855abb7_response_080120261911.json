@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261903_17dc",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_09ba39fa2d3ca33400695ff34050488193a554a4e23044adb8",
+    "logged_at": "2026-01-08T18:11:36.520878",
+    "request_id": "3855abb7"
+  },
+  "payload": {
+    "id": "resp_09ba39fa2d3ca33400695ff34050488193a554a4e23044adb8",
+    "created_at": 1767895872.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_09ba39fa2d3ca33400695ff340e3608193be82ed8232bf0731",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Pokračování specifikace FULL Ubuntu (Web Server) Diagnostics – detailní obsah podadresářů v diagnostickém balíku.\\n\\nAdresářová struktura (navazuje na 28.2):\\n- Kořen obsahuje další podadresáře:\\n  - app/\\n  - python/\\n  - database/\\n  - certs/\\n  - cron_webhooks/\\n  - logs/\\n  - virtualization_containers/\\n\\n28.3 README_problem.md (ruční vstup uživatele)\\n- Minimální šablona:\\n  - Symptom (co nefunguje)\\n  - Repro kroky\\n  - Očekávání vs. realita\\n  - Kdy to začalo (datum/čas)\\n  - Poslední změny (deploy, update, cert renewal, firewall…)\\n  - Výpis chyby (kopie výstupu)\\n\\n28.4 system/\\n- Soubory se systémovým přehledem:\\n  - os_release.txt – obsah /etc/os-release + info o kernelu.\\n  - uname_a.txt – výstup `uname -a`.\\n  - uptime.txt – `uptime`, `who -b`.\\n  - locale_timezone.txt – `locale`, `timedatectl`.\\n  - hostname_hosts.txt – `hostnamectl`, obsah /etc/hosts a /etc/hostname.\\n  - sysctl_all.txt – `sysctl -a`.\\n  - limits_summary.txt – `ulimit -a`, listing /etc/security/limits.conf a limits.d.\\n  - systemd_failed_units.txt – `systemctl --failed`.\\n  - systemd_running_units.txt – `systemctl list-units --type=service --state=running`.\\n  - journal_boot_errors.txt – `journalctl -b -p err..alert --no-pager`.\\n  - env_root_sanitized.txt – relevantní environment proměnné pro služby, bez tajemství.\\n\\n28.5 hardware/\\n- Přehled HW a zátěže:\\n  - cpuinfo.txt – shrnutí /proc/cpuinfo.\\n  - meminfo.txt – /proc/meminfo + `free -h`.\\n  - load_ps_top.txt – `ps aux --sort=-%cpu`, `ps aux --sort=-%mem`, `top -b -n 1`.\\n  - dmesg_tail.txt – `dmesg -T | tail -n 400`.\\n\\n28.6 storage/\\n- Disky, mounty, využití:\\n  - df_h.txt – `df -hT`.\\n  - lsblk.txt – `lsblk -f`.\\n  - mounts.txt – `mount` + obsah /etc/fstab.\\n  - inode_usage.txt – `df -ih`.\\n  - disk_health_hint.txt – `smartctl -H` pro hlavní disk (jen health status, pokud dostupné).\\n  - largest_dirs_root.csv – top největší složky v / (1–2 úrovně).\\n  - largest_dirs_var.csv – top největší složky v /var.\\n\\n28.7 network/\\n- Síťová konfigurace a spojení:\\n  - ip_addr.txt – `ip a`.\\n  - ip_route.txt – `ip r`.\\n  - resolv_conf.txt – obsah /etc/resolv.conf + `systemd-resolve --status` (pokud existuje).\\n  - ss_listen.txt – `ss -lntup`.\\n  - ss_all.txt – `ss -antup`.\\n  - netstat_fallback.txt – výstup z netstat, pokud je balík net-tools.\\n  - dns_check.txt – `getent hosts` pro klíčové domény (pokud jsou definovány).\\n  - proxy_env.txt – hodnoty HTTP(S)_PROXY proměnných, pokud existují.\\n\\n28.8 firewall/\\n- Stav firewallu:\\n  - ufw_status.txt – `ufw status verbose` (pokud je ufw).\\n  - iptables_rules.txt – `iptables -S` + `iptables -L -n -v`.\\n  - nft_ruleset.txt – `nft list ruleset` (pokud je nftables).\\n\\n28.9 users_permissions/\\n- Uživatelé, skupiny, práva:\\n  - users_groups.txt – `getent passwd`, `getent group` (bez hashů hesel).\\n  - sudoers_listing.txt – listing souborů /etc/sudoers* (jen listing nebo redigovaný obsah).\\n  - umask.txt – `umask`.\\n  - important_paths_permissions.txt – vlastníci a práva pro /etc/nginx, /var/www, /srv, /opt a adresáře aplikací.\\n\\n28.10 processes_services/\\n- Procesy a služby:\\n  - ps_full.txt – `ps auxfww`.\\n  - systemctl_status_nginx.txt – `systemctl status nginx --no-pager`.\\n  - systemctl_status_app.txt – status aplikační služby (např. gunicorn/uvicorn/systemd unit), pokud existuje.\\n  - systemctl_status_db.txt – status databázové služby, pokud existuje.\\n  - open_files_limits.txt – `cat /proc/sys/fs/file-max` + souhrn z `lsof` (pokud dostupné).\\n\\n28.11 packages/\\n- Balíčky a verze:\\n  - dpkg_list.txt – `dpkg -l`.\\n  - apt_policy_key_pkgs.txt – `apt policy` pro klíčové balíky: nginx, openssl, python3, certbot, postgres/mysql, redis.\\n  - snap_list.txt – `snap list` (pokud je snapd).\\n  - pip_global_list.txt – `python3 -m pip list` (pokud je pip).\\n\\n28.12 web/\\n- Webový obsah a velikosti:\\n  - web_root_overview.txt – stromový přehled document rootů (např. /var/www, /srv/www) do hloubky 3.\\n  - static_assets_sizes.csv – top složky podle velikosti v document rootech.\\n  - web_server_headers_hint.txt – volitelně `curl -I` na http://127.0.0.1 a vybrané virtuální hosty (pro kontrolu hlaviček).\\n\\n28.13 nginx/\\n- Detailní diagnostika nginx:\\n  - nginx_version.txt – `nginx -V` včetně configure arguments.\\n  - nginx_test.txt – výstup `nginx -t`.\\n  - nginx_conf_tree.txt – strom /etc/nginx do hloubky 4.\\n  - nginx_conf_files_list.txt – seznam všech .conf souborů.\\n  - nginx_sites_enabled.txt – listing sites-enabled a sites-available.\\n  - nginx_effective_config.txt – `nginx -T` (nutno případně redigovat tajemství).\\n  - nginx_logs_tail_access.txt – tail relevantních access logů.\\n  - nginx_logs_tail_error.txt – tail relevantních error logů.\\n\\n28.14 app/\\n- Aplikační vrstva:\\n  - app_dirs_overview.txt – přehled typických umístění aplikací: /srv, /opt, /var/www, ~/apps.\\n  - systemd_units_related.txt – výpis služeb souvisejících s app (grep na gunicorn/uvicorn/celery/worker atd.).\\n  - app_env_files_found.txt – nalezené .env, config*.yml, settings.py – pouze cesty, práva, hash (bez obsahu).\\n  - app_permissions_summary.txt – vlastníci a práva pro app dir a data dir.\\n  - webhook_configs_found.txt – konfigurace webhooků – jen cesty a metadata.\\n\\n28.15 python/\\n- Cíl: odhalit konflikty mezi více instalacemi Pythonu, venv, pyenv, poetry, pipx.\\n- Soubory:\\n  - python_versions.txt – `which -a python python3 pip pip3` + `python3 --version`.\\n  - python_alternatives.txt – `update-alternatives --display python3` (pokud existuje).\\n  - python_sys_path.json – JSON výstup `sys.path` z python3.\\n  - python_site.json – JSON se `site.getsitepackages()` a `site.getusersitepackages()`.\\n  - pip_debug.txt – `python3 -m pip debug -v` (nutno redigovat citlivé údaje, např. tokeny/indexy).\\n  - pip_config_list.txt – `pip config list -v` (cesty na konfigurační soubory).\\n- Discovery virtuálních prostředí (venv/Poetry/Pipenv/Pyenv):\\n  - venv_candidates_found.txt – hledání pyvenv.cfg a bin/python v /srv, /opt, /var/www, /home, /root.\\n  - venv_tree_summaries/venv_<name>.txt – strom venv (bin/, lib/, site-packages) + velikost.\\n  - venv_reports/venv_<name>__report.json – pro každou venv: sys.executable, sys.prefix, sys.base_prefix, sys.path, `pip --version`, `pip list`, `pip freeze`.\\n\\n28.16 database/\\n- Bez exportu dat; jen verze, konfigurace (metadata), stav, porty, logy.\\n- PostgreSQL (pokud existuje):\\n  - postgres_version.txt – `psql --version`.\\n  - postgres_service_status.txt – `systemctl status postgresql --no-pager`.\\n  - postgres_conf_locations.txt – cesty k postgresql.conf, pg_hba.conf (jen metadata + hash, neobsah).\\n  - postgres_listen_ports.txt – `ss -lntup | grep postgres`.\\n  - postgres_logs_tail.txt – tail relevantních logů.\\n- MySQL/MariaDB (pokud existuje):\\n  - mysql_version.txt – verze klienta/serveru.\\n  - mysql_service_status.txt – `systemctl status` příslušné služby.\\n  - mysql_conf_locations.txt – umístění my.cnf (metadata).\\n  - mysql_logs_tail.txt – tail relevantních logů.\\n- Redis (pokud existuje):\\n  - redis_version.txt.\\n  - redis_service_status.txt.\\n  - redis_conf_metadata.txt – metadata konfiguračních souborů.\\n  - redis_logs_tail.txt – tail logů.\\n\\n28.17 certs/\\n- Certifikáty a expirace (bez privátních klíčů):\\n  - cert_locations.txt – přehled adresářů /etc/letsencrypt, /etc/ssl a custom cert dirs.\\n  - certbot_status.txt – `certbot certificates` (pokud je certbot).\\n  - cert_expiry_report.txt – report expirací certifikátů (např. `openssl x509 -enddate` pro vybrané certy).\\n\\nTento chunk rozpracovává strukturu FULL Ubuntu (Web Server) Diagnostics do konkrétních souborů a příkazů pro jednotlivé oblasti (system, hardware, storage, network, firewall, users_permissions, processes_services, packages, web, nginx, app, python, database, certs). Důraz zůstává na bezpečnosti: žádné privátní klíče, žádná databázová data, potenciálně citlivé konfigurace jen jako metadata nebo redigované. Všechna tato pravidla jsou závazná pro implementaci programu „Kája“ a jeho generovaných diagnostických skriptů.\",\"chunk_index\":10,\"chunk_count\":15,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 5451,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2637,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 8088
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767895896,
+    "store": true
+  }
+}

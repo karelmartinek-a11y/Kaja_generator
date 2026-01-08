@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261741_5a1d",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_0770dd4bfdbbae5700695fe089b9e481978c74355da72cf6f6",
+    "logged_at": "2026-01-08T16:51:56.831202",
+    "request_id": "65b0b251"
+  },
+  "payload": {
+    "id": "resp_0770dd4bfdbbae5700695fe089b9e481978c74355da72cf6f6",
+    "created_at": 1767891081.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0770dd4bfdbbae5700695fe08a8ca48197bc8cd75c67306b26",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Specifikace pokračuje detailním obsahem bash skriptu pro FULL diagnostiku Ubuntu (web server) a jeho PowerShell wrapperu, zejména pro oblast app, python, database, certs, cron_webhooks, logs a virtualization_containers, plus začátek varianty B (sshpass).\\n\\nV části app/ skript doplňuje:\\n- `systemctl list-unit-files | grep -E 'gunicorn|uvicorn|celery|worker' || true > app/systemd_units_related.txt` – inventarizace systemd unit souborů souvisejících s typickými Python web/workers službami (gunicorn, uvicorn, celery, worker). Výstup jde do `app/systemd_units_related.txt`.\\n- Opět `mkdir -p \\\"$remote_root/app\\\"` (idempotentní).\\n- `find /srv /opt /var/www ~/apps -type f \\\\( -name '*.env' -o -name 'config*.yml' -o -name 'settings.py' \\\\) -print -exec ls -l {} \\\\; 2>/dev/null > app/app_env_files_found.txt` – hledání potenciálně konfiguračních / env souborů (např. .env, config*.yml, settings.py) v typických aplikačních cestách. Do výstupu se ukládají cesty a `ls -l` metadata, nikoli obsah souborů. Cíl: identifikovat, kde jsou konfigurační/env soubory, ale neexponovat tajemství.\\n\\nPython diagnostika (python/):\\n- `mkdir -p \\\"$remote_root/python\\\"` (opakovaně, ale nevadí).\\n- `(which python && which python3) > python/where_python.txt` – zjištění umístění interpreterů python a python3.\\n- `(python3 -m pip --version && pip3 --version) > python/py_launcher_list.txt` – verze pipu a jeho vazba na python3.\\n- `(python3 -c \\\"import json,sys; print(json.dumps({'python': sys.executable, 'paths': sys.path}))\\\") > python/interpreters_inventory.csv` – jednorázový Python skript, který vypíše JSON s cestou k aktuálnímu interpreteru a `sys.path`. Soubor se jmenuje `.csv`, ale obsah je JSON; slouží jako inventář Python prostředí a modulových cest.\\n\\nDatabase (PostgreSQL) diagnostika (database/):\\n- `mkdir -p \\\"$remote_root/database\\\"` (opakovaně).\\n- `(psql --version) > database/postgres_version.txt` – verze klienta psql (indikace přítomnosti PostgreSQL nástrojů).\\n- `(systemctl status postgresql --no-pager) > database/postgres_service_status.txt` – stav systemd služby postgresql.\\n- `(find /etc/postgresql -name 'postgresql.conf' -o -name 'pg_hba.conf' -print 2>/dev/null) > database/postgres_conf_locations.txt` – vyhledání hlavních konfiguračních souborů PostgreSQL, opět pouze cesty, ne obsah.\\n\\nCertifikáty (certs/):\\n- `mkdir -p \\\"$remote_root/certs\\\"` (opakovaně).\\n- `find /etc/letsencrypt /etc/ssl /etc/pki -maxdepth 3 -type f \\\\( -name '*.pem' -o -name '*.crt' \\\\) -print 2>/dev/null > certs/cert_locations.txt` – inventář certifikačních souborů (PEM/CRT) v typických cestách, pouze cesty.\\n- `(certbot certificates || echo 'certbot missing') > certs/certbot_status.txt` – stav certbotu a přehled spravovaných certifikátů, nebo informace, že certbot chybí.\\n- `(for cert in /etc/letsencrypt/live/*/cert.pem; do echo CERT: $cert; openssl x509 -enddate -noout -in \\\"$cert\\\"; done 2>/dev/null) > certs/cert_expiry_report.txt` – pro každý cert.pem v Let’s Encrypt live adresáři vypíše cestu a datum expirace přes `openssl x509 -enddate`. Slouží k rychlé kontrole expirací.\\n\\nCron a webhooks (cron_webhooks/):\\n- `mkdir -p \\\"$remote_root/cron_webhooks\\\"` (opakovaně).\\n- `(crontab -l) > cron_webhooks/crontab_root.txt` – aktuální crontab pro uživatele, pod kterým skript běží (typicky root). Pozn.: může obsahovat citlivé příkazy/skripty.\\n- `(ls /var/spool/cron/crontabs 2>/dev/null) > cron_webhooks/crontab_users_listing.txt` – výpis souborů v adresáři s uživatelskými crontaby, tj. seznam uživatelů, kteří mají vlastní crontab.\\n- `(ls /etc/cron.* 2>/dev/null) > cron_webhooks/system_cron_dirs_tree.txt` – jednoduchý listing systémových cron adresářů (cron.daily, cron.hourly, cron.weekly, cron.monthly, cron.d). V této zkrácené verzi jde jen o `ls`, nikoli rekurzivní strom.\\n\\nLogy (logs/):\\n- `mkdir -p \\\"$remote_root/logs\\\"` (opakovaně).\\n- `(journalctl -u nginx -n 500 --no-pager) > logs/journal_nginx_last500.txt` – posledních 500 záznamů journald pro unit nginx.\\n- `(journalctl -n 500 --no-pager) > logs/journal_app_last500.txt` – zde je zjednodušená varianta: místo konkrétního aplikačního unitu se bere posledních 500 záznamů z journald obecně. V dřívější specifikaci bylo plánováno cílení na konkrétní app unit.\\n- `(journalctl -u postgresql -n 500 --no-pager) > logs/journal_db_last500.txt` – posledních 500 záznamů pro databázovou službu postgresql.\\n- `(tail -n 200 /var/log/syslog) > logs/syslog_tail.txt` – posledních 200 řádků ze syslogu (Ubuntu). V dřívějším popisu byl zmíněn fallback přes journalctl, zde zatím není.\\n- `(tail -n 200 /var/log/auth.log) > logs/auth_log_tail.txt` – posledních 200 řádků z auth.log (přihlašování, sudo, SSH). Může obsahovat citlivé údaje (uživatelská jména, IP adresy).\\n- `(journalctl -k -n 400 --no-pager) > logs/kernel_log_tail.txt` – posledních 400 řádků kernel logu (HW chyby, OOM, síťové problémy).\\n\\nVirtualizace a kontejnery (virtualization_containers/):\\n- `mkdir -p \\\"$remote_root/virtualization_containers\\\"` (opakovaně).\\n- `(docker info) > virtualization_containers/docker_info.txt` – detailní informace o Docker daemonu (pokud je nainstalován). V případě, že docker není, příkaz selže; skript ale díky `set +e` pokračuje.\\n- `(docker ps -a) > virtualization_containers/docker_ps.txt` – seznam všech kontejnerů (běžících i zastavených) s jejich stavem.\\n- `(find /srv /opt /etc -name 'docker-compose*.yml' -print 2>/dev/null) > virtualization_containers/docker_compose_files_found.txt` – seznam docker-compose YAML souborů v typických cestách, pouze cesty.\\n\\nNa konci varianty A bash skriptu:\\n- `echo \\\"REMOTE_ROOT=$remote_root\\\"` – vytiskne cestu ke kořenovému adresáři diagnostiky, aby ji PowerShell mohl zachytit.\\n\\nPowerShell příkaz pro variantu A (bez hesla v příkazu, používá SSH klíč):\\n- `$remoteRoot = $script | ssh \\\"$user@$ip\\\" \\\"bash -s\\\" | Select-String -Pattern '^REMOTE_ROOT=' | Select-Object -First 1 | ForEach-Object { $_.Line -replace '^REMOTE_ROOT=' }` – pošle obsah proměnné `$script` na vzdálený server přes SSH, spustí jej jako bash skript, z výstupu vyfiltruje řádek začínající `REMOTE_ROOT=`, odstraní prefix a uloží čistou cestu do `$remoteRoot`.\\n- `scp -r \\\"$user@$ip:$remoteRoot\\\" .` – rekurzivně stáhne celý diagnostický adresář z Ubuntu na lokální Windows stroj (do aktuálního adresáře).\\n\\nNásleduje Varianta B (méně bezpečná, heslo v příkazu, vyžaduje sshpass). Začátek varianty B:\\n- V PowerShellu se nastaví proměnné: `$ip=\\\"<IP_ADDRESS>\\\"; $user=\\\"root\\\"; $pw=\\\"<ROOT_PASSWORD>\\\"; $script=@' ...` – podobně jako u varianty A, ale navíc proměnná `$pw` s heslem.\\n- Bash skript uvnitř here-stringu je znovu definován (velmi podobný jako ve variantě A):\\n  - `#!/usr/bin/env bash`, `set -o pipefail`, `set +e`.\\n  - `timestamp=$(date +%Y%m%d-%H%M%S)` a `remote_root=\\\"/root/Diag_${timestamp}\\\"`, `mkdir -p \\\"$remote_root\\\"`.\\n  - Následuje stejná nebo velmi podobná sada `mkdir -p` a příkazů pro system/, hardware/, storage/, network/, firewall/ atd., jako v dříve popsané variantě A (os_release, uname, uptime, locale, hostname, sysctl, limits, systemd_failed_units, systemd_running_units, journal_boot_errors, env_root_sanitized, lscpu, dmidecode, free, lsblk, mount, smartctl, ip addr, ip link, DNS config, hosts, routes, listening_sockets, ufw, iptables). Zde je v CHUNK_TEXT zachycena jen část těchto příkazů; zbytek bude pokračovat v dalších chuncích.\\n\\nVarianta B se liší hlavně způsobem autentizace (heslo přes sshpass) a tím, že je explicitně označena jako méně bezpečná. Struktura sběru diagnostiky (adresáře, soubory, příkazy) je v zásadě stejná jako u varianty A, s drobnými rozdíly v detailech (např. konkrétní příkazy pro logy nebo app část mohou být mírně zjednodušené). Celkový kontrakt diagnostiky (adresářová struktura Diag_YYYYMMDD-HHMMSS/, zaměření na metadata a minimalizaci úniku tajemství) zůstává zachován.\",\"chunk_index\":12,\"chunk_count\":15,\"notes\":[\"Zachována struktura a význam skriptu pro app, python, database, certs, cron_webhooks, logs, virtualization_containers a začátek varianty B.\",\"Upozorněno na rozdíly mezi dřívější specifikací a konkrétním skriptem (např. journal_app_last500 jako obecný journalctl -n 500).\",\"Zdůrazněno, že některé příkazy mohou selhat (např. docker info, certbot) bez přerušení skriptu díky set +e.\",\"Zachován bezpečnostní kontext: metadata místo obsahu u citlivých souborů, rizika u logů a crontabů, rozdíl mezi variantou A (SSH klíč) a B (sshpass s heslem).\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 5699,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2716,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 8415
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767891116,
+    "store": true
+  }
+}

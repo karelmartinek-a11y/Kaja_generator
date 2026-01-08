@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261936_1829",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "GENERATE_65c01d",
+    "logged_at": "2026-01-08T18:42:40.058099",
+    "request_id": "922d8667"
+  },
+  "payload": {
+    "id": "resp_0c95fca01cf574a900695ffa50f6c881a3b50c4873eae008c3",
+    "created_at": 1767897680.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0c95fca01cf574a900695ffa51baf081a397e4f5fdb3fdec8f",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk pokračuje v popisu GO orchestrace, práce s Files API, bezpečnosti a vývojářských workflow.\\n\\n16.3 Diagnostika IN (WINDOWS IN / SSH IN)\\n- Pokud je zvolena diagnostika IN (Windows nebo SSH/Ubuntu), aplikace:\\n  - Vygeneruje diagnostický balík podle příslušné sekce (Windows – sekce 28, Ubuntu – sekce 27).\\n  - Nahraje diagnostické soubory do Files API.\\n  - Zapíše je do diagnostického manifestu a zároveň do mirror manifestu jako externí artefakty s popisem.\\n  - Redundantně je připojí do všech relevantních requestů:\\n    - V `instructions` vypíše jejich `file_id` a popis.\\n    - V `input` je přiloží jako `input_file` (content parts input_file).\\n    - Pokud existuje vector store, připojí je i do něj.\\n\\n16.4 IN krok (pouze MODIFY, pokud je IN zvolen)\\n- Slouží k vytvoření mirroru vstupního projektu:\\n  - Rekurzivně projde IN adresář, s výjimkou:\\n    - `venv`, `.venv`, `LOG` a verzovacích snapshot adresářů dle 12.3.\\n  - Uploadne kompatibilní soubory do Files API.\\n  - Vytvoří mirror manifest se všemi soubory a poznámkami o neuploadovaných (včetně důvodů).\\n  - Ověří, zda zvolený model podporuje `file_search` a vector store.\\n- Pokud model podporuje vector store:\\n  - Vytvoří vector store s názvem ve formátu „<NÁZEV_PROJEKTU><DDMMRRRRHHMM>“.\\n  - Připojí všechny uploadované soubory do vector store, včetně atributu jejich plné původní cesty (PATH).\\n  - Připojí mirror manifest do vector store.\\n  - Pokud existují diagnostické soubory, připojí i je.\\n- Pokud model vector store/file_search nepodporuje:\\n  - Vector store se nepoužije.\\n  - Nepoužije se `file_search` nástroj.\\n  - Pracuje se pouze s Files API a manifestem podle pravidel z 12.3.1 (fallback režim).\\n\\n16.5 Očekávání skriptu (WINDOWS OUT / SSH OUT)\\n- Pokud je zvolena diagnostika OUT (Windows OUT nebo SSH OUT), musí orchestrátor do každého relevantního requestu (instructions i input) přidat povinné očekávání:\\n  - Response musí obsahovat skript(y) (např. opravné/deploy skripty).\\n  - Response musí obsahovat soubor `readmerepair.txt`.\\n- Po obdržení response:\\n  - Obsah `readmerepair.txt` se zobrazí v ANSWARE okně.\\n  - Aktivuje se tlačítko SCRIPT (umožňující práci se skripty).\\n\\n16.6 Request pipeline podle režimu\\n- Pokud je zvoleno „SEND AS C (BATCH)“, použije se batch tok dle sekce 14 (C pipeline), nikoli synchronní A/B/QA.\\n- Jinak se pipeline řídí zvoleným módem:\\n  - GENERATE (A-pipeline):\\n    - A1 (PLAN) → A2 (STRUCTURE) → pro každý soubor z A2: A3 (FILE CONTENT, s chunk loopem) → ukládání výsledných souborů do OUT.\\n  - MODIFY (B-pipeline):\\n    - B1 (PLAN) → B2 (STRUCTURE – touched files) → pro každý `touched_file` z B2: B3 (FILE CONTENT, s chunk loopem) → ukládání výsledných souborů do OUT.\\n  - QA mód:\\n    - Pouze 1 request, čistě textový (v instructions i input explicitně uvedeno, že jde o text-only), bez ukládání souborů.\\n\\n16.7 OUT ukládání\\n- Pokud je aktivní VERSING a má být uložen alespoň jeden soubor:\\n  - Vytvoří se snapshot kopie podle pravidel v 12.4 (verzovací snapshot před přepsáním).\\n- Ukládání souborů do OUT:\\n  - Soubory se ukládají přímo.\\n  - Existující soubory se bez dotazu přepisují (žádné interaktivní potvrzování přepisu).\\n\\n16.8 ANSWARE panel\\n- UI panel pro zobrazení výsledků requestů:\\n  - V titulku zobrazuje `Response ID`.\\n  - V hlavním okně zobrazuje odpověď – buď raw obsah, nebo extrahovaný text/JSON (podle typu odpovědi a režimu).\\n  - Klávesová zkratka CTRL+C zkopíruje `Response ID` i text odpovědi.\\n  - Tlačítko RESPONSE přenese `Response ID` do pole MODE/RESPONSE ID (umožní navázat další krok přes `previous_response_id`).\\n  - Pokud je v odpovědi přítomen `readmerepair.txt`, zobrazí se jeho obsah a zpřístupní se tlačítko SCRIPT.\\n\\n17) File API panel – synchronizace\\n- Po každém uploadu nebo delete souboru přes Files API:\\n  - Aplikace musí refreshnout seznam souborů ve File API panelu.\\n- Po uploadu z LOCAL FILES:\\n  - Tabulka LOCAL FILES se vyprázdní (aby odrážela, že soubory byly přesunuty/uploadnuty).\\n\\n18) Kompatibilní soubory pro Files API\\n- Při výběru souborů pro upload do Files API (mirror, diagnostika apod.) musí implementace:\\n  - Upřednostnit upload běžných textových konfiguračních souborů a zdrojových kódů.\\n  - Detekovat binární soubory a extrémně velké soubory jako nekompatibilní pro upload.\\n    - Tyto soubory se neuploadují, ale jejich existence a důvod neuploadování se zaznamená do manifestu.\\n  - Pro `.env` a jiné citlivé soubory:\\n    - Preferovat neuploadovat.\\n    - Do manifestu zapsat, že existují, a případně uvést bezpečný popis (např. seznam klíčů bez hodnot).\\n- Zásadní požadavek: existence všech souborů (i neuploadovaných) musí být v mirror manifestu zachycena.\\n\\n19) Další povinná rozšíření\\n\\n19.1 Spolehlivost a řízení běhu\\nA1) Cancel/Stop běhu\\n- V UI musí být vždy dostupné tlačítko „STOP“ (součást progress dialogu).\\n- Po stisku STOP:\\n  - Korektně ukončí čekání na batch (polling) u běžících batch runů.\\n  - Zruší probíhající uploady, pokud to SDK umožňuje; jinak je bezpečně dokončí a zaznamená jejich stav.\\n  - Zruší plánování/posílání dalších requestů v pipeline (nezahajuje nové kroky).\\n- Aplikace nesmí zůstat ve stavu „zamrzlo“:\\n  - Progress dialog se přepne do režimu „Stopping...“.\\n  - Po dokončení ukončovacích kroků se dialog zavře.\\n- Po STOP musí být k dispozici:\\n  - Možnost „Resume“ (pokračovat v runu, pokud to dává smysl).\\n  - Možnost „Close run“ (definitivně ukončit run).\\n\\nA2) Resume běhu po pádu / restartu\\n- Program musí umět z LOG rekonstruovat poslední stav rozpracovaného runu:\\n  - Jaké kroky pipeline již proběhly (A1/A2/A3, B1/B2/B3, C, QA, diagnostika, IN/OUT kroky atd.).\\n  - Jaké `file_id` byly uploadnuty.\\n  - Jaké `response_id` / `batch_id` již existují.\\n  - Jaké soubory byly uloženy do OUT.\\n- Při startu aplikace:\\n  - Pokud je detekován nedokončený run, nabídne se volba „RESUME LAST RUN“.\\n- Resume musí být idempotentní:\\n  - Kroky, které již byly úspěšně provedeny, se přeskočí.\\n  - Pokud není jisté, zda krok proběhl, provede se znovu bezpečným způsobem (např. znovu stáhnout batch result, znovu provést validaci, znovu uložit do karantény místo přímého přepsání).\\n\\nA3) Rate-limit & retry politika\\n- Implementovat robustní retry mechanismus s exponenciálním backoffem a jitterem.\\n- Circuit breaker:\\n  - Pokud se opakovaně vrací chyby typu rate-limit (429) nebo serverové chyby (5xx), dočasně se zastaví posílání nových requestů.\\n  - UI zobrazí stav „Cooling down“.\\n- Retry pravidla:\\n  - Retryovat pouze transient chyby: 429, 5xx, timeouts a podobné dočasné problémy.\\n  - Nikdy nere-tryovat chyby validace kontraktů (porušení JSON schémat A/B/C/QA), protože jde o logickou chybu výstupu, ne o síťový problém.\\n- Všechny retry pokusy (včetně počtu, důvodů a výsledků) musí být logovány.\\n\\n19.2 Bezpečnost práce se soubory a snapshoty\\nB1) Secret scanner + redakce\\n- Před uploadem souborů do Files API (mirror i diagnostika) musí program provést skenování citlivých dat:\\n  - Detekovat `.env` soubory.\\n  - Detekovat klíče/tokeny pomocí heuristik a regexů.\\n  - Detekovat privátní klíče a certifikáty.\\n- Výchozí chování:\\n  - Citlivé soubory se preferenčně neuploadují.\\n  - Do manifestu se zapíše, že existují, a přidá se bezpečný popis (např. názvy proměnných bez hodnot, typ klíče apod.).\\n- Pokud uživatel v SETTINGS vypne bezpečnostní omezení:\\n  - Program umožní upload i citlivých souborů.\\n  - Vždy však zobrazí výrazné varování o rizicích.\\n\\nB2) Allow/Deny list přípon i cest\\n- V SETTINGS existuje konfigurace allow/deny listů:\\n  - Allow/deny list přípon souborů.\\n  - Allow/deny list cest (glob patterns).\\n- Tyto seznamy jsou definovány odděleně pro:\\n  - IN mirror (zrcadlení vstupního projektu).\\n  - Diagnostické snapshoty.\\n- V manifestu musí být vždy vidět:\\n  - Jaké soubory byly vynechány.\\n  - Z jakého důvodu (např. deny list, příliš velké, binární, citlivé).\\n\\nB3) Šifrování logů + panic wipe\\n- Volitelné šifrování lokálních logů:\\n  - Minimálně symetrické šifrování celé LOG složky nebo jednotlivých log souborů.\\n  - Šifrovací klíč se ukládá pomocí bezpečného úložiště Windows (pokud je dostupné) nebo jiného bezpečného mechanismu.\\n- Funkce „Panic wipe“:\\n  - Smaže lokální cache (dočasné soubory, stažené batch výsledky, price cache apod.).\\n  - Volitelně smaže i nešifrované logy.\\n  - Vždy vyžaduje explicitní potvrzení uživatele (ochrana proti náhodnému spuštění).\\n\\n19.3 Vývojářské workflow\\nC1) Dry-run režim pro MODIFY\\n- Volitelná funkce v SETTINGS.\\n- V dry-run režimu pro MODIFY pipeline:\\n  - AI nejprve vrátí pouze plán změn, rizika a seznam `touched_files` (bez generování konkrétního obsahu souborů).\\n  - Uživatel musí tento plán ručně potvrdit.\\n  - Teprve po potvrzení se spustí B3 kroky pro generování výsledného obsahu souborů.\\n- Výstup dry-run fáze se loguje a je součástí run bundle (umožňuje audit a pozdější analýzu).\\n\\nC2) Post-run hooks\\n- Po uložení souborů (po dokončení A/B/C pipeline) může program automaticky spustit post-run hooky:\\n  - Testy (např. unit/integration tests).\\n  - Lint.\\n  - Formátování kódu.\\n- Hooky lze spouštět:\\n  - Lokálně na stejném stroji.\\n  - Přes SSH, pokud je k dispozici SSH konfigurace pro hooky.\\n- Výstup hooků (stdout, stderr, návratové kódy) se loguje a je součástí run logů.\\n\\nC3) Diff viewer\\n- V UI existuje diff viewer pro přehled uživatele:\\n  - Umožňuje porovnat původní a novou verzi souborů.\\n- Důležité omezení:\\n  - Do AI se nikdy neposílají diffy; AI vždy dostává a vrací full content souborů podle definovaných kontraktů (A3_FILE, B3_FILE atd.).\\n\\nCelkově tento chunk doplňuje orchestraci GO režimu o diagnostické kroky, IN mirror krok, očekávání skriptů a readmerepair.txt, pravidla ukládání do OUT, chování ANSWARE panelu, synchronizaci File API panelu, výběr kompatibilních souborů pro upload, robustní řízení běhu (STOP/RESUME, retry, circuit breaker), bezpečnostní mechanismy (secret scanning, allow/deny listy, šifrování logů, panic wipe) a vývojářské workflow (dry-run pro MODIFY, post-run hooky, diff viewer). Všechna tato pravidla musí být integrována s dříve popsanými kontrakty a politikou čistého JSON výstupu.\",\"chunk_index\":7,\"chunk_count\":15,\"notes\":[\"Zachovat vazbu na předchozí sekce: IN krok vytváří mirror a případný vector store, který je následně používán v B1/B2/B3; diagnostické soubory jsou součástí mirroru i vector store, pokud existuje.\",\"STOP/Resume logika musí být navržena tak, aby byla kompatibilní s batch i synchronními requesty a s kontrakty A/B/C/QA (idempotentní opakování kroků).\",\"Rate-limit & retry politika nesmí nikdy maskovat logické chyby kontraktů – ty se musí řešit jiným mechanismem (např. re-run s upravenými instrukcemi, ale ne automatickým retry).\",\"Secret scanning, allow/deny listy a manifestování neuploadovaných souborů jsou klíčové pro bezpečnost a auditovatelnost mirroru a diagnostiky.\",\"Dry-run režim pro MODIFY musí být implementován tak, aby B3 generování obsahu bylo jednoznačně oddělené a spouštěné až po explicitním potvrzení uživatele.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 5753,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3594,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 9347
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767897759,
+    "store": true
+  }
+}

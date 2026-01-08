@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260216_99fb",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_0f5832087e6c06e100695f0a6c8af881a1af1e4aba473ff83c",
+    "event": "run_failed",
+    "sequence": 428,
+    "logged_at": "2026-01-08T01:40:50.285906"
+  },
+  "details": {
+    "event": "run_failed",
+    "level": "error",
+    "details": {
+      "error": "A2X_FILE_MAP duplicitní export Manifest.",
+      "type": "ValueError",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2828, in execute\n    files = self._run_generate(user_spec, assets, ui_state, progress_callback, stop_check)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3160, in _run_generate\n    a2x_data = self._parse_json_response(a2x_response, FILE_MAP_CONTRACT, assets=assets)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2359, in _parse_json_response\n    self._validate_contract(payload, expected_contract, assets)\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2385, in _validate_contract\n    self._validate_a2x_file_map(payload)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2466, in _validate_a2x_file_map\n    raise ValueError(f\"A2X_FILE_MAP duplicitní export {name}.\")\nValueError: A2X_FILE_MAP duplicitní export Manifest.\n"
+    },
+    "timestamp": "2026-01-08T01:40:50.285815"
+  }
+}

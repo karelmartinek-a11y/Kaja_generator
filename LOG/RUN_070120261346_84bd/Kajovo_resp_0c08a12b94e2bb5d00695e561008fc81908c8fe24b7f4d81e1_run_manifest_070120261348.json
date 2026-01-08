@@ -1,0 +1,409 @@
+{
+  "attachments": [],
+  "vector_store_ids": [],
+  "mode": "GENERATE",
+  "response_id": "resp_0c08a12b94e2bb5d00695e561008fc81908c8fe24b7f4d81e1",
+  "project": "Kajovo",
+  "run_id": "RUN_070120261346_84bd",
+  "vector_store_requested": [],
+  "vector_store_enabled": false,
+  "capabilities": {
+    "supports_vector_store": true,
+    "supports_file_search": false,
+    "source": "defaults"
+  },
+  "files_written": [
+    "C:\\KAJOVO\\src\\ui_main.py",
+    "C:\\KAJOVO\\src\\request_handler.py",
+    "C:\\KAJOVO\\src\\response_processor.py",
+    "C:\\KAJOVO\\resources\\montserrat_bold.ttf",
+    "C:\\KAJOVO\\resources\\montserrat_regular.ttf",
+    "C:\\KAJOVO\\config\\settings.json",
+    "C:\\KAJOVO\\logs",
+    "C:\\KAJOVO\\docs\\README.md"
+  ],
+  "duration_s": 92.11,
+  "steps": [
+    "A1",
+    "A2",
+    "A3"
+  ],
+  "total_cost": 0.121672,
+  "pricing_receipt": "Kajovo_resp_0c08a12b94e2bb5d00695e561008fc81908c8fe24b7f4d81e1_GENERATE_receipt_070120261348.json",
+  "ui_state_log": "Kajovo_GENERATE_GENERATE_e1dac5_ui_state_070120261346.json",
+  "log_files": [
+    {
+      "path": "Kajovo_GENERATE_GENERATE_e1dac5_ui_state_070120261346.json",
+      "category": "ui_state"
+    },
+    {
+      "path": "Kajovo_GENERATE_e1dac5_run_metadata_070120261346.json",
+      "category": "run_metadata",
+      "meta": {
+        "mode": "GENERATE"
+      }
+    },
+    {
+      "path": "Kajovo_A1_GENERATE_e1dac5_request_070120261346.json",
+      "category": "request",
+      "meta": {
+        "stage": "A1"
+      }
+    },
+    {
+      "path": "Kajovo_A1_resp_0c08a12b94e2bb5d00695e55b91f0c8190bc901c344ddab58c_response_070120261347.json",
+      "category": "response",
+      "meta": {
+        "stage": "A1",
+        "response_id": "resp_0c08a12b94e2bb5d00695e55b91f0c8190bc901c344ddab58c"
+      }
+    },
+    {
+      "path": "Kajovo_A2_resp_0c08a12b94e2bb5d00695e55b91f0c8190bc901c344ddab58c_request_070120261347.json",
+      "category": "request",
+      "meta": {
+        "stage": "A2"
+      }
+    },
+    {
+      "path": "Kajovo_A2_resp_0c08a12b94e2bb5d00695e55eaa4408190af6c0201856b7c59_response_070120261347.json",
+      "category": "response",
+      "meta": {
+        "stage": "A2",
+        "response_id": "resp_0c08a12b94e2bb5d00695e55eaa4408190af6c0201856b7c59"
+      }
+    },
+    {
+      "path": "Kajovo_A3_resp_0c08a12b94e2bb5d00695e55eaa4408190af6c0201856b7c59_request_070120261347.json",
+      "category": "request",
+      "meta": {
+        "stage": "A3"
+      }
+    },
+    {
+      "path": "Kajovo_A3_resp_0c08a12b94e2bb5d00695e55f366f48190854370926c641345_response_070120261347.json",
+      "category": "response",
+      "meta": {
+        "stage": "A3",
+        "response_id": "resp_0c08a12b94e2bb5d00695e55f366f48190854370926c641345"
+      }
+    },
+    {
+      "path": "files\\src\\ui_main.py",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "src\\ui_main.py"
+      }
+    },
+    {
+      "path": "Kajovo_GENERATE_resp_0c08a12b94e2bb5d00695e55f366f48190854370926c641345_create_file_ops_070120261347.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "Kajovo_A3_resp_0c08a12b94e2bb5d00695e55f366f48190854370926c641345_request_070120261347.json",
+      "category": "request",
+      "meta": {
+        "stage": "A3"
+      }
+    },
+    {
+      "path": "Kajovo_A3_resp_0c08a12b94e2bb5d00695e55f8513c819087db8749d57c4e9f_response_070120261347.json",
+      "category": "response",
+      "meta": {
+        "stage": "A3",
+        "response_id": "resp_0c08a12b94e2bb5d00695e55f8513c819087db8749d57c4e9f"
+      }
+    },
+    {
+      "path": "files\\src\\request_handler.py",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "src\\request_handler.py"
+      }
+    },
+    {
+      "path": "Kajovo_GENERATE_resp_0c08a12b94e2bb5d00695e55f8513c819087db8749d57c4e9f_create_file_ops_070120261347.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "Kajovo_A3_resp_0c08a12b94e2bb5d00695e55f8513c819087db8749d57c4e9f_request_070120261347.json",
+      "category": "request",
+      "meta": {
+        "stage": "A3"
+      }
+    },
+    {
+      "path": "Kajovo_A3_resp_0c08a12b94e2bb5d00695e55fc10e08190ad6af474fd744351_response_070120261348.json",
+      "category": "response",
+      "meta": {
+        "stage": "A3",
+        "response_id": "resp_0c08a12b94e2bb5d00695e55fc10e08190ad6af474fd744351"
+      }
+    },
+    {
+      "path": "files\\src\\response_processor.py",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "src\\response_processor.py"
+      }
+    },
+    {
+      "path": "Kajovo_GENERATE_resp_0c08a12b94e2bb5d00695e55fc10e08190ad6af474fd744351_create_file_ops_070120261348.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "Kajovo_A3_resp_0c08a12b94e2bb5d00695e55fc10e08190ad6af474fd744351_request_070120261348.json",
+      "category": "request",
+      "meta": {
+        "stage": "A3"
+      }
+    },
+    {
+      "path": "Kajovo_A3_resp_0c08a12b94e2bb5d00695e56016dac819086b13ffec9708c7f_response_070120261348.json",
+      "category": "response",
+      "meta": {
+        "stage": "A3",
+        "response_id": "resp_0c08a12b94e2bb5d00695e56016dac819086b13ffec9708c7f"
+      }
+    },
+    {
+      "path": "files\\resources\\montserrat_bold.ttf",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "resources\\montserrat_bold.ttf"
+      }
+    },
+    {
+      "path": "Kajovo_GENERATE_resp_0c08a12b94e2bb5d00695e56016dac819086b13ffec9708c7f_create_file_ops_070120261348.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "Kajovo_A3_resp_0c08a12b94e2bb5d00695e56016dac819086b13ffec9708c7f_request_070120261348.json",
+      "category": "request",
+      "meta": {
+        "stage": "A3"
+      }
+    },
+    {
+      "path": "Kajovo_A3_resp_0c08a12b94e2bb5d00695e5603bb7c819098a731b7a8408d94_response_070120261348.json",
+      "category": "response",
+      "meta": {
+        "stage": "A3",
+        "response_id": "resp_0c08a12b94e2bb5d00695e5603bb7c819098a731b7a8408d94"
+      }
+    },
+    {
+      "path": "files\\resources\\montserrat_regular.ttf",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "resources\\montserrat_regular.ttf"
+      }
+    },
+    {
+      "path": "Kajovo_GENERATE_resp_0c08a12b94e2bb5d00695e5603bb7c819098a731b7a8408d94_create_file_ops_070120261348.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "Kajovo_A3_resp_0c08a12b94e2bb5d00695e5603bb7c819098a731b7a8408d94_request_070120261348.json",
+      "category": "request",
+      "meta": {
+        "stage": "A3"
+      }
+    },
+    {
+      "path": "Kajovo_A3_resp_0c08a12b94e2bb5d00695e560964ec8190b65d600a1dec3141_response_070120261348.json",
+      "category": "response",
+      "meta": {
+        "stage": "A3",
+        "response_id": "resp_0c08a12b94e2bb5d00695e560964ec8190b65d600a1dec3141"
+      }
+    },
+    {
+      "path": "files\\config\\settings.json",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "config\\settings.json"
+      }
+    },
+    {
+      "path": "Kajovo_GENERATE_resp_0c08a12b94e2bb5d00695e560964ec8190b65d600a1dec3141_create_file_ops_070120261348.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "Kajovo_A3_resp_0c08a12b94e2bb5d00695e560964ec8190b65d600a1dec3141_request_070120261348.json",
+      "category": "request",
+      "meta": {
+        "stage": "A3"
+      }
+    },
+    {
+      "path": "Kajovo_A3_resp_0c08a12b94e2bb5d00695e560d855c819085bb609d67ffd949_response_070120261348.json",
+      "category": "response",
+      "meta": {
+        "stage": "A3",
+        "response_id": "resp_0c08a12b94e2bb5d00695e560d855c819085bb609d67ffd949"
+      }
+    },
+    {
+      "path": "files\\logs",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "logs"
+      }
+    },
+    {
+      "path": "Kajovo_GENERATE_resp_0c08a12b94e2bb5d00695e560d855c819085bb609d67ffd949_create_file_ops_070120261348.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "Kajovo_A3_resp_0c08a12b94e2bb5d00695e560d855c819085bb609d67ffd949_request_070120261348.json",
+      "category": "request",
+      "meta": {
+        "stage": "A3"
+      }
+    },
+    {
+      "path": "Kajovo_A3_resp_0c08a12b94e2bb5d00695e561008fc81908c8fe24b7f4d81e1_response_070120261348.json",
+      "category": "response",
+      "meta": {
+        "stage": "A3",
+        "response_id": "resp_0c08a12b94e2bb5d00695e561008fc81908c8fe24b7f4d81e1"
+      }
+    },
+    {
+      "path": "files\\docs\\README.md",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "docs\\README.md"
+      }
+    },
+    {
+      "path": "Kajovo_GENERATE_resp_0c08a12b94e2bb5d00695e561008fc81908c8fe24b7f4d81e1_create_file_ops_070120261348.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "Kajovo_resp_0c08a12b94e2bb5d00695e561008fc81908c8fe24b7f4d81e1_GENERATE_receipt_070120261348.json",
+      "category": "receipt",
+      "meta": {
+        "total_cost": 0.121672
+      }
+    }
+  ],
+  "dry_run_summary": null,
+  "dry_run_summary_log": null,
+  "post_run_hooks": [],
+  "design_verification": {
+    "theme": "black-white",
+    "font_family": "Montserrat",
+    "rounded_corners": true,
+    "manifest_reference": "yolo-design/references/design-manifest.md",
+    "notes": "UI changes were applied under yolo-design rules (2.02.000–2.06.001)."
+  },
+  "pricing_details": {
+    "mode": "GENERATE",
+    "model": "gpt-4o",
+    "summary_steps": [
+      "A1",
+      "A2",
+      "A3"
+    ],
+    "usage": {
+      "input_tokens": 47500,
+      "output_tokens": 814,
+      "storage_bytes": 3098,
+      "storage_gb": 2.8852373361587524e-06,
+      "storage_days": 2.8852373361587524e-06,
+      "vector_store_files": 0,
+      "attachments_bytes": 0,
+      "attachments": [],
+      "files": [
+        {
+          "path": "C:\\KAJOVO\\src\\ui_main.py",
+          "size": 414
+        },
+        {
+          "path": "C:\\KAJOVO\\src\\request_handler.py",
+          "size": 790
+        },
+        {
+          "path": "C:\\KAJOVO\\src\\response_processor.py",
+          "size": 667
+        },
+        {
+          "path": "C:\\KAJOVO\\resources\\montserrat_bold.ttf",
+          "size": 24
+        },
+        {
+          "path": "C:\\KAJOVO\\resources\\montserrat_regular.ttf",
+          "size": 16
+        },
+        {
+          "path": "C:\\KAJOVO\\config\\settings.json",
+          "size": 254
+        },
+        {
+          "path": "C:\\KAJOVO\\logs",
+          "size": 0
+        },
+        {
+          "path": "C:\\KAJOVO\\docs\\README.md",
+          "size": 933
+        }
+      ]
+    },
+    "vector_store_ids": [],
+    "cost_breakdown": {
+      "input_cost": 0.11875000000000001,
+      "output_cost": 0.002442,
+      "vector_store_cost": 0.0,
+      "storage_cost": 2.8852373361587528e-11,
+      "file_api_cost": 0.00048,
+      "tool_cost": 0.0,
+      "discount_factor": 1.0
+    },
+    "total_cost": 0.121672,
+    "pricing_summary": {
+      "source": "https://openai.com/pricing",
+      "last_refreshed": null,
+      "verified": false,
+      "status": "Ceník offline / odhad",
+      "error": "Client error '403 Forbidden' for url 'https://openai.com/pricing'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403"
+    },
+    "status": "Ceník offline / odhad",
+    "verified": false,
+    "computed_at": "2026-01-07T12:48:20.319621"
+  },
+  "pricing_catalog": {
+    "source": "https://openai.com/pricing",
+    "last_refreshed": null,
+    "verified": false,
+    "status": "Ceník offline / odhad",
+    "error": "Client error '403 Forbidden' for url 'https://openai.com/pricing'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403"
+  },
+  "timeline": [],
+  "timeline_log": "RUN_070120261346_84bd_timeline_070120261348.json"
+}

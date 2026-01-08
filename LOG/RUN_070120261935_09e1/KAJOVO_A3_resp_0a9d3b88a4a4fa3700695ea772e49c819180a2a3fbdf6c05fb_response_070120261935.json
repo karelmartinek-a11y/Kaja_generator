@@ -1,0 +1,89 @@
+{
+  "metadata": {
+    "run_id": "RUN_070120261935_09e1",
+    "project": "KAJOVO",
+    "stage": "A3",
+    "response_id": "resp_0a9d3b88a4a4fa3700695ea772e49c819180a2a3fbdf6c05fb",
+    "logged_at": "2026-01-07T18:35:43.714934"
+  },
+  "payload": {
+    "id": "resp_0a9d3b88a4a4fa3700695ea772e49c819180a2a3fbdf6c05fb",
+    "created_at": 1767810932.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi generátor obsahu jednoho konkrétního souboru podle A2_STRUCTURE. OUTPUT: VRAŤ POUZE validní JSON. ŽÁDNÝ markdown ani další text. KRITICKÉ: content je vždy čistý obsah souboru (ne DIFF, ne patch). U chunkingu posílej po částech, které se spojí do kompletního souboru. CHUNK: max 500 řádků v jednom chunku, dlouhé soubory vrať po částech. KONTRAKT A3_FILE: {\"contract\":\"A3_FILE\",\"path\":string,\"chunking\":{\"max_lines\":500,\"chunk_index\":integer,\"chunk_count\":integer,\"has_more\":boolean,\"next_chunk_index\":integer|null},\"content\":string}",
+    "metadata": {},
+    "model": "gpt-5.1-codex-max",
+    "object": "response",
+    "output": [
+      {
+        "id": "rs_0a9d3b88a4a4fa3700695ea774dbe08191bf7188992c65e0a4",
+        "summary": [],
+        "type": "reasoning",
+        "content": null,
+        "encrypted_content": null,
+        "status": null
+      },
+      {
+        "id": "msg_0a9d3b88a4a4fa3700695ea778e4e481918c96d5d5d8a2dfd7",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"A3_FILE\",\"path\":\"cli.py\",\"chunking\":{\"max_lines\":500,\"chunk_index\":1,\"chunk_count\":1,\"has_more\":false,\"next_chunk_index\":null},\"content\":\"import argparse\\nimport sys\\nfrom typing import Any, Dict, List, Optional\\n\\nimport service\\n\\n\\nclass CLIError(Exception):\\n    \\\"\\\"\\\"Custom exception for CLI-related errors.\\\"\\\"\\\"\\n\\n\\ndef build_parser() -> argparse.ArgumentParser:\\n    parser = argparse.ArgumentParser(\\n        description=\\\"TaskManager CLI - správa úloh\\\",\\n        formatter_class=argparse.ArgumentDefaultsHelpFormatter,\\n    )\\n\\n    subparsers = parser.add_subparsers(dest=\\\"command\\\", required=True)\\n\\n    add_parser = subparsers.add_parser(\\\"add\\\", help=\\\"Přidá novou úlohu\\\")\\n    add_parser.add_argument(\\\"--title\\\", required=True, help=\\\"Název úlohy\\\")\\n    add_parser.add_argument(\\n        \\\"--description\\\", required=False, default=\\\"\\\", help=\\\"Popis úlohy\\\"\\n    )\\n    add_parser.add_argument(\\n        \\\"--due\\\",\\n        required=False,\\n        help=\\\"Termín dokončení ve formátu YYYY-MM-DD nebo ISO 8601\\\",\\n    )\\n    add_parser.add_argument(\\n        \\\"--priority\\\",\\n        required=False,\\n        default=\\\"medium\\\",\\n        choices=[\\\"low\\\", \\\"medium\\\", \\\"high\\\"],\\n        help=\\\"Priorita úlohy\\\",\\n    )\\n\\n    list_parser = subparsers.add_parser(\\\"list\\\", help=\\\"Vypíše úlohy s filtrem\\\")\\n    list_parser.add_argument(\\n        \\\"--status\\\",\\n        required=False,\\n        choices=[\\\"todo\\\", \\\"in-progress\\\", \\\"done\\\"],\\n        help=\\\"Filtrovat podle stavu\\\",\\n    )\\n    list_parser.add_argument(\\n        \\\"--priority\\\",\\n        required=False,\\n        choices=[\\\"low\\\", \\\"medium\\\", \\\"high\\\"],\\n        help=\\\"Filtrovat podle priority\\\",\\n    )\\n    list_parser.add_argument(\\n        \\\"--before\\\",\\n        required=False,\\n        help=\\\"Filtrovat úlohy s termínem před datem (YYYY-MM-DD nebo ISO 8601)\\\",\\n    )\\n\\n    update_parser = subparsers.add_parser(\\\"update\\\", help=\\\"Aktualizuje stav úlohy\\\")\\n    update_parser.add_argument(\\\"--id\\\", required=True, type=int, help=\\\"ID úlohy\\\")\\n    update_parser.add_argument(\\n        \\\"--status\\\",\\n        required=True,\\n        choices=[\\\"todo\\\", \\\"in-progress\\\", \\\"done\\\"],\\n        help=\\\"Nový stav úlohy\\\",\\n    )\\n\\n    remove_parser = subparsers.add_parser(\\\"remove\\\", help=\\\"Odstraní úlohu\\\")\\n    remove_parser.add_argument(\\\"--id\\\", required=True, type=int, help=\\\"ID úlohy\\\")\\n\\n    show_parser = subparsers.add_parser(\\\"show\\\", help=\\\"Zobrazí detail úlohy\\\")\\n    show_parser.add_argument(\\\"--id\\\", required=True, type=int, help=\\\"ID úlohy\\\")\\n\\n    return parser\\n\\n\\ndef format_task(task: Dict[str, Any]) -> str:\\n    return (\\n        f\\\"ID: {task.get('id')}\\\\n\\\"\\n        f\\\"Title: {task.get('title')}\\\\n\\\"\\n        f\\\"Description: {task.get('description', '')}\\\\n\\\"\\n        f\\\"Due: {task.get('due') or '-'}\\\\n\\\"\\n        f\\\"Priority: {task.get('priority')}\\\\n\\\"\\n        f\\\"Status: {task.get('status')}\\\\n\\\"\\n    )\\n\\n\\ndef format_task_row(task: Dict[str, Any]) -> str:\\n    return (\\n        f\\\"[{task.get('id')}] \\\"\\n        f\\\"{task.get('title')} | \\\"\\n        f\\\"status: {task.get('status')} | \\\"\\n        f\\\"priority: {task.get('priority')} | \\\"\\n        f\\\"due: {task.get('due') or '-'}\\\"\\n    )\\n\\n\\ndef handle_add(args: argparse.Namespace) -> int:\\n    task = service.add_task(\\n        title=args.title,\\n        description=args.description,\\n        due=args.due,\\n        priority=args.priority,\\n    )\\n    print(\\\"Úloha vytvořena:\\\")\\n    print(format_task(task))\\n    return 0\\n\\n\\ndef handle_list(args: argparse.Namespace) -> int:\\n    tasks = service.list_tasks(\\n        status=args.status,\\n        priority=args.priority,\\n        before=args.before,\\n    )\\n    if not tasks:\\n        print(\\\"Žádné úlohy k zobrazení.\\\")\\n        return 0\\n\\n    for task in tasks:\\n        print(format_task_row(task))\\n    return 0\\n\\n\\ndef handle_update(args: argparse.Namespace) -> int:\\n    updated = service.update_status(task_id=args.id, status=args.status)\\n    print(\\\"Úloha aktualizována:\\\")\\n    print(format_task(updated))\\n    return 0\\n\\n\\ndef handle_remove(args: argparse.Namespace) -> int:\\n    service.remove_task(task_id=args.id)\\n    print(f\\\"Úloha {args.id} odstraněna.\\\")\\n    return 0\\n\\n\\ndef handle_show(args: argparse.Namespace) -> int:\\n    task = service.get_task(task_id=args.id)\\n    print(format_task(task))\\n    return 0\\n\\n\\ndef dispatch(args: argparse.Namespace) -> int:\\n    command_map = {\\n        \\\"add\\\": handle_add,\\n        \\\"list\\\": handle_list,\\n        \\\"update\\\": handle_update,\\n        \\\"remove\\\": handle_remove,\\n        \\\"show\\\": handle_show,\\n    }\\n    handler = command_map.get(args.command)\\n    if handler is None:\\n        raise CLIError(f\\\"Neznámý příkaz: {args.command}\\\")\\n    return handler(args)\\n\\n\\ndef run(argv: Optional[List[str]] = None) -> int:\\n    parser = build_parser()\\n    try:\\n        args = parser.parse_args(argv)\\n        return dispatch(args)\\n    except CLIError as cli_err:\\n        print(f\\\"Chyba: {cli_err}\\\", file=sys.stderr)\\n        return 1\\n    except service.ValidationError as val_err:\\n        print(f\\\"Chyba validace: {val_err}\\\", file=sys.stderr)\\n        return 2\\n    except service.NotFoundError as nf_err:\\n        print(f\\\"Nenalezeno: {nf_err}\\\", file=sys.stderr)\\n        return 3\\n    except service.StorageError as st_err:\\n        print(f\\\"Chyba úložiště: {st_err}\\\", file=sys.stderr)\\n        return 4\\n    except Exception as exc:  # pragma: no cover - fallback\\n        print(f\\\"Neočekávaná chyba: {exc}\\\", file=sys.stderr)\\n        return 9\\n\\n\\nif __name__ == \\\"__main__\\\":\\n    sys.exit(run())\\n\"}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 0.985,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": "resp_0a9d3b88a4a4fa3700695ea76a966c8191847693465fc78190",
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "medium",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 1942,
+      "input_tokens_details": {
+        "cached_tokens": 1024
+      },
+      "output_tokens": 2036,
+      "output_tokens_details": {
+        "reasoning_tokens": 448
+      },
+      "total_tokens": 3978
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767810943,
+    "store": true
+  }
+}

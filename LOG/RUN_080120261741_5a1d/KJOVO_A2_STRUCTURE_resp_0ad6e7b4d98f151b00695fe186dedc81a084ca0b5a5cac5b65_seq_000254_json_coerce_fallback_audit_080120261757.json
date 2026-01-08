@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261741_5a1d",
+    "project": "KJOVO",
+    "stage": "A2_STRUCTURE",
+    "response_id": "resp_0ad6e7b4d98f151b00695fe186dedc81a084ca0b5a5cac5b65",
+    "event": "json_coerce_fallback",
+    "sequence": 254,
+    "logged_at": "2026-01-08T16:57:06.527311"
+  },
+  "details": {
+    "event": "json_coerce_fallback",
+    "level": "warning",
+    "details": {
+      "expected_contract": "A2_STRUCTURE",
+      "candidate_count": 73,
+      "parsed_count": 38,
+      "unescape_count": 0,
+      "response_chars": 28261
+    },
+    "timestamp": "2026-01-08T16:57:06.527305"
+  }
+}

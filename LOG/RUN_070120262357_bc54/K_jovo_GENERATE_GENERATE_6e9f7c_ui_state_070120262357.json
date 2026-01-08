@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "run_id": "RUN_070120262357_bc54",
+    "response_id": "GENERATE_6e9f7c",
+    "captured_at": "2026-01-07T22:57:21.338909",
+    "project": "Kájovo",
+    "mode": "GENERATE"
+  },
+  "ui_state": {
+    "project_name": "Kájovo",
+    "prompt_text": "Vygeneruj program dle zadání, které je v přiloženém souboru.",
+    "in_dir": "",
+    "out_dir": "C:/KAJOVO",
+    "versing_enabled": false,
+    "mode": "GENERATE",
+    "response_id": "",
+    "model": "gpt-5.1",
+    "send_as_c": false,
+    "diagnostics": {
+      "windows_in": false,
+      "windows_out": false,
+      "ssh_in": false,
+      "ssh_out": false
+    },
+    "ssh": {
+      "host": "89.221.216.10",
+      "user": "root",
+      "key_path": "",
+      "password": "+Sin8glov8",
+      "port": 10
+    },
+    "attached_file_ids": [
+      "ATT_83027a"
+    ]
+  }
+}

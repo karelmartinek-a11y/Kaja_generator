@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261823_0885",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_b86da8",
+    "event": "log_message",
+    "sequence": 17,
+    "logged_at": "2026-01-08T17:23:38.946494"
+  },
+  "details": {
+    "event": "log_message",
+    "level": "info",
+    "details": {
+      "message": "Spouštím sekvenci A1 → A2 → A2X → A3"
+    },
+    "timestamp": "2026-01-08T17:23:38.946485"
+  }
+}

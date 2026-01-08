@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260216_99fb",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_074f6b3b558f3bc600695f09008adc81a18efc3b9490e81370",
+    "logged_at": "2026-01-08T01:32:11.872095",
+    "request_id": "a6089981"
+  },
+  "payload": {
+    "id": "resp_074f6b3b558f3bc600695f09008adc81a18efc3b9490e81370",
+    "created_at": 1767835904.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_074f6b3b558f3bc600695f0900e59081a19f773b0ba6036b60",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Vstup popisuje plán A1_PLAN pro projekt \\\"CrossPlatformDiagSuite\\\" – křížově platformní diagnostický balík pro Linux a Windows v Pythonu 3.12+ (CPython), distribuovaný jako portable adresářový strom. GUI část pro Windows respektuje Kájovo UI Design Standard (MASTER v1.0), framework (PySide6/tkinter) není pevně určen. Linuxová část je primárně CLI, generuje strukturované výstupy (JSON, logy) dle již dříve definovaného MANIFESTu. Diagnostika je nedestruktivní (nezasahuje do konfigurace systému, nezapisuje mimo vlastní pracovní adresář, pokud to původní zadání výslovně nevyžaduje). Síťový přístup je defaultně vypnutý nebo omezený na volitelné testy konektivity. Všechny texty UI/CLI jsou v češtině, pokud původní zadání neurčuje jinak. UI standard definuje vzhled a chování, tento plán řeší logickou architekturu a API.\\n\\nFunkční požadavky shrnuté v textu:\\n- Poskytnout linuxový diagnostický balík dle existujícího MANIFESTu, který spouští modulární sběrače (collectors) systémových informací a ukládá je do strukturované adresářové hierarchie.\\n- Poskytnout plnou (FULL) Windows diagnostickou aplikaci s GUI, umožňující spouštět diagnostické scénáře, zobrazovat průběh a výsledky a exportovat je do souborů dle MANIFESTu.\\n- Implementovat jednotný MANIFEST formát (MANIFEST.md + strojově čitelný manifest.json) popisující strukturu výstupů, verze nástrojů a čas běhu.\\n- Na Linuxu implementovat moduly pro sběr informací o: OS (kernel, distribuce), CPU, paměti, discích, síťových rozhraních, běžících procesech, službách a log souborech (detailní obsah je v původní specifikaci, zde jen odkaz).\\n- Na Windows implementovat moduly pro sběr informací o: systému (verze, edice, build), hardware (CPU, RAM, disky, síť), ovladačích, službách, událostech (Event Log), síťové konfiguraci a volitelně doménovém prostředí.\\n- Definovat jednotné datové modely pro diagnostické entity: SystemInfo, CpuInfo, MemoryInfo, DiskInfo, NetworkInterfaceInfo, ProcessInfo, ServiceInfo, EventLogEntry, DiagnosticRunSummary.\\n- Umožnit spuštění kompletní diagnostiky jedním příkazem (Linux CLI) nebo jedním tlačítkem v GUI (Windows), včetně zobrazení průběhu a vytvoření archivu s výsledky.\\n- Umožnit spuštění dílčích diagnostických scénářů (např. pouze síťová nebo disková diagnostika) na Linuxu i Windows.\\n- Logovat průběh diagnostiky do diagnostic.log s časovými razítky a úrovněmi INFO, WARN, ERROR.\\n- Implementovat modul pro zabalení výsledků do archivu (např. ZIP) s názvem obsahujícím čas běhu a identifikátor stroje.\\n- Poskytnout CLI rozhraní pro Linux (a volitelně Windows) s příkazy: run-full, run-scenario <name>, list-scenarios, show-manifest, version.\\n- Poskytnout GUI pro Windows v souladu s Kájovo UI standardem: hlavní okno s hlavičkou (název, verze, ovládací prvky, EXIT), sekce pro výběr scénáře, konfiguraci, zobrazení průběhu a stavový řádek se stavovým textem, časem a datem.\\n- Implementovat v GUI tlačítka a ovládací prvky (dropdown, combobox, tabulky, dialogy) dle definovaných kontraktů stavů, typografie, rozestupů a interakcí.\\n- Všechny textové prvky GUI musí používat font Montserrat (Regular/Bold) z lokálních assetů; při selhání načtení fontu se zobrazí chybový dialog a aplikace se ukončí.\\n- Implementovat modul pro měření a aplikaci UI_scale = min(W/1280, H/720), z něhož se odvozují velikosti písma, paddingy, výšky řádků, rozměry ikon a radius.\\n- Implementovat stavový řádek s PRAGOTRON časem (HH:MM:SS) a datem (DD.MM.YYYY), aktualizovaný v reálném čase.\\n- Implementovat potvrzovací dialogy pro kritické akce (např. EXIT, smazání výstupů) s tlačítky OK, CANCEL, CLOSE a chováním dle standardu.\\n- Implementovat textová pole (editable i read-only) s placeholdery „Zde pište...“ a „Zde se zobrazí text...“, s podporou výběru textu a kopírování přes CTRL+C.\\n- Implementovat tabulky a seznamy pro zobrazení výsledků (síťová rozhraní, disky, služby atd.) s možností výběru řádku, kopírování a tooltipy při overflow.\\n- Implementovat dropdown a combobox komponenty pro výběr scénářů, filtrů a parametrů, včetně klávesových zkratek a tooltipů při overflow.\\n- Implementovat globální klávesové zkratky: TAB/SHIFT+TAB pro focus, ENTER/SPACE pro aktivaci prvků, ESC pro zavírání overlay prvků (tooltip, roletka, dialog) v definovaném pořadí.\\n- Implementovat algoritmus text fit/scale-to-fit/scroll dle standardu pro všechny textové prvky, aby nedocházelo k neřízenému overflow.\\n- Poskytnout mechanismus pro konfiguraci výstupního adresáře (default ./output nebo dle původního zadání) a možnost otevřít tento adresář z GUI.\\n- Zajistit, aby MANIFEST obsahoval: verzi diagnostického balíku, verze modulů, datum a čas běhu, identifikátor stroje a seznam všech vygenerovaných souborů.\\n- Poskytnout jednoduchý plug-in mechanismus pro rozšíření o nové diagnostické moduly bez zásahu do jádra (registrace přes manifest nebo konfigurační registr).\\n\\nText explicitně uvádí, že detailní specifikace linuxového balíku a FULL Windows diagnostiky (včetně MANIFESTu, struktury adresářů a obsahu podsložek) existuje v předchozích částech zadání a nesmí být tímto plánem měněna. Tento plán nad ní pouze abstrahuje a doplňuje rozhraní a architektonické požadavky.\",\"chunk_index\":1,\"chunk_count\":10,\"notes\":[\"Zachovat, že A1_PLAN nesmí měnit původní detailní specifikaci; kde chybí detail, má být popsán jen na úrovni rozhraní a označen v constraints.\",\"Důležité: portable režim, žádná instalace; Python 3.12+ dostupný nebo embedovaný.\",\"GUI Windows musí respektovat Kájovo UI Design Standard (MASTER v1.0), ale konkrétní framework je volitelný.\",\"MANIFEST existuje v textové (MANIFEST.md) i strojové podobě (manifest.json) a popisuje strukturu výstupů, verze nástrojů a čas běhu.\",\"Nutné zachovat seznam datových modelů (SystemInfo, CpuInfo, MemoryInfo, DiskInfo, NetworkInterfaceInfo, ProcessInfo, ServiceInfo, EventLogEntry, DiagnosticRunSummary).\",\"Zachovat přesnou definici UI_scale = min(W/1280, H/720) a závislost všech UI rozměrů na tomto měřítku.\",\"Zachovat požadavek na Montserrat font z lokálních assetů a chování při selhání načtení (chybový dialog + ukončení).\",\"Zachovat požadavky na klávesové zkratky, text fit/scale-to-fit/scroll a chování ESC pro zavírání overlay prvků v definovaném pořadí.\",\"Zachovat, že diagnostika je nedestruktivní a síťový přístup je defaultně omezený; žádné odesílání dat mimo stroj ve výchozím běhu.\",\"Další chunk(y) pravděpodobně doplní zbytek funkčních požadavků, nefunkční požadavky a architekturu; je nutné je sloučit do jednoho konzistentního shrnutí.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 2110,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2010,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 4120
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767835931,
+    "store": true
+  }
+}

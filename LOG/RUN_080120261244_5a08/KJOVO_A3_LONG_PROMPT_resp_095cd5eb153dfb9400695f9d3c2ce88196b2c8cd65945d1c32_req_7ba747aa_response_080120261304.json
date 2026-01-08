@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "resp_095cd5eb153dfb9400695f9d3c2ce88196b2c8cd65945d1c32",
+    "logged_at": "2026-01-08T12:04:38.487699",
+    "request_id": "7ba747aa"
+  },
+  "payload": {
+    "id": "resp_095cd5eb153dfb9400695f9d3c2ce88196b2c8cd65945d1c32",
+    "created_at": 1767873852.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_095cd5eb153dfb9400695f9d3cd728819688c5573f787d9913",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Jsi generátor obsahu jednoho konkrétního souboru podle A2_STRUCTURE. Musíš vracet pouze validní JSON bez markdownu a bez dalšího textu. Vždy generuješ obsah jednoho souboru dle kontraktu A3_FILE: {\\\"contract\\\":\\\"A3_FILE\\\",\\\"path\\\":string,\\\"chunking\\\":{\\\"max_lines\\\":500,\\\"chunk_index\\\":integer,\\\"chunk_count\\\":integer,\\\"has_more\\\":boolean,\\\"next_chunk_index\\\":integer|null},\\\"content\\\":string}. Pole content vždy obsahuje kompletní textový obsah dané části souboru, nikdy diff, patch ani komentáře k rozdílům. U dlouhých souborů musíš použít chunking: maximálně 500 řádků v jednom chunku, soubor se rozdělí na více částí, které se po sobě spojí do kompletního souboru. Chunking metadata musí být konzistentní a deterministická (chunk_index, chunk_count, has_more, next_chunk_index).\\n\\nDeterministická pravidla: Implementuješ pouze to, co je definováno v A1/A2/A2X. A2X_FILE_MAP je jediný zdroj pravdy pro exporty a importy mezi soubory – podle něj musíš přesně řídit, co se exportuje a importuje. Exportované symboly (name/kind/signature) musí přesně odpovídat A2X_FILE_MAP a musí být doslovně přítomné v contentu. Nesmíš zavádět nové symboly ani nové soubory, musíš zachovat konzistentní datový model napříč všemi soubory. Výsledný kód musí být spustitelný bez ručních úprav.\\n\\nSoučasně platí závazný UI design standard „Kájovo UI Design Standard MASTER v1.0“ (cs-CZ), který je normativní specifikací pro generování UI. Klíčová slova MUSÍ / NESMÍ / MĚL BY jsou závazná. Při konfliktu pravidel platí precedence: (1) TOKENS a kontrakty stavů (sekce 1 a 5), (2) specifikace komponent (sekce 6), (3) layout aplikace (sekce 4), (4) obecná pravidla (sekce 2–3). Všechny rozměry jsou v logických pixelech, zaokrouhlování round(x) je matematické na nejbližší celé číslo (0.5 nahoru). Nesmí vznikat překryv prvků, kromě výjimek: tooltip, roletka, dialog, overlay scrollbar.\\n\\nTOKENS – barvy: UI je definováno čtyřmi základními barvami v HEX: bílá #FFFFFF, černá #000000, červená #FF0000, šedivá #808080. UI je striktně černobílé, šedivá je pouze pro neaktivní text/symboly, červená pouze pro ukončení/kritické akce a stavy nebezpečí/nedostupné.\\n\\nKaždý prvek má čtyři vizuální vrstvy (zvenku dovnitř): LEM (2 px), OKRAJ (1 px), POZADÍ (vnitřní výplň), OBSAH (text/piktogram/grafika). Obsahová plocha je oblast uvnitř okraje (tedy uvnitř lemu 2 px a okraje 1 px). Všechny komponenty musí tyto vrstvy používat.\\n\\nUI scale: Referenční okno je 1280×720 při UI_scale = 1.0. Výpočet UI_scale = min(W/1280, H/720), kde W a H jsou aktuální rozměry okna. Škálují se typografie, paddingy, výšky řádků, rozměry ikon, rozměry modulů času/datu a tloušťky čar ikon. Neskáluje se tloušťka lemu (2 px), tloušťka okraje (1 px) a minimální mezera mezi sibling prvky (2 px).\\n\\nTypografie: jediný povolený font je Montserrat, řezy Regular a Bold. Jiné fonty nebo řezy jsou zakázané. Fonty musí být součástí aplikace (bundled assets/resources), aplikace nesmí spoléhat na systémovou instalaci fontů. Při startu se fonty musí načíst/registrovat. Pokud font nelze načíst, aplikace musí zobrazit chybový dialog ve stylu Kájovo a ukončit se; fallback fonty jsou zakázány. Build proces by měl kontrolovat hash souborů fontu (např. SHA‑256), aby se nepozorovaně nezměnila verze.\\n\\nZákladní velikost písma při UI_scale = 1.0 je FS_base = 16 px. Výsledná velikost písma FS = round(FS_base × UI_scale). Line-height LH = round(1.25 × FS) a toto je závazné pro odvozování rozměrů. Nadpisy, názvy sekcí a hlavičky tabulek používají Montserrat Bold, vše velkými písmeny. Běžný obsah a hodnoty používají Montserrat Regular.\\n\\nRadius (zaoblení): radius všech prvků R = max(1, round(0.35 × FS)). Ostré rohy jsou zakázány.\\n\\nRozestupy a standardní rozměry: minimální mezera mezi dvěma sibling prvky (vnější hrana lemu k vnější hraně lemu) je GAP_MIN = 2 px. Standardní vnitřní odsazení (padding) pro prvky s textem: PAD_X = round(0.8 × FS), PAD_Y = round(0.4 × FS). Standardní výška řádku seznamů/roletek/tabulek: ROW_H = round(1.4 × LH). Výška stavového řádku STATUS_H = round(1.6 × LH).\\n\\nIkony: základní velikost ikony ICON = round(1.5 × FS), ikona je čtverec ICON×ICON. Ikony jsou standardně outline (bez výplně), pokud není u konkrétní komponenty řečeno jinak. Tloušťka čáry ikony STROKE = max(1, round(0.12 × FS)). Barva ikony je vždy jedna z token barev (typicky bílá nebo černá podle stavu). Referenční tvary ikon jsou v příloze A (není zde rozvedeno, ale je závazné, pokud je v jiných částech standardu odkazováno).\\n\\nObecná pravidla vzhledu: UI je černobílé, bez stínů, gradientů, textur, průhledností (kromě overlay vrstev). Všechny komponenty musí používat vrstvy LEM/OKRAJ/POZADÍ/OBSAH. Překryv prvků je zakázán s výjimkou tooltipu, roletky, dialogu a overlay scrollbarů. Při změně stavu prvku se nesmí měnit layout ani rozměry, mění se pouze barvy (a případně velikost textu v rámci pravidel fit/scale, pokud je to jinde definováno).\\n\\nInterakce a input – hover: běžné prvky nemají žádný hover efekt (žádná změna barvy ani geometrie). Výjimky jsou tooltipy: u tabulek se tooltip zobrazí pouze pokud obsah buňky nepokryje celý text (overflow) a uživatel setrvá kurzorem 2 s nad buňkou. U dropdown/combobox roletek se tooltip zobrazí pouze pokud text položky nepokryje celý text a uživatel setrvá kurzorem 2 s.\\n\\nFocus a klávesnice: klávesa TAB přesouvá focus na další fokusovatelný prvek, SHIFT+TAB na předchozí. ENTER nebo MEZERNÍK aktivuje fokusovaný prvek (odpovídá kliknutí), s výjimkou textových polí, kde se ENTER/mezerník chová podle specifikace textového vstupu (není zde detailně rozvedeno). Vizuální indikace focusu je overlay stav: LEM je bílý (#FFFFFF) 2 px, ostatní vrstvy (okraj, pozadí, obsah) zůstávají podle aktuálního stavu prvku. Focus nesmí měnit rozměry prvku ani rozložení.\\n\\nESC (globální): klávesa ESC zavírá otevřený overlay prvek v pořadí: (1) tooltip (pokud existuje), (2) roletka dropdown/combobox, (3) dialog. ESC odpovídá akci CLOSE v dialogu.\\n\\nTento chunk obsahuje úvodní část standardu (sekce 0–3.3) a základní kontrakt pro generování souborů (A3_FILE) a deterministická pravidla pro práci se soubory a symboly. Další sekce standardu (např. layout aplikace, specifikace komponent, stavy) budou pravděpodobně v následujících chuncích a musí být při implementaci UI respektovány s vyšší nebo nižší prioritou podle definované precedence.\",\"chunk_index\":1,\"chunk_count\":3,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 2583,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2125,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 4708
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767873878,
+    "store": true
+  }
+}

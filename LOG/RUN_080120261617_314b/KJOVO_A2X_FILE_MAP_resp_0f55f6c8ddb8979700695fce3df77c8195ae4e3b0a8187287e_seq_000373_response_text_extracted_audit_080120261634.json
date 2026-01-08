@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261617_314b",
+    "project": "KJOVO",
+    "stage": "A2X_FILE_MAP",
+    "response_id": "resp_0f55f6c8ddb8979700695fce3df77c8195ae4e3b0a8187287e",
+    "event": "response_text_extracted",
+    "sequence": 373,
+    "logged_at": "2026-01-08T15:34:04.514286"
+  },
+  "details": {
+    "event": "response_text_extracted",
+    "level": "info",
+    "details": {
+      "expected_contract": "A2X_FILE_MAP",
+      "text_chars": 25906
+    },
+    "timestamp": "2026-01-08T15:34:04.514279"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261124_80c8",
+    "project": "KJOVO",
+    "stage": "LONG_PROMPT_COMPRESS",
+    "response_id": "resp_0194ec4d78158bd800695f878d39608193a5e8d399049f9f3e",
+    "event": "json_coerce_match",
+    "sequence": 120,
+    "logged_at": "2026-01-08T10:32:24.847435"
+  },
+  "details": {
+    "event": "json_coerce_match",
+    "level": "info",
+    "details": {
+      "expected_contract": "LONG_PROMPT_COMPRESS",
+      "candidate_count": 1,
+      "parsed_count": 1,
+      "unescape_count": 0,
+      "response_chars": 16074
+    },
+    "timestamp": "2026-01-08T10:32:24.847428"
+  }
+}

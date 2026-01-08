@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_095cd5eb153dfb9400695f9d3c2ce88196b2c8cd65945d1c32",
+    "event": "progress_update",
+    "sequence": 409,
+    "logged_at": "2026-01-08T12:04:38.494984"
+  },
+  "details": {
+    "event": "progress_update",
+    "level": "info",
+    "details": {
+      "message": "A3: komprimuji instructions (2/3)",
+      "ratio": 0.35
+    },
+    "timestamp": "2026-01-08T12:04:38.494974"
+  }
+}

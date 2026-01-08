@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261657_c5d0",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_b5c8a9",
+    "event": "progress_update",
+    "sequence": 137,
+    "logged_at": "2026-01-08T16:04:12.917575"
+  },
+  "details": {
+    "event": "progress_update",
+    "level": "info",
+    "details": {
+      "message": "A1: komprimuji dialog (10/15)",
+      "ratio": 0.1
+    },
+    "timestamp": "2026-01-08T16:04:12.917553"
+  }
+}

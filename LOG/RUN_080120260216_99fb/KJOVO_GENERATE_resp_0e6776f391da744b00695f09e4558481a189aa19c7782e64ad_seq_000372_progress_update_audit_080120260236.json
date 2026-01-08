@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260216_99fb",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_0e6776f391da744b00695f09e4558481a189aa19c7782e64ad",
+    "event": "progress_update",
+    "sequence": 372,
+    "logged_at": "2026-01-08T01:36:00.986251"
+  },
+  "details": {
+    "event": "progress_update",
+    "level": "info",
+    "details": {
+      "message": "A2X: komprimuji input_text (8/10)",
+      "ratio": 0.3
+    },
+    "timestamp": "2026-01-08T01:36:00.986244"
+  }
+}

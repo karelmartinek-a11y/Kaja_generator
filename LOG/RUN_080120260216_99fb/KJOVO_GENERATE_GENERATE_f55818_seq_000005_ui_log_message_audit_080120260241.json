@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260216_99fb",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_f55818",
+    "event": "ui_log_message",
+    "sequence": 5,
+    "logged_at": "2026-01-08T01:41:16.188440"
+  },
+  "details": {
+    "message": "Chyba běhu: A2X_FILE_MAP duplicitní export Manifest.",
+    "timestamp_local": "02:41:16",
+    "source": "ui_log"
+  }
+}

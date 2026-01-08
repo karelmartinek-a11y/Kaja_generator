@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "resp_034a49741b693e0100695f9f0e2a5881938f1b64d4d68b7bd0",
+    "event": "api_payload_prepared",
+    "sequence": 553,
+    "logged_at": "2026-01-08T12:12:36.999752"
+  },
+  "details": {
+    "event": "api_payload_prepared",
+    "level": "info",
+    "details": {
+      "stage": "A3_LONG_PROMPT",
+      "request_id": "180c0350",
+      "payload_keys": [
+        "model",
+        "temperature",
+        "instructions",
+        "input"
+      ],
+      "has_temperature": true,
+      "has_tools": false,
+      "previous_response_id": ""
+    },
+    "timestamp": "2026-01-08T12:12:36.999746"
+  }
+}

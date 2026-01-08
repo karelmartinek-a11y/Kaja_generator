@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261657_c5d0",
+    "project": "KJOVO",
+    "stage": "A3_TRIM",
+    "response_id": "resp_0daa464aebd146b500695fd6a535948190adb81a07304760b2",
+    "logged_at": "2026-01-08T16:09:47.659978",
+    "request_id": "c3724e16"
+  },
+  "payload": {
+    "id": "resp_0daa464aebd146b500695fd6a535948190adb81a07304760b2",
+    "created_at": 1767888549.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Výstup musí být JEDINÝ validní JSON bez markdownu. Kontrakt: KAJA_PROMPT_SPLIT. Zkrať vstupní texty a rozděl je na instructions a input_text. Obě pole musí obsahovat kontrakt, pravidla i obsah dialogového okna (zhuštěně, bez ztráty významu). Zachovej explicitní JSON kontrakty beze změny. Neopakuje se stejný text v obou polích, ale obě musí být plnohodnotné. Celková délka instructions+input_text <= 6554 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0daa464aebd146b500695fd6a5ebfc819084c6ca277309f4b6",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"KAJA_PROMPT_SPLIT\",\"instructions\":\"Jsi kompresní modul. Výstup musí být JEDINÝ validní JSON bez markdownu. Kontrakt: KAJA_PROMPT_SPLIT. Zkrať vstupní texty a rozděl je na instructions a input_text. Obě pole musí obsahovat kontrakt, pravidla i obsah dialogového okna (zhuštěně, bez ztráty významu). Zachovej explicitní JSON kontrakty beze změny. Neopakuje se stejný text v obou polích, ale obě musí být plnohodnotné. Celková délka instructions+input_text <= 6554 tokenů. \\n\\nJsi generátor obsahu jednoho konkrétního souboru podle A2_STRUCTURE. OUTPUT: vrať POUZE validní JSON dle kontraktu A3_FILE, bez markdownu a bez dalšího textu. Kritické: pole content obsahuje vždy kompletní čistý obsah souboru (ne DIFF, ne patch). Pokud je soubor dlouhý, použij chunking: max 500 řádků v jednom chunku, soubor vrať po částech, které se spojí do kompletního souboru. Kontrakt A3_FILE: {\\\"contract\\\":\\\"A3_FILE\\\",\\\"path\\\":string,\\\"chunking\\\":{\\\"max_lines\\\":500,\\\"chunk_index\\\":integer,\\\"chunk_count\\\":integer,\\\"has_more\\\":boolean,\\\"next_chunk_index\\\":integer|null},\\\"content\\\":string}.\\n\\nImplementuj pouze to, co je definováno v A1_PLAN, A2_STRUCTURE, A2X_INVARIANTS a A2X_FILE_MAP_FOR_PATH. A2X_FILE_MAP je jediný zdroj pravdy pro exporty/importy. Exporty v generovaném souboru musí přesně odpovídat A2X_FILE_MAP (name/kind/signature) a být v contentu doslovně přítomné. Nezaváděj nové symboly ani nové soubory; zachovej shodný datový model napříč soubory. Výsledek musí být spustitelný bez ručních úprav.\\n\\nProjekt MASTER_Zadani_Terminator je čistě specifikační terminátor: tento chunk slouží jako end-of-spec marker, nepřidává žádné nové funkční ani nefunkční požadavky, nedefinuje nové doménové entity ani API. Moduly SpecEndMarker a SpecInterpreter existují jen pro nástroje, které parsují sekvenci chunků a určují, kde končí normativní část. End-of-spec marker nesmí měnit žádné předchozí požadavky ani UI standard (Kájovo UI Design Standard MASTER v1.0). Žádné nové build kroky ani soubory se z tohoto chunku neodvozují.\\n\\nPro soubor src/spec_end_marker.ts platí: language=TypeScript, žádné importy. Musí exportovat přesně: (1) constant END_OF_SPEC_MARKER_ID se signaturou \\\"export const END_OF_SPEC_MARKER_ID: string;\\\" a (2) funkci isEndOfSpecChunk se signaturou \\\"export function isEndOfSpecChunk(chunkId: string): boolean;\\\". Implementace má deterministicky rozpoznat end-of-spec chunk podle ID, ale nesmí zavádět další veřejné symboly ani měnit kontrakt. Soubor pouze definuje logický end-of-spec marker a API pro jeho rozpoznání v sekvenci chunků zadání. Nepoužívej žádné externí knihovny ani runtime závislosti mimo standardní TypeScript/JavaScript jazykové konstrukce. Dodržuj, že tento soubor neukládá žádné nové normativní požadavky – je čistě technickým artefaktem pro nástroje.\\n\\nDesign standard Kájovo UI Design Standard (MASTER v1.0) je závazný pro UI, ale tento konkrétní soubor je čistě logický/technický (TypeScript) a UI přímo neimplementuje. Přesto nesmí být v rozporu s tím, že end-of-spec marker nesmí měnit UI požadavky. Žádné další komponenty, layout ani vizuální prvky zde nedefinuj. Zaměř se pouze na implementaci exportovaných symbolů dle A2X_FILE_MAP_FOR_PATH a respektuj, že tento soubor je součástí většího projektu, kde další soubory (spec_interpreter.ts, types/chunk_model.ts) budou generovány zvlášť podle svých map.\",\"input_text\":\"Vrať obsah souboru PATH=src/spec_end_marker.ts jako JSON dle A3_FILE. Pokud je soubor dlouhý, použij chunking s max_lines=500. Volitelně může být zadán CHUNK_INDEX, ale zde není, takže vrať první (a pravděpodobně jediný) chunk. REDUNDANTNÍ KONTRAKT: vrať pouze JSON dle A3_FILE, žádný diff ani patch, jen čistý obsah souboru nebo jeho část.\\n\\nA1_PLAN shrnutí: Projekt MASTER_Zadani_Terminator je terminátor MASTER specifikace pro Linux FULL diagnostiku (Ubuntu Web Server) a Windows FULL diagnostiku. Tento závěrečný chunk je pouze explicitní end-of-spec marker, bez nových funkčních či nefunkčních požadavků. Doménové entity, datové modely, názvosloví a veřejná API jsou již sjednoceny v předchozích částech. Nejsou požadovány nové soubory, moduly ani build kroky. Funkční požadavky: tento chunk pouze označuje konec specifikace, nesmí z něj být odvozovány nové funkce. Nefunkční požadavky: deterministická interpretace (po tomto chunku už žádné normativní části), zachování konzistence (nic nemění), žádný vliv na UI, výkon ani bezpečnost běžícího systému. Omezení: žádné nové technické požadavky, struktury ani soubory; žádné změny Linux/Windows diagnostik; žádné nové doménové entity nebo API; žádné externí soubory.\\n\\nArchitektura shrnutí: Modul SpecEndMarker reprezentuje logický konec MASTER zadání; exportuje isEndOfSpecChunk(chunkId: string): boolean a END_OF_SPEC_MARKER_ID: string; nemá aplikační závislosti. Modul SpecInterpreter interpretuje sekvenci chunků a určuje normativní část vůči end-of-spec markeru; exportuje getNormativeChunks(allChunks: Chunk[]): Chunk[] a getEndMarkerChunk(allChunks: Chunk[]): Chunk | null; závisí na SpecEndMarker a typu Chunk z ./types/chunk_model. Datový tok: sekvence chunků je načtena, SpecInterpreter identifikuje end-of-spec marker pomocí END_OF_SPEC_MARKER_ID nebo jiného deterministického kritéria, chunk(y) před markerem jsou normativní, marker a vše po něm není zdrojem nových požadavků. Chybové stavy: chybějící marker → celé zadání normativní + varování; více kandidátů → použít poslední a zalogovat varování; marker uprostřed nedokončené sekce → chyba specifikace; pokusy odvozovat nové požadavky z markeru → chyba interpretace. Bezpečnost: marker nemá runtime logiku ani vstupy, bezpečnostní dopady nulové; nástroje musí odolávat manipulaci s falešnými markery; marker nesmí měnit bezpečnostní politiky.\\n\\nA2_STRUCTURE shrnutí pro tento soubor: root=master_zadani_terminator. Soubor src/spec_end_marker.ts: TypeScript, generovaný ve fázi A3, účel: definovat logický end-of-spec marker a API pro jeho rozpoznání v sekvenci chunků zadání. Další soubory (spec_interpreter.ts, types/chunk_model.ts) existují, ale zde se neimportují.\\n\\nEXPORT_INDEX relevantní položky: \\n- Chunk (type) je v src/types/chunk_model.ts, zde se nepoužívá.\\n- END_OF_SPEC_MARKER_ID je constant v src/spec_end_marker.ts se signaturou \\\"export const END_OF_SPEC_MARKER_ID: string;\\\".\\n- isEndOfSpecChunk je function v src/spec_end_marker.ts se signaturou \\\"export function isEndOfSpecChunk(chunkId: string): boolean;\\\".\\n\\nA2X_INVARIANTS shrnutí: Každý soubor má unikátní odpovědnost: spec_end_marker.ts pouze definuje end-of-spec marker a jeho rozpoznání; spec_interpreter.ts pouze interpretuje sekvenci chunků pomocí markeru; chunk_model.ts pouze definuje datový model Chunk. Názvy exportovaných symbolů jsou globálně unikátní. Všechny importy musí přesně odpovídat exportům a existujícím path. Žádné externí soubory ani moduly mimo kořen master_zadani_terminator. Struktura souborů ani API nepřidávají nové doménové požadavky; pouze technicky realizují end-of-spec marker a jeho interpretaci.\\n\\nA2X_FILE_MAP_FOR_PATH=src/spec_end_marker.ts (nutno respektovat doslovně):\\n{\\n  \\\"path\\\": \\\"src/spec_end_marker.ts\\\",\\n  \\\"purpose\\\": \\\"Definuje logický end-of-spec marker a API pro jeho rozpoznání v sekvenci chunků zadání.\\\",\\n  \\\"language\\\": \\\"TypeScript\\\",\\n  \\\"exports\\\": [\\n    {\\n      \\\"name\\\": \\\"isEndOfSpecChunk\\\",\\n      \\\"kind\\\": \\\"function\\\",\\n      \\\"signature\\\": \\\"export function isEndOfSpecChunk(chunkId: string): boolean;\\\"\\n    },\\n    {\\n      \\\"name\\\": \\\"END_OF_SPEC_MARKER_ID\\\",\\n      \\\"kind\\\": \\\"constant\\\",\\n      \\\"signature\\\": \\\"export const END_OF_SPEC_MARKER_ID: string;\\\"\\n    }\\n  ],\\n  \\\"imports\\\": []\\n}\\n\\nTvým úkolem je z těchto podkladů odvodit konkrétní implementaci souboru src/spec_end_marker.ts v TypeScriptu, která: (1) přesně obsahuje oba exporty se signaturami z A2X_FILE_MAP, (2) neobsahuje žádné další exportované symboly, (3) nepoužívá žádné importy, (4) implementuje deterministickou logiku rozpoznání end-of-spec chunku podle konstanty END_OF_SPEC_MARKER_ID (např. porovnáním chunkId s touto konstantou), (5) nezavádí žádné nové doménové požadavky ani chování nad rámec popsaného. Výsledek vrať jako JSON dle A3_FILE s path=\\\"src/spec_end_marker.ts\\\", správně vyplněným objektem chunking (max_lines=500, chunk_index, chunk_count, has_more, next_chunk_index) a content jako celý zdrojový kód souboru (pokud se vejde do jednoho chunku, chunk_count=1, has_more=false, next_chunk_index=null).\",\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 9489,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2478,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 11967
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767888587,
+    "store": true
+  }
+}

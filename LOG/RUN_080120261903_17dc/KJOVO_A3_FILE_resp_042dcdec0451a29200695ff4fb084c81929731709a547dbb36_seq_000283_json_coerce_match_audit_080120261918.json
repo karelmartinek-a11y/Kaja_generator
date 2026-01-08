@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261903_17dc",
+    "project": "KJOVO",
+    "stage": "A3_FILE",
+    "response_id": "resp_042dcdec0451a29200695ff4fb084c81929731709a547dbb36",
+    "event": "json_coerce_match",
+    "sequence": 283,
+    "logged_at": "2026-01-08T18:18:51.405187"
+  },
+  "details": {
+    "event": "json_coerce_match",
+    "level": "info",
+    "details": {
+      "expected_contract": "A3_FILE",
+      "candidate_count": 1,
+      "parsed_count": 1,
+      "unescape_count": 0,
+      "response_chars": 3927
+    },
+    "timestamp": "2026-01-08T18:18:51.405165"
+  }
+}

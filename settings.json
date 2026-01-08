@@ -46,44 +46,42 @@
           "go"
         ],
         "sizes": [
-          394,
-          393
+          396,
+          395
         ]
       },
       {
         "sections": [
-          "in_dir",
           "model_openai"
         ],
         "sizes": [
-          394,
-          393
+          792
         ]
       },
       {
         "sections": [
-          "attached_files",
-          "file_api",
-          "out_dir"
-        ],
-        "sizes": [
-          262,
-          262,
-          262
-        ]
-      },
-      {
-        "sections": [
-          "local_files",
           "vector_stores",
-          "timeline",
-          "answer"
+          "file_api",
+          "attached_files"
         ],
         "sizes": [
-          196,
+          264,
+          263,
+          263
+        ]
+      },
+      {
+        "sections": [
+          "out_dir",
+          "answer",
+          "timeline",
+          "local_files"
+        ],
+        "sizes": [
+          198,
           197,
-          196,
-          196
+          197,
+          197
         ]
       }
     ],
@@ -94,6 +92,7 @@
       436
     ],
     "park": [
+      "in_dir",
       "diagnostics",
       "batch_monitor",
       "diff_viewer"

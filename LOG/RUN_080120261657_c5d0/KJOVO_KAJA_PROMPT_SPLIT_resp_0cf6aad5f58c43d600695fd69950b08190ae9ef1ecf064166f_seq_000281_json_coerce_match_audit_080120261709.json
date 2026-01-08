@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261657_c5d0",
+    "project": "KJOVO",
+    "stage": "KAJA_PROMPT_SPLIT",
+    "response_id": "resp_0cf6aad5f58c43d600695fd69950b08190ae9ef1ecf064166f",
+    "event": "json_coerce_match",
+    "sequence": 281,
+    "logged_at": "2026-01-08T16:09:47.661951"
+  },
+  "details": {
+    "event": "json_coerce_match",
+    "level": "info",
+    "details": {
+      "expected_contract": "KAJA_PROMPT_SPLIT",
+      "candidate_count": 1,
+      "parsed_count": 1,
+      "unescape_count": 0,
+      "response_chars": 8457
+    },
+    "timestamp": "2026-01-08T16:09:47.661945"
+  }
+}

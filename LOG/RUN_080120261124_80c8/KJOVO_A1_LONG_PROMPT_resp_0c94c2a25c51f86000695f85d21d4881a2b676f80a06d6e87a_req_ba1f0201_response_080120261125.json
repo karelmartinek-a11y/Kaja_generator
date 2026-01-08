@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261124_80c8",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_0c94c2a25c51f86000695f85d21d4881a2b676f80a06d6e87a",
+    "logged_at": "2026-01-08T10:25:10.228480",
+    "request_id": "ba1f0201"
+  },
+  "payload": {
+    "id": "resp_0c94c2a25c51f86000695f85d21d4881a2b676f80a06d6e87a",
+    "created_at": 1767867858.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0c94c2a25c51f86000695f85d2d83881a28cc40d7db646959a",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"MASTER zadání definuje desktopový program „Kája“ pro Windows 10/11, který automatizuje requesty na OpenAI Responses API a související služby (Files, Models, Vector stores, Batch). Program je robustní, detailně loguje, má přehledné UI a kontroluje kombinace nastavení, aby neodesílal neplatné nebo nebezpečné requesty. V zadání je mnoho redundancí, ale implementace nesmí vynechat žádný detail.\\n\\n1) Precedence a determinismus\\n- Vše označené „MUSÍ“/„NESMÍ“ je závazné.\\n- Při konfliktu pravidel platí precedence (od nejsilnějšího):\\n  a) TOKENS a KONTRAKTY stavů (sekce 20 a 24 – zatím neviditelné v tomto chunku, ale mají nejvyšší prioritu),\\n  b) Specifikace komponent (sekce 25),\\n  c) Layout aplikace (sekce 23),\\n  d) Obecná pravidla (sekce 21–22),\\n  e) Ostatní části zadání (funkční logika, pipeline, logování, pricing, batch, diagnostika).\\n- Odvozené hodnoty (vzorce) se musí použít přesně, včetně definovaného zaokrouhlení.\\n- Jednotky rozměrů v UI jsou v logických pixelech (px).\\n- Zaokrouhlování: round(x) = matematické zaokrouhlení (0.5 nahoru).\\n- Nesmí vzniknout překryv UI prvků (kromě overlay vrstev: tooltip, roletka, dialog, scrollbar).\\n\\n2) Nezbytné vlastnosti a zásady\\n\\n2.1 Robustnost\\n- Program musí být robustní a „nikdy nesmí spadnout“ – nutné důsledné ošetření chyb, výjimek a edge-case situací.\\n- Všechny delší procesy musí být zobrazovány ve vyskakovacím dialogu s:\\n  - průběžným logováním kroků,\\n  - odhadem zbývajícího času (ETA),\\n  - procentuálním průběhem (0–100 %) pro celý krok i sub-kroky.\\n- UI se nesmí blokovat: síťové operace, uploady, polling, kopírování adresářů, zipování atd. musí běžet na pozadí (asynchronně / v jiném vlákně) tak, aby hlavní UI zůstalo responsivní.\\n- Pokud nějaká operace trvá déle než cca 3–5 sekund, program musí zobrazit pop-up okno, které informuje uživatele, co se děje, a zabrání dojmu „zamrznutí“.\\n\\n2.2 Logování\\n- V adresáři spuštění programu se musí vytvořit složka LOG/ (pokud neexistuje).\\n- Každý běh programu („run“) má vlastní Run ID ve formátu `RUN_<DDMMRRRRHHMM>_<random4>`.\\n- Každý request a response se ukládá jako samostatný soubor do LOG/.\\n- Název log souboru musí obsahovat:\\n  - název projektu (pokud je vyplněn),\\n  - ResponseID (nebo BatchID / C_RUN_ID / RUN_ID),\\n  - časový kód DDMMRRRHHMM (čas) – přesně v názvu.\\n\\nPovinné artefakty v LOG pro každý run:\\n- kompletní request JSON (odeslaný) – samostatný soubor,\\n- kompletní response JSON (přijatý) – samostatný soubor,\\n- kompletní „UI state“ (co bylo vyplněno a zvoleno) – samostatný soubor a zároveň embed v request logu, aby šel použít pro funkci LOAD REQUEST,\\n- manifesty:\\n  - mirror manifest (IN mirror),\\n  - diagnostické manifesty (Windows/SSH snapshot),\\n  - výstupní mapa uložených souborů (co se uložilo kam),\\n  - stavové logy kroků: uploady, pollingy, validace, retry, backoff, cancel.\\n\\nDetailní logování změn souborů:\\n- Logovat seznam všech souborů, které program:\\n  - přidal (nově vytvořil),\\n  - přepsal,\\n  - smazal (lokálně nebo na File API),\\n  - přesunul / zkopíroval,\\n  - vytvořil adresář.\\n- U každé změny logovat:\\n  - časové razítko,\\n  - původní cesta + cílová cesta,\\n  - velikost před/po (pokud existuje),\\n  - hash (např. SHA256) před/po, pokud je to rozumné (u velkých souborů volitelně – lze optimalizovat).\\n\\nLogování Files API:\\n- U uploadů na Files API logovat:\\n  - lokální path,\\n  - file_id,\\n  - purpose,\\n  - velikost,\\n  - timestamp uploadu.\\n- U mazání na Files API logovat:\\n  - file_id,\\n  - původní jméno (pokud dostupné),\\n  - timestamp.\\n\\nBatch logování:\\n- U batch jobů logovat:\\n  - vstupní JSONL,\\n  - výstupní JSONL,\\n  - error JSONL,\\n  - mapování `custom_id → path` (pokud je použito),\\n  - stavový průběh jobu (polling snapshots – průběžné stavy).\\n\\nSkripty (pokud jsou vyžádány diagnostikou OUT a přijdou v response):\\n- Uložit:\\n  - `readmerepair.txt`,\\n  - skripty,\\n  - log spuštění skriptu (stdout/stderr),\\n  - návratové kódy,\\n  - záznam o potvrzení uživatele před spuštěním (uživatel musí explicitně potvrdit spuštění skriptu).\\n\\n2.3 Kontrola logiky kombinací\\n- Program musí kontrolovat, že zvolené kombinace nastavení jsou přípustné (např. kompatibilita modelu s file_search, režimy A/B/QA/C, batch vs. non-batch, atd.).\\n- Nesmí odeslat request v neplatné kombinaci.\\n- Při chybné kombinaci musí zobrazit jasnou chybu s návrhem opravy (např. změna modelu, vypnutí určitého toolu, úprava režimu).\\n\\n2.4 Cenová evidence a nacenění\\n- Program musí přesně sledovat ceny za jednotlivé requesty i batch joby.\\n- Musí evidovat náklady na:\\n  - input tokens,\\n  - output tokens,\\n  - Batch (s ohledem na specifické batch pricing),\\n  - file_search a Vector store náklady (tool + storage).\\n- Důraz na přesnost a aktuálnost ceníku.\\n\\nUI pro ceny:\\n- V UI musí existovat samostatná obrazovka pro ceny pod tlačítkem „$“ v záhlaví (vedle API-KEY).\\n- Na hlavní ploše programu se ceny nezobrazují a neovlivňují workflow; ceny se řeší pouze v této samostatné obrazovce.\\n\\nElektronická účtenka:\\n- Pro každý běh vzniká „účtenka“ (detailní rozpad položek) a ukládá se:\\n  - do lokální databáze (SQLite),\\n  - jako exportovatelný JSON v LOG.\\n- Účtenky musí být filtrovatelné podle:\\n  - data,\\n  - projektu,\\n  - modelu,\\n  - režimu,\\n  - typu (A/B/QA/C),\\n  - obsahu zadání (fulltext),\\n  - ResponseID/BatchID.\\n- Musí být možné účtenky:\\n  - mazat,\\n  - exportovat,\\n  - sumarizovat za období.\\n\\nAktualizace ceníku:\\n- Program musí podporovat lokální cache „price table“ + ruční refresh z oficiálních podkladů (konfigurovatelné v SETTINGS).\\n- Musí podporovat i automatický refresh při startu (pokud je v SETTINGS zapnuto).\\n- Pokud program nemá aktuální ceny, musí:\\n  - jasně upozornit (banner/popup),\\n  - umožnit pokračovat, ale účtenka musí být označena jako „odhad / neověřeno“.\\n\\n3) Technologie a runtime požadavky\\n- Program je pro Windows 10 a Windows 11, běží lokálně na PC.\\n- UI musí být stabilní, podporovat dlouhé běhy a background operace (neblokovat UI).\\n- Použít standardní OpenAI SDK (Python nebo JS). Implementace musí být plně funkční.\\n\\nKomunikace s OpenAI:\\n- Responses API pro generování (s previous_response_id pro řetězení) – pro režimy A/B/QA.\\n- Files API pro upload/list/delete.\\n- Models endpoint pro list modelů.\\n- Vector store + file_search (pokud je zvolen IN režim a model to podporuje).\\n- Batch API – pro režim C a sledování batch jobů.\\n\\nDetekce capabilities modelu:\\n- Program musí umět detekovat capabilities modelu a podle toho:\\n  - nepoužít nepodporované tooly (zejména file_search),\\n  - přepnout se do fallback režimu dle pravidel v sekci 11.3.1 (a jen tam, kde je fallback definovaný a bezpečný).\\n\\n4) Assets a povinné soubory\\n\\n4.1 Fonty (TTF) – kritický kontrakt\\n- Povinné fonty v adresáři resources/:\\n  - resources/montserrat_bold.ttf (Montserrat Bold),\\n  - resources/montserrat_regular.ttf (Montserrat Regular).\\n- Při startu aplikace MUSÍ dojít k načtení/registraci obou fontů z lokálních assets.\\n- Tyto fonty MUSÍ být použity pro celé UI.\\n- Aplikace NESMÍ spoléhat na systémovou instalaci fontů.\\n- Jiné fonty/řezy jsou zakázané.\\n- Pokud font nelze načíst/registrovat, aplikace MUSÍ zobrazit chybový dialog ve stylu „Kájovo“ a korektně se ukončit.\\n- Build proces by měl kontrolovat hash souborů fontu (např. SHA-256), aby se nezměnila verze (doporučení, ne absolutní MUST, ale silně preferované).\\n\\n4.2 Degradovaný režim pro chybějící soubory (mimo fonty)\\n- Pokud jiný povinný soubor (ne font) chybí, uživatel musí dostat jasné hlášení.\\n- Program musí pokračovat v degradovaném režimu, pokud to dává bezpečný smysl.\\n- Vše se zaloguje včetně:\\n  - co přesně chybí,\\n  - jaký je dopad,\\n  - jaká omezení byla aktivována.\\n\\n5) Start aplikace, okno a automatická inicializace\\n\\n5.1 Hlavní okno\\n- Program se musí spustit v maximalizovaném okně na hlavním monitoru.\\n- Program nesmí znemožnit ovládání (žádné chování blokující systémové ovládání; dialogy a overlaye jsou v rámci aplikace a ovladatelné, program nesmí zůstat ve stavu „zamrzlo“).\\n\\n5.2 Jedna pracovní plocha, responsivní rozvržení do 1–3 sloupců\\n- Hlavní plocha je jedna scrollovatelná pracovní plocha („workspace“).\\n- Všechny sekce existují jako karty/sekce na této ploše.\\n- Layout je responsivní:\\n  - při velké šířce okna se sekce automaticky skládají do tří sloupců,\\n  - při menší šířce do dvou sloupců,\\n  - při malé šířce do jednoho sloupce.\\n- Nesmí existovat tvrdé fixní rozdělení na konkrétní sloupce (layout musí být fluidní/responsivní).\\n- Horizontální scroll na úrovni celé plochy se nepoužívá; horizontální scroll je povolen pouze v konkrétních multiline polích, kde je explicitně požadován.\\n\\n5.3 Automatická inicializace po startu\\n- Před zobrazením UI program automaticky (na pozadí, s progress dialogem) provede:\\n  - načtení aktuálního seznamu OpenAI modelů (pro uložený API key),\\n  - načtení aktuálního seznamu souborů na Files API,\\n  - načtení aktuálního seznamu existujících Vector Stores,\\n  - načtení stavu všech rozpracovaných Batch jobů a jejich zobrazení v Batch monitoru.\\n- Pokud API key chybí, místo toho se zobrazí jasná informace, že automatická inicializace není možná, a nabídne se uživateli otevřít dialog API-KEY.\\n\\n6) Záhlaví (toolbar) – tlačítka a chování\\n- V záhlaví obrazovky jsou tlačítka.\\n- Vlevo:\\n  1. API-KEY\\n  2. $ (CENY / ÚČTENKY / CENÍK)\\n  3. SETTINGS\\n  4. SAVE\\n  5. LOAD\\n  6. LOAD REQUEST\\n- Vpravo:\\n  7. EXIT\\n- Chování jednotlivých tlačítek bude specifikováno dále (v dalších částech zadání), ale zde je definována jejich existence a umístění.\\n\\n7) Dialog „API-KEY“\\n- Po stisknutí API-KEY se otevře vyskakovací dialog s jednořádkovým polem pro zadání API key pro OpenAI.\\n- Pod řádkem jsou tlačítka/volby:\\n\\n7.1 Uložit\\n- Uloží API key do systémových proměnných (system environment variables).\\n- Po uložení musí být program schopen key používat bez restartu (v aktuálním běhu).\\n\\n7.2 Zobraz\\n- Zobrazí viditelně v řádku API key, pokud je uložen v systémových proměnných (pravděpodobně přepnutí z maskovaného na čitelný text).\\n\\n7.3 Smazat\\n- Smaže uložený API key ze systémových proměnných.\\n\\n7.4 STORNO\\n- Zavře okno beze změn.\\n\\n8) SETTINGS\\n- Tlačítko SETTINGS otevře samostatné okno (mimo hlavní pracovní plochu).\\n- SETTINGS slouží pouze pro nastavení chodu programu, nikoliv pro konfiguraci konkrétních requestů.\\n\\nSETTINGS musí obsahovat minimálně:\\n- Lokace lokální databáze (default v adresáři programu).\\n- Limity logování (rotace / max velikost / max počet runů).\\n- Politika retry/backoff (limity, jitter, max pokusů, circuit breaker).\\n- Ceník: zdroj (URL / lokální), refresh, cache TTL, auto-refresh při startu.\\n- Bezpečnost:\\n  - volitelné maskování tajemství v logu (default OFF, ale musí existovat varování o riziku nemaskování),\\n  - volitelné šifrování logů (default OFF),\\n  - panic wipe lokální cache (tlačítko pro nouzové smazání lokálních dat/cache).\\n- Batch polling interval a timeouty.\\n- Výchozí model a defaultní teploty dle politiky.\\n- Povolení/konfigurace post-run hooks (lokálně/SSH).\\n- Allow/deny list přípon a cest (glob patterns) odděleně pro IN mirror a diagnostické snapshoty.\\n- Volitelný dry-run režim pro MODIFY (pravděpodobně pro operace, které mění soubory/systém, aby šlo simulovat bez reálných změn).\\n\\n9) $ (CENY) – samostatná obrazovka\\n- Tlačítko $ otevře samostatnou obrazovku.\\n\\n9.1 Přehled ceníku\\n- Na této obrazovce bude tabulka cen per model:\\n  - cena za input token,\\n  - cena za output token,\\n  - batch pricing (pokud relevantní pro daný model),\\n  - náklady na tooly (file_search),\\n  - storage náklady (vector store),\\n- Zobrazuje se datum poslední aktualizace ceníku.\\n\\nTento chunk pokrývá obecné zásady robustnosti, logování, pricingu, základní technologické požadavky, práci s fonty, start aplikace, layout hlavního okna, toolbar tlačítka, dialog API-KEY, SETTINGS a základ ceníkové obrazovky. Další sekce (např. detailní workflow, režimy A/B/QA/C, TOKENS, KONTRAKTY stavů, specifikace komponent, layout detailů) budou pravděpodobně popsány v následujících chuncích a mají vyšší prioritu dle definované precedence.\",\"chunk_index\":1,\"chunk_count\":8,\"notes\":[\"Zachovat striktní precedence pravidel: TOKENS/KONTRAKTY > komponenty > layout > obecná pravidla > ostatní logika.\",\"Fonty Montserrat (bold/regular) z resources jsou kritický kontrakt – bez nich se aplikace musí ukončit po zobrazení chybového dialogu.\",\"Logování je extrémně detailní: per-run složka, request/response JSON, UI state, manifesty, file operace, Files API, Batch API, skripty a jejich spuštění.\",\"UI musí být neblokující, všechny delší operace běží na pozadí s progress dialogem, ETA a procenty.\",\"Cenová evidence je oddělena do samostatné obrazovky ($), hlavní workflow nesmí být cenami zahlceno.\",\"API key se spravuje přes dialog, ukládá se do systémových proměnných a je okamžitě použitelný bez restartu.\",\"SETTINGS slouží pouze pro provozní nastavení (DB, logy, retry, ceník, bezpečnost, batch, default modely, hooks, allow/deny listy, dry-run).\",\"Při startu probíhá automatická inicializace (models, files, vector stores, batch jobs), pokud je k dispozici API key; jinak se zobrazí informace a nabídka otevřít API-KEY dialog.\",\"Program musí detekovat capabilities modelu a nepoužívat nepodporované tooly (zejména file_search), případně bezpečně přepnout na definovaný fallback.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 3817,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 4420,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 8237
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767867908,
+    "store": true
+  }
+}

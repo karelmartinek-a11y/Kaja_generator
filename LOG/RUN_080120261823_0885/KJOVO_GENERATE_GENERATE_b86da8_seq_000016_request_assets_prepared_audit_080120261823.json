@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261823_0885",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_b86da8",
+    "event": "request_assets_prepared",
+    "sequence": 16,
+    "logged_at": "2026-01-08T17:23:38.943638"
+  },
+  "details": {
+    "event": "request_assets_prepared",
+    "level": "info",
+    "details": {
+      "mode": "GENERATE",
+      "attachments": 3,
+      "attachment_ids": 3,
+      "vector_store_id": "vs_695fe816fd988191ae3b2df190aa6aa0",
+      "file_search_enabled": true,
+      "attachments_in_vector_store": true,
+      "attachments_as_input_files": false
+    },
+    "timestamp": "2026-01-08T17:23:38.943631"
+  }
+}

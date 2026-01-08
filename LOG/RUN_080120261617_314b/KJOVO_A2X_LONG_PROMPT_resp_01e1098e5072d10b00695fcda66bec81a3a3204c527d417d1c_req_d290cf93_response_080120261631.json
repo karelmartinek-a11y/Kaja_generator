@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261617_314b",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_01e1098e5072d10b00695fcda66bec81a3a3204c527d417d1c",
+    "logged_at": "2026-01-08T15:31:19.763969",
+    "request_id": "d290cf93"
+  },
+  "payload": {
+    "id": "resp_01e1098e5072d10b00695fcda66bec81a3a3204c527d417d1c",
+    "created_at": 1767886246.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_01e1098e5072d10b00695fcda6bea481a38a07e86c4b70db15",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk pokračuje v nefunkčních požadavcích, přidává explicitní omezení (constraints) a začíná detailní architekturou modulů.\\n\\nNefunkční požadavky (pokračování):\\n- Paměťová náročnost musí být omezená; velké výstupy (zejména logy) se mají streamovat přímo do souborů, ne držet celé v paměti.\\n- Kód musí být modulární s jasně definovanými rozhraními mezi moduly, aby bylo snadné přidávat nové diagnostické sekce.\\n- Logování má být stručné, informativní a nesmí logovat citlivá data.\\n- Chybové stavy musí být robustně ošetřeny; selhání sběru jedné sekce nesmí ukončit celou diagnostiku.\\n- Projekt musí být snadno spustitelný z příkazové řádky, bez nutnosti instalace jako služba.\\n- Struktura adresářů a názvy souborů musí být kompatibilní s běžnými archivačními nástroji (zip, tar) a nesmí obsahovat problematické znaky.\\n- Kód musí být přenositelný mezi různými verzemi Ubuntu a Windows bez úprav, s detekcí dostupnosti konkrétních nástrojů.\\n\\nGlobální omezení (constraints):\\n- Nesmí být použity žádné externí soubory kromě těch, které diagnostika sama generuje jako výstup.\\n- Během běhu diagnostiky nesmí být prováděny žádné síťové požadavky; sběr dat je čistě lokální.\\n- Nesmí být exportována žádná tajemství (hesla, privátní klíče, tokeny, obsah citlivých konfigurací); taková data musí být redigována nebo vůbec nečtena.\\n- Chybějící subsystémy nebo nedostupné informace musí být explicitně označeny jako NOT PRESENT nebo ACCESS DENIED, nikoli ponechány prázdné.\\n- Výstupní formát a struktura pro Ubuntu a Windows jsou pevně dány existujícími návrhy a tento plán je nesmí měnit.\\n- Projekt nesmí zavádět nové technické požadavky, struktury ani pravidla nad rámec již shrnutých částí master zadání.\\n- UI design standard je závazný pouze pro případné budoucí GUI; aktuální CLI implementace nesmí zavádět grafické závislosti.\\n- Názvy modulů, funkcí a datových modelů musí být stabilní a konzistentní, aby na ně bylo možné navázat v dalších fázích (STRUCTURE, FILE_CONTENT).\\n\\nArchitektura – přehled modulů (začátek):\\n\\n1) diagnostics_main\\n- Role: hlavní entrypoint aplikace, orchestruje běh diagnostiky podle detekovaného OS nebo parametrů CLI.\\n- Exporty: main(argv: list[str]) -> int, run_from_cli() -> None.\\n- Závislosti: cli_interface, os_detection, ubuntu_diagnostics_runner, windows_diagnostics_runner, logging_setup, error_reporting.\\n- Očekávané chování: načte argumenty, detekuje platformu (pokud není explicitně zadána), spustí odpovídající runner, zajistí návratové kódy dle specifikace (0 pro úspěch, nenulové pro fatální chyby).\\n\\n2) cli_interface\\n- Role: parsování argumentů příkazové řádky a validace vstupů.\\n- Exporty: parse_args(argv: list[str]) -> argparse.Namespace, print_help() -> None.\\n- Závislosti: standardní knihovna argparse.\\n- Očekávané možnosti: volba platformy, výstupního adresáře, úrovně detailu, vypnutí vybraných sekcí.\\n\\n3) os_detection\\n- Role: detekce platformy a verze OS.\\n- Exporty: detect_platform() -> Literal['ubuntu','windows','unknown'], get_os_version() -> str.\\n- Závislosti: platform, sys, os.\\n- Musí deterministicky rozhodnout, kterou diagnostiku spustit, a poskytnout informaci o verzi OS pro záznam.\\n\\n4) ubuntu_diagnostics_runner\\n- Role: orchestrace všech Ubuntu sběrných modulů a zápis výstupů dle definované struktury pro Ubuntu web server.\\n- Exporty: run_ubuntu_diagnostics(output_dir: str) -> None.\\n- Závislosti: ubuntu_collectors, manifest_writer, path_layout, io_safety, redaction, logging_setup, error_reporting, summary_report.\\n- Očekávané chování: vytvoří adresářovou strukturu, volá jednotlivé collect_* funkce, zapisuje výsledky do souborů, aktualizuje manifest, zachytává chyby na úrovni sekcí a zapisuje je do errors.log.\\n\\n5) windows_diagnostics_runner\\n- Role: orchestrace všech Windows sběrných modulů a zápis výstupů dle struktury FULL Windows Diagnostics.\\n- Exporty: run_windows_diagnostics(output_dir: str) -> None.\\n- Závislosti: windows_collectors, manifest_writer, path_layout, io_safety, redaction, logging_setup, error_reporting, summary_report.\\n- Očekávané chování: analogické k ubuntu_diagnostics_runner, ale pro všechny podsložky Windows diagnostiky (system, registry, filesystem, python, processes_services, network, security, hardware, storage, drivers, devtools, virtualization, wsl, logs), s označováním NOT PRESENT/ACCESS DENIED.\\n\\n6) ubuntu_collectors\\n- Role: implementace konkrétních sběrných funkcí pro Ubuntu (zejména web server).\\n- Exporty (příklady):\\n  - collect_ubuntu_system_info() -> SystemInfo\\n  - collect_ubuntu_web_server_config() -> WebServerConfigSummary\\n  - collect_ubuntu_network() -> list[NetworkEndpoint]\\n  - collect_ubuntu_logs(limit_bytes: int) -> list[LogFileSummary]\\n  - collect_ubuntu_packages() -> list[PackageInfo]\\n  - collect_ubuntu_services() -> list[ServiceStatus]\\n  - collect_ubuntu_filesystem() -> list[FilesystemEntry]\\n- Závislosti: subprocess, os, data_models, redaction, logging_setup.\\n- Musí respektovat zásady neexportování tajemství a případně používat limit_bytes a streamování pro logy.\\n\\n7) windows_collectors\\n- Role: implementace konkrétních sběrných funkcí pro Windows FULL Diagnostics.\\n- Exporty (příklady):\\n  - collect_windows_system() -> SystemInfo\\n  - collect_windows_registry() -> RegistrySummary\\n  - collect_windows_filesystem() -> list[FilesystemEntry]\\n  - collect_windows_python() -> PythonEnvironmentSummary\\n  - collect_windows_processes_services() -> ProcessesServicesSummary\\n  - collect_windows_network() -> list[NetworkEndpoint]\\n  - collect_windows_security() -> SecuritySummary\\n  - collect_windows_hardware() -> HardwareSummary\\n  - collect_windows_storage() -> StorageSummary\\n  - collect_windows_drivers() -> DriversSummary\\n  - collect_windows_devtools() -> DevToolsSummary\\n  - collect_windows_virtualization() -> VirtualizationSummary\\n  - collect_windows_wsl() -> WslSummary\\n  - collect_windows_logs(limit_bytes: int) -> list[LogFileSummary]\\n- Závislosti: subprocess, os, platform-specific nástroje (PowerShell, WMI), data_models, redaction, logging_setup.\\n- Musí označovat chybějící subsystémy jako NOT PRESENT a nedostupná data jako ACCESS DENIED.\\n\\n8) manifest_writer\\n- Role: generování MANIFEST.md a dalších indexových souborů.\\n- Exporty:\\n  - ManifestItem (dataclass)\\n  - Manifest (dataclass)\\n  - create_manifest(root_dir: str, platform: str) -> Manifest\\n  - write_manifest(manifest: Manifest, path: str) -> None\\n  - add_manifest_item(manifest: Manifest, item: ManifestItem) -> None\\n- Závislosti: os, data_models, io_safety.\\n- Očekávané chování: udržuje index všech generovaných souborů, včetně velikosti, stručného popisu a poznámek o redakci či nedostupnosti.\\n\\n9) data_models\\n- Role: definice sdílených datových modelů pro diagnostiku.\\n- Exporty (dataclasses):\\n  - SystemInfo\\n  - NetworkEndpoint\\n  - ServiceStatus\\n  - FilesystemEntry\\n  - LogFileSummary\\n  - PackageInfo\\n  - WebServerConfigSummary\\n  - RegistrySummary\\n  - PythonEnvironmentSummary\\n  - ProcessesServicesSummary\\n  - SecuritySummary\\n  - HardwareSummary\\n  - StorageSummary\\n  - DriversSummary\\n  - DevToolsSummary\\n  - VirtualizationSummary\\n  - WslSummary\\n  - DiagnosticSectionSummary\\n  - ManifestItem\\n  - Manifest\\n- Závislosti: dataclasses, typing.\\n- Slouží jako jednotný typový základ pro výstupy collectorů i manifest.\\n\\n10) redaction\\n- Role: redakce citlivých údajů z textu a cest.\\n- Exporty:\\n  - redact_secrets(text: str) -> str\\n  - redact_path(path: str) -> str\\n  - contains_potential_secret(text: str) -> bool\\n- Závislosti: re, os, logging_setup.\\n- Musí implementovat heuristiky pro detekci a maskování tajemství a být použita všude, kde hrozí únik citlivých dat.\\n\\nChunk končí u definice modulu io_safety (název uveden, ale detailní popis pokračuje v dalším chunku). Celkově tento úsek doplňuje nefunkční požadavky (paměť, modularita, logování, robustnost, přenositelnost), stanovuje tvrdá omezení (bez sítě, bez externích souborů, bez tajemství) a rozpracovává architekturu klíčových modulů včetně jejich exportů a závislostí. Tyto definice jsou závazné pro další fáze návrhu a implementace a musí zůstat stabilní.\",\"chunk_index\":2,\"chunk_count\":6,\"notes\":[\"Zachovat všechna omezení: žádné síťové požadavky, žádné externí soubory kromě výstupu, žádná tajemství ve výstupech, explicitní NOT PRESENT/ACCESS DENIED.\",\"Názvy modulů, funkcí a datových tříd uvedené v architektuře jsou stabilní API pro další fáze (STRUCTURE, FILE_CONTENT) a nesmí se měnit.\",\"Implementace musí respektovat paměťová omezení (streamování logů) a modularitu (jasná rozhraní mezi moduly).\",\"io_safety je pouze naznačen, jeho detailní popis je v následujícím chunku a je nutné jej zkombinovat s tímto shrnutím.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 3844,
+      "input_tokens_details": {
+        "cached_tokens": 3840
+      },
+      "output_tokens": 2513,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 6357
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767886279,
+    "store": true
+  }
+}

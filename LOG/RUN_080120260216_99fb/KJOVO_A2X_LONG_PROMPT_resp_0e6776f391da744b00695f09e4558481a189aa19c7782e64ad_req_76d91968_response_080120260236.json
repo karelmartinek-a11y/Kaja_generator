@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260216_99fb",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_0e6776f391da744b00695f09e4558481a189aa19c7782e64ad",
+    "logged_at": "2026-01-08T01:36:00.977289",
+    "request_id": "76d91968"
+  },
+  "payload": {
+    "id": "resp_0e6776f391da744b00695f09e4558481a189aa19c7782e64ad",
+    "created_at": 1767836132.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0e6776f391da744b00695f09e5083481a1bd01a0502d9abe2b",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk pokračuje v návrhu modulární struktury projektu „CrossPlatformDiagSuite“ a navazuje na předchozí popis balíčků core, serializers a modules. Zaměřuje se na registr diagnostických modulů a na konkrétní implementační soubory pro Linux a Windows collectory.\\n\\n1) modules/registry.py\\n- Purpose: Registr diagnostických modulů a scénářů.\\n- EXPORTS:\\n  - Třída `ModuleRegistry` s metodami:\\n    - `register_module(name: str, func: callable)` – registrace diagnostického modulu pod daným jménem.\\n    - `get_module(name: str) -> callable` – získání registrovaného modulu podle jména.\\n    - `list_modules() -> list[str]` – výpis všech registrovaných modulů.\\n  - Třída `ScenarioRegistry` s metodami:\\n    - `register_scenario(defn: DiagnosticScenarioDefinition)` – registrace scénáře na základě definice.\\n    - `get_scenario(name: str) -> DiagnosticScenarioDefinition` – získání scénáře podle jména.\\n    - `list_scenarios() -> list[DiagnosticScenarioDefinition]` – výpis všech registrovaných scénářů.\\n- IMPORTS:\\n  - `DiagnosticScenarioDefinition` z `core/shared_models.py`.\\n  - Z `typing`: `Callable`, `Dict`, `List`.\\n  - `get_logger` ze `serializers/logger.py` pro logování registrací a přístupů.\\n\\n2) modules/linux/__init__.py\\n- Purpose: Inicializace linuxového balíčku modulů a registrace linuxových collectors do `ModuleRegistry`.\\n- EXPORTS:\\n  - Funkce `register_linux_modules(registry: ModuleRegistry) -> None` – zaregistruje všechny linuxové sběrné funkce (collectors) do předaného registru.\\n- IMPORTS:\\n  - `ModuleRegistry` z `modules/registry.py`.\\n  - `collect_linux_system_info` z `modules/linux/system_info.py`.\\n  - `collect_linux_cpu_info`, `collect_linux_memory_info`, `collect_linux_disk_info` z `modules/linux/hardware.py`.\\n  - `collect_linux_network_info` z `modules/linux/network.py`.\\n  - `collect_linux_process_list`, `collect_linux_services` z `modules/linux/processes.py`.\\n  - `collect_linux_logs` z `modules/linux/logs.py`.\\n  - `get_logger` ze `serializers/logger.py`.\\n\\n3) modules/linux/system_info.py\\n- Purpose: Sběr základních systémových informací na Linuxu.\\n- EXPORTS:\\n  - Funkce `collect_linux_system_info() -> DiagnosticModuleResult[SystemInfo]` – vrací výsledek modulu obsahující `SystemInfo` nebo chybu.\\n- IMPORTS:\\n  - `SystemInfo`, `DiagnosticModuleResult`, `DiagnosticErrorInfo` z `core/shared_models.py`.\\n  - Standardní moduly `platform`, `os`.\\n  - Z `typing`: `Optional` (např. pro volitelné hodnoty v `SystemInfo`).\\n  - `get_logger` ze `serializers/logger.py`.\\n\\n4) modules/linux/hardware.py\\n- Purpose: Sběr informací o CPU, paměti a discích na Linuxu.\\n- EXPORTS:\\n  - `collect_linux_cpu_info() -> DiagnosticModuleResult[CpuInfo]`.\\n  - `collect_linux_memory_info() -> DiagnosticModuleResult[MemoryInfo]`.\\n  - `collect_linux_disk_info() -> DiagnosticModuleResult[list[DiskInfo]]`.\\n- IMPORTS:\\n  - `CpuInfo`, `MemoryInfo`, `DiskInfo`, `DiagnosticModuleResult`, `DiagnosticErrorInfo` z `core/shared_models.py`.\\n  - Knihovna `psutil` (pokud je k dispozici) pro získávání HW údajů.\\n  - Z `typing`: `List`.\\n  - `get_logger` ze `serializers/logger.py`.\\n\\n5) modules/linux/network.py\\n- Purpose: Sběr informací o síťových rozhraních a konfiguraci na Linuxu.\\n- EXPORTS:\\n  - `collect_linux_network_info() -> DiagnosticModuleResult[list[NetworkInterfaceInfo]]` – vrací seznam síťových rozhraní a jejich stav.\\n- IMPORTS:\\n  - `NetworkInterfaceInfo`, `DiagnosticModuleResult`, `DiagnosticErrorInfo` z `core/shared_models.py`.\\n  - `psutil` pro enumeraci síťových rozhraní.\\n  - `subprocess` pro volání systémových nástrojů (např. ip, ifconfig).\\n  - Z `typing`: `List`.\\n  - `get_logger` ze `serializers/logger.py`.\\n\\n6) modules/linux/processes.py\\n- Purpose: Sběr informací o běžících procesech a službách na Linuxu.\\n- EXPORTS:\\n  - `collect_linux_process_list() -> DiagnosticModuleResult[list[ProcessInfo]]` – seznam procesů.\\n  - `collect_linux_services() -> DiagnosticModuleResult[list[ServiceInfo]]` – seznam služeb/daemonů.\\n- IMPORTS:\\n  - `ProcessInfo`, `ServiceInfo`, `DiagnosticModuleResult`, `DiagnosticErrorInfo` z `core/shared_models.py`.\\n  - `psutil` pro procesy.\\n  - `subprocess` pro dotazy na služby (systemd, service, init skripty apod.).\\n  - Z `typing`: `List`.\\n  - `get_logger` ze `serializers/logger.py`.\\n\\n7) modules/linux/logs.py\\n- Purpose: Sběr logů dle specifikace na Linuxu (např. syslog, journald).\\n- EXPORTS:\\n  - `collect_linux_logs() -> DiagnosticModuleResult[None]` – modul, který shromáždí logové soubory nebo výstupy do cílového adresáře; datová část může být prázdná (`None`), důležitý je side-effect (kopie logů).\\n- IMPORTS:\\n  - `DiagnosticModuleResult`, `DiagnosticErrorInfo` z `core/shared_models.py`.\\n  - `subprocess` (např. pro `journalctl`).\\n  - `pathlib.Path` pro práci s cestami k logům.\\n  - `shutil` pro kopírování/archivaci logových souborů.\\n  - `get_logger` ze `serializers/logger.py`.\\n\\n8) modules/windows/__init__.py\\n- Purpose: Inicializace windowsového balíčku modulů a registrace windows collectors do `ModuleRegistry`.\\n- EXPORTS:\\n  - Funkce `register_windows_modules(registry: ModuleRegistry) -> None` – zaregistruje všechny windows-specific collectory.\\n- IMPORTS:\\n  - `ModuleRegistry` z `modules/registry.py`.\\n  - `collect_windows_system_info` z `modules/windows/system_info.py`.\\n  - `collect_windows_cpu_info`, `collect_windows_memory_info`, `collect_windows_disk_info`, `collect_windows_network_info` z `modules/windows/hardware.py`.\\n  - `collect_windows_process_list`, `collect_windows_services` z `modules/windows/processes_services.py`.\\n  - `collect_windows_event_logs` z `modules/windows/event_logs.py`.\\n  - `get_logger` ze `serializers/logger.py`.\\n\\n9) modules/windows/system_info.py\\n- Purpose: Sběr základních systémových informací na Windows.\\n- EXPORTS:\\n  - `collect_windows_system_info() -> DiagnosticModuleResult[SystemInfo]` – vrací základní údaje o OS, verzi, hostname atd.\\n- IMPORTS:\\n  - `SystemInfo`, `DiagnosticModuleResult`, `DiagnosticErrorInfo` z `core/shared_models.py`.\\n  - Standardní moduly `platform`, `os`.\\n  - Z `typing`: `Optional`.\\n  - Windows-specific knihovny `win32api` nebo `wmi` (pokud jsou k dispozici) pro detailnější systémové informace.\\n  - `get_logger` ze `serializers/logger.py`.\\n\\n10) modules/windows/hardware.py\\n- Purpose: Sběr informací o CPU, paměti, discích a síti na Windows.\\n- EXPORTS:\\n  - `collect_windows_cpu_info() -> DiagnosticModuleResult[CpuInfo]`.\\n  - `collect_windows_memory_info() -> DiagnosticModuleResult[MemoryInfo]`.\\n  - `collect_windows_disk_info() -> DiagnosticModuleResult[list[DiskInfo]]`.\\n  - `collect_windows_network_info() -> DiagnosticModuleResult[list[NetworkInterfaceInfo]]`.\\n- IMPORTS:\\n  - `CpuInfo`, `MemoryInfo`, `DiskInfo`, `NetworkInterfaceInfo`, `DiagnosticModuleResult`, `DiagnosticErrorInfo` z `core/shared_models.py`.\\n  - `psutil` pro cross-platform přístup k HW údajům.\\n  - Z `typing`: `List`.\\n  - Windows-specific knihovny `win32api` nebo `wmi` pro doplňující informace.\\n  - `get_logger` ze `serializers/logger.py`.\\n\\nChunk koncepčně doplňuje architekturu: definuje centrální registr modulů a scénářů a konkrétní implementační soubory pro Linux a Windows collectory. Každý collector vrací `DiagnosticModuleResult[T]` s typově specifickými daty (`SystemInfo`, `CpuInfo`, seznamy `DiskInfo`, `NetworkInterfaceInfo`, `ProcessInfo`, `ServiceInfo` nebo `None` u log collectoru). Všechny moduly používají sdílené datové modely z `core/shared_models.py` a centralizované logování přes `serializers.logger.get_logger`. Linuxové a Windows balíčky mají vlastní `__init__` modul, který poskytuje funkci pro hromadnou registraci všech collectors do `ModuleRegistry`, což umožňuje `DiagnosticRunner` (z předchozího chunku) dynamicky objevovat a spouštět moduly podle scénářů definovaných v `ScenarioRegistry`. Tento chunk tak rozpracovává platform-specific vrstvu diagnostických modulů a jejich napojení na jádro systému a registr scénářů/modulů.\",\"chunk_index\":7,\"chunk_count\":10,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4432,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2327,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 6759
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767836160,
+    "store": true
+  }
+}

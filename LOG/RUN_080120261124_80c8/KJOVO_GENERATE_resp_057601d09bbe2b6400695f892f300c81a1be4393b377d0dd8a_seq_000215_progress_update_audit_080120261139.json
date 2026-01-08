@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261124_80c8",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_057601d09bbe2b6400695f892f300c81a1be4393b377d0dd8a",
+    "event": "progress_update",
+    "sequence": 215,
+    "logged_at": "2026-01-08T10:39:12.957303"
+  },
+  "details": {
+    "event": "progress_update",
+    "level": "info",
+    "details": {
+      "message": "A1: komprimuji instructions_reshrink (2/2)",
+      "ratio": 0.1
+    },
+    "timestamp": "2026-01-08T10:39:12.957290"
+  }
+}

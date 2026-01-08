@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261903_17dc",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_0e9aecba62d8fd0c00695ff3589e94819297c91448cd6e9113",
+    "logged_at": "2026-01-08T18:12:28.857519",
+    "request_id": "8540382f"
+  },
+  "payload": {
+    "id": "resp_0e9aecba62d8fd0c00695ff3589e94819297c91448cd6e9113",
+    "created_at": 1767895896.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0e9aecba62d8fd0c00695ff359141081929979927a5738c622",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Navazuje se na specifikaci FULL Ubuntu (Web Server) Diagnostics, doplňuje další části balíku a ukázkový automatizovaný sběr.\\n\\n28.17 certs/ (dokončení z předchozího chunku)\\n- `tls_private_keys_presence.txt` – pouze detekce přítomnosti privátních klíčů (např. existence souborů v typických cestách), ale nikdy se neexportuje jejich obsah. Bezpečnostní zásada: žádné privátní klíče v diagnostice.\\n\\n28.18 cron_webhooks/\\n- Cíl: zmapovat cron úlohy a webhook endpointy související s web/app, bez úniku tajemství.\\n- Soubory:\\n  - `crontab_root.txt` – výstup `crontab -l` pro uživatele root.\\n  - `crontab_users_listing.txt` – přehled, kteří uživatelé mají vlastní crontab (např. podle /var/spool/cron/crontabs nebo jiného mechanismu). Neřeší se obsah všech crontabů do detailu, primárně inventář.\\n  - `system_cron_dirs_tree.txt` – listing systémových cron adresářů `/etc/cron.*` (cron.daily, cron.hourly, cron.weekly, cron.monthly, cron.d). Cílem je vidět, jaké skripty se spouštějí periodicky.\\n  - `webhook_endpoints_inventory.txt` – soupis webhook endpointů odvozený z nginx/app konfigurace. Zapisují se pouze URL/endpointy a související metadata (např. soubor, kde byly nalezeny), ale ne tajné tokeny, API klíče ani celé konfigurační soubory.\\n\\n28.19 logs/\\n- Cíl: získat reprezentativní výřezy z logů pro rychlou diagnostiku, bez stahování celých obřích logů.\\n- Soubory:\\n  - `journal_nginx_last500.txt` – `journalctl -u nginx -n 500 --no-pager`; posledních 500 záznamů z journald pro službu nginx.\\n  - `journal_app_last500.txt` – `journalctl -u <app> -n 500 --no-pager` pro aplikační službu, pokud existuje (název jednotky je konfigurovatelný). Opět jen posledních 500 záznamů.\\n  - `journal_db_last500.txt` – obdobně pro databázovou službu (PostgreSQL/MySQL/MariaDB apod.), pokud je přítomna.\\n  - `syslog_tail.txt` – tail z `/var/log/syslog` (na Ubuntu) nebo fallback přes `journalctl` (např. posledních N řádků). Cílem je zachytit obecné systémové události.\\n  - `auth_log_tail.txt` – tail z `/var/log/auth.log` (přihlašování, sudo, ssh). Poznámka „opatrně“: může obsahovat citlivější informace (uživatelská jména, IP adresy), ale stále ne hesla; je třeba zvážit rozsah a případné redigování.\\n  - `kernel_log_tail.txt` – `journalctl -k -n 400 --no-pager`; posledních 400 kernel log záznamů (např. OOM, disk chyby, síťové chyby).\\n\\n28.20 virtualization_containers/\\n- Cíl: zjistit, zda server používá Docker nebo lehké Kubernetes distribuce a jaké kontejnery běží.\\n- Soubory:\\n  - `docker_info.txt` – výstup `docker info` (pokud je docker nainstalován a dostupný). Obsahuje informace o verzi, storage driveru, počtu kontejnerů atd.\\n  - `docker_ps.txt` – `docker ps -a` (pokud je docker). Přehled běžících i zastavených kontejnerů, jejich image, porty, status.\\n  - `docker_compose_files_found.txt` – nalezené soubory `docker-compose*.yml` (jen cesty a metadata – např. velikost, práva, hash; neobsah). Slouží k identifikaci docker-compose stacků.\\n  - `k8s_hint.txt` – stručná informace, zda je přítomen microk8s/k3s (např. výstup `microk8s status`, `k3s --version` nebo podobný indikátor). Cílem je jen detekce a základní stav, ne kompletní k8s diagnostika.\\n\\n28.21 Automatizovaný sběr – doporučený běh\\n- Doporučený postup pro FULL Ubuntu (Web Server) Diagnostics:\\n  1. Na Ubuntu serveru spustit sběr pomocí bash skriptu, který:\\n     - vygeneruje časové razítko `timestamp=$(date +%Y%m%d-%H%M%S)`;\\n     - vytvoří kořenový adresář `Diag_YYYYMMDD-HHMMSS/` (např. `/root/Diag_20250101-120000`);\\n     - vytvoří v něm podsložky (system, hardware, storage, network, firewall, users_permissions, processes_services, packages, web, nginx, app, atd. – dle specifikace) a naplní je výstupy příslušných příkazů.\\n  2. Volitelně se celý adresář stáhne na Windows (nebo jiný klient) přes SCP/SFTP pro další analýzu.\\n- Tento krok je koncepční – popisuje, jak má vypadat orchestrátor sběru, ne kompletní finální skript.\\n\\n28.22 Jednořádkový příkaz z Windows PowerShellu (remote sběr + stažení)\\n- Cíl: umožnit uživateli na Windows spustit vzdálený sběr diagnostiky na Ubuntu serveru přes SSH, ideálně pomocí SSH klíče (bez hesla v příkazu), a následně si balík stáhnout.\\n- Varianta A (doporučená): použití SSH klíče, žádné heslo v příkazu.\\n- Ukázka PowerShell skriptu (vloženého do proměnné `$script`), který se pak pošle na server přes SSH:\\n  - Na začátku se definují proměnné:\\n    - `$ip=\\\"<IP_ADDRESS>\\\"; $user=\\\"root\\\";` – IP adresa serveru a uživatel (např. root nebo jiný admin účet).\\n    - `$script=@' ... '@` – here-string obsahující bash skript, který se má na serveru spustit.\\n  - Bash skript uvnitř here-stringu:\\n    - `#!/usr/bin/env bash`\\n    - `set -o pipefail` – aby se chyba v pipe propagovala jako chyba celého příkazu.\\n    - `set +e` – skript nepřestane při prvním chybovém kódu (některé příkazy mohou chybět, ale sběr má pokračovat).\\n    - `timestamp=$(date +%Y%m%d-%H%M%S)` – generování časového razítka.\\n    - `remote_root=\\\"/root/Diag_${timestamp}\\\"` – kořenový adresář diagnostiky.\\n    - `mkdir -p \\\"$remote_root\\\"` – vytvoření kořene.\\n\\n  - Následuje série bloků, které vždy:\\n    1. vytvoří cílový podadresář `mkdir -p \\\"$remote_root/<subdir>\\\"`;\\n    2. spustí příkaz a přesměruje výstup do konkrétního souboru v daném podadresáři, včetně stderr (`2>&1`).\\n\\n  - Příklady z ukázky (ne nutně 1:1 s dříve definovanou FULL strukturou, ale koncept je podobný):\\n\\n    System:\\n    - `mkdir -p \\\"$remote_root/system\\\"`\\n      - `(cat /etc/os-release) > \\\"$remote_root/system/os_release.txt\\\" 2>&1`\\n      - `(uname -a) > \\\"$remote_root/system/uname.txt\\\" 2>&1`\\n      - `(uptime && who -b) > \\\"$remote_root/system/uptime.txt\\\" 2>&1`\\n      - `(locale && timedatectl) > \\\"$remote_root/system/locale_timezone.txt\\\" 2>&1`\\n      - `(hostnamectl && cat /etc/hosts && cat /etc/hostname) > \\\"$remote_root/system/hostname_hosts.txt\\\" 2>&1`\\n      - `(sysctl -a) > \\\"$remote_root/system/sysctl_all.txt\\\" 2>&1`\\n      - `(ulimit -a && ls /etc/security/limits.conf /etc/security/limits.d 2>/dev/null) > \\\"$remote_root/system/limits_summary.txt\\\" 2>&1`\\n      - `(systemctl --failed) > \\\"$remote_root/system/systemd_failed_units.txt\\\" 2>&1`\\n      - `(systemctl list-units --type=service --state=running) > \\\"$remote_root/system/systemd_running_units.txt\\\" 2>&1`\\n      - `(journalctl -b -p err..alert --no-pager) > \\\"$remote_root/system/journal_boot_errors.txt\\\" 2>&1`\\n      - `(env | grep -v -E '(PASS|KEY|SECRET|TOKEN|PASSWORD)') > \\\"$remote_root/system/env_root_sanitized.txt\\\" 2>&1` – environment proměnné s filtrem na potenciálně citlivé názvy.\\n\\n    Hardware:\\n    - `mkdir -p \\\"$remote_root/hardware\\\"`\\n      - `(lscpu) > \\\"$remote_root/hardware/cpu.txt\\\" 2>&1`\\n      - `(dmidecode -t memory) > \\\"$remote_root/hardware/memory_modules.txt\\\" 2>&1`\\n      - `(free -h) > \\\"$remote_root/hardware/memory_summary.txt\\\" 2>&1`\\n\\n    Storage:\\n    - `mkdir -p \\\"$remote_root/storage\\\"`\\n      - `(lsblk -o NAME,SIZE,TYPE,MOUNTPOINT,FSTYPE) > \\\"$remote_root/storage/volumes.txt\\\" 2>&1`\\n      - `(mount | column -t) > \\\"$remote_root/storage/mount_points.txt\\\" 2>&1`\\n      - `(if command -v smartctl >/dev/null 2>&1; then for dev in /dev/sd?; do smartctl -H \\\"$dev\\\"; done; else echo 'smartctl missing'; fi) > \\\"$remote_root/storage/smart_status.txt\\\" 2>&1` – health check disků, pokud je smartctl k dispozici.\\n\\n    Network:\\n    - `mkdir -p \\\"$remote_root/network\\\"`\\n      - `(ip addr) > \\\"$remote_root/network/ipconfig_all.txt\\\" 2>&1`\\n      - `(ip link) > \\\"$remote_root/network/adapters_details.txt\\\" 2>&1`\\n      - `(resolvectl status || systemd-resolve --status || cat /etc/resolv.conf) > \\\"$remote_root/network/dns_client_config.txt\\\" 2>&1` – preferuje systemd nástroje, fallback na /etc/resolv.conf.\\n      - `(cat /etc/hosts) > \\\"$remote_root/network/hosts_file.txt\\\" 2>&1`\\n      - `(ip route) > \\\"$remote_root/network/routes.txt\\\" 2>&1`\\n      - `(ss -tunlp) > \\\"$remote_root/network/listening_sockets.txt\\\" 2>&1`\\n\\n    Firewall:\\n    - `mkdir -p \\\"$remote_root/firewall\\\"`\\n      - `(ufw status verbose) > \\\"$remote_root/firewall/ufw_status.txt\\\" 2>&1`\\n      - `(iptables -S && iptables -L -n -v) > \\\"$remote_root/firewall/iptables_rules.txt\\\" 2>&1`\\n      - `(nft list ruleset) > \\\"$remote_root/firewall/nft_ruleset.txt\\\" 2>&1`\\n\\n    Users & permissions:\\n    - `mkdir -p \\\"$remote_root/users_permissions\\\"`\\n      - `(getent passwd && getent group) > \\\"$remote_root/users_permissions/users_groups.txt\\\" 2>&1`\\n      - `(cat /etc/sudoers && ls /etc/sudoers.d 2>/dev/null) > \\\"$remote_root/users_permissions/sudoers_listing.txt\\\" 2>&1` – může být v praxi redigováno.\\n      - `(umask) > \\\"$remote_root/users_permissions/umask.txt\\\" 2>&1`\\n\\n    Processes & services:\\n    - `mkdir -p \\\"$remote_root/processes_services\\\"`\\n      - `(ps -ef) > \\\"$remote_root/processes_services/process_list.txt\\\" 2>&1`\\n      - `(systemctl list-units --type=service --all) > \\\"$remote_root/processes_services/services_state.txt\\\" 2>&1`\\n      - `(systemctl list-unit-files --state=enabled) > \\\"$remote_root/processes_services/startup_items.txt\\\" 2>&1`\\n\\n    Packages:\\n    - `mkdir -p \\\"$remote_root/packages\\\"`\\n      - `(dpkg -l) > \\\"$remote_root/packages/dpkg_list.txt\\\" 2>&1`\\n      - `(apt-cache policy nginx openssl python3 certbot postgresql redis) > \\\"$remote_root/packages/apt_policy_key_pkgs.txt\\\" 2>&1`\\n      - `(snap list) > \\\"$remote_root/packages/snap_list.txt\\\" 2>&1`\\n\\n    Web:\\n    - `mkdir -p \\\"$remote_root/web\\\"`\\n      - `(find /var/www /srv/www -maxdepth 3 -type d -print 2>/dev/null) > \\\"$remote_root/web/web_root_overview.txt\\\" 2>&1`\\n      - `(du -h --max-depth=2 /var/www /srv/www 2>/dev/null | sort -hr) > \\\"$remote_root/web/static_assets_sizes.csv\\\" 2>&1`\\n      - `(curl -I http://127.0.0.1 2>&1 || true) > \\\"$remote_root/web/web_server_headers_hint.txt\\\" 2>&1` – pokus o získání HTTP hlaviček z lokálního web serveru.\\n\\n    Nginx:\\n    - `mkdir -p \\\"$remote_root/nginx\\\"`\\n      - `(nginx -V) > \\\"$remote_root/nginx/nginx_version.txt\\\" 2>&1`\\n      - `(nginx -t) > \\\"$remote_root/nginx/nginx_test.txt\\\" 2>&1`\\n      - `(find /etc/nginx -maxdepth 4 -print 2>/dev/null) > \\\"$remote_root/nginx/nginx_conf_tree.txt\\\" 2>&1`\\n\\n    App:\\n    - `mkdir -p \\\"$remote_root/app\\\"`\\n      - `(find /srv /opt /var/www ~/apps -maxdepth 2 -type d -print 2>/dev/null) > \\\"$remote_root/app/app_dirs_overview.txt\\\" 2>&1`\\n      - (skript v ukázce zde končí, ale v plné verzi by pokračoval dalšími částmi – python, database, certs, cron_webhooks, logs, virtualization_containers atd., podle dříve definované struktury FULL diagnostiky.)\\n\\n- Celý here-string `$script` se v praxi předá SSH klientu (např. `ssh -i <key> $user@$ip \\\"bash -s\\\" <<< $script`), skript se na serveru spustí, vytvoří `Diag_<timestamp>/` a naplní jej daty.\\n- Následně lze adresář zabalit (tar/gzip) a stáhnout na Windows (např. `scp -i <key> $user@$ip:/root/Diag_<timestamp>.tar.gz .`).\\n\\nBezpečnostní a koncepční zásady zůstávají v platnosti:\\n- žádné privátní klíče ani databázová data;\\n- potenciálně citlivé konfigurace jen jako metadata nebo redigované výstupy;\\n- environment proměnné a logy sbírat s rozumným omezením a filtrováním.\\n- Tento chunk doplňuje konkrétní soubory pro cron_webhooks, logs, virtualization_containers a ukazuje praktický příklad automatizovaného sběru z Windows přes PowerShell a SSH, který musí být v implementaci „Káji“ přizpůsoben tak, aby respektoval celou dříve popsanou FULL strukturu a bezpečnostní pravidla.\",\"chunk_index\":11,\"chunk_count\":15,\"notes\":[\"Zachovat zásadu: žádné privátní klíče, žádná databázová data, citlivé konfigurace jen jako metadata/redigované výstupy.\",\"cron_webhooks/: sbírat pouze inventář cron úloh a webhook endpointů bez tajemství.\",\"logs/: používat tail/journalctl s omezeným počtem záznamů, uvědomit si citlivost auth.log.\",\"virtualization_containers/: pouze základní informace o Dockeru a lehkých k8s distribucích, ne kompletní k8s diagnostiku.\",\"PowerShell/SSH ukázka je referenční – implementace v „Kája“ musí generovat obdobný skript, ale sladěný s finální specifikací adresářů/souborů.\",\"V ukázkovém bash skriptu je záměrně `set +e`, aby chybějící nástroje (smartctl, snap, nginx atd.) nepřerušily sběr.\",\"Env proměnné se filtrují regulárním výrazem na názvy obsahující PASS/KEY/SECRET/TOKEN/PASSWORD – tento filtr je nutné zachovat nebo zpřísnit, ne oslabit.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4647,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 4028,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 8675
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767895948,
+    "store": true
+  }
+}

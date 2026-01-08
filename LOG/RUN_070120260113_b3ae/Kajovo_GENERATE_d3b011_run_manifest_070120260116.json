@@ -1,0 +1,193 @@
+{
+  "attachments": [],
+  "vector_store_ids": [],
+  "mode": "GENERATE",
+  "response_id": "GENERATE_d3b011",
+  "project": "Kajovo",
+  "run_id": "RUN_070120260113_b3ae",
+  "vector_store_requested": [],
+  "vector_store_enabled": false,
+  "capabilities": {
+    "supports_vector_store": true,
+    "supports_file_search": false,
+    "source": "defaults"
+  },
+  "files_written": [
+    "C:\\Kaja_generator\\OUT\\project\\core\\runtime.py",
+    "C:\\Kaja_generator\\OUT\\project\\core\\pipeline.py",
+    "C:\\Kaja_generator\\OUT\\project\\docs\\README.md"
+  ],
+  "duration_s": 185.83,
+  "steps": [
+    "A1",
+    "A2",
+    "A3"
+  ],
+  "total_cost": 0.471005,
+  "pricing_receipt": "Kajovo_GENERATE_d3b011_GENERATE_receipt_070120260116.json",
+  "ui_state_log": "Kajovo_GENERATE_GENERATE_d3b011_ui_state_070120260113.json",
+  "log_files": [
+    {
+      "path": "Kajovo_GENERATE_GENERATE_d3b011_ui_state_070120260113.json",
+      "category": "ui_state"
+    },
+    {
+      "path": "Kajovo_GENERATE_d3b011_run_metadata_070120260113.json",
+      "category": "run_metadata",
+      "meta": {
+        "mode": "GENERATE"
+      }
+    },
+    {
+      "path": "Kajovo_A1_GENERATE_d3b011_request_070120260113.json",
+      "category": "request",
+      "meta": {
+        "stage": "A1"
+      }
+    },
+    {
+      "path": "Kajovo_A1_resp_0f678ed20939b9e100695da51118d48192b3d56e24d575808f_response_070120260116.json",
+      "category": "response",
+      "meta": {
+        "stage": "A1",
+        "response_id": "resp_0f678ed20939b9e100695da51118d48192b3d56e24d575808f"
+      }
+    },
+    {
+      "path": "files\\project\\core\\runtime.py",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "project\\core\\runtime.py"
+      }
+    },
+    {
+      "path": "Kajovo_GENERATE_GENERATE_d3b011_create_file_ops_070120260116.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "files\\project\\core\\pipeline.py",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "project\\core\\pipeline.py"
+      }
+    },
+    {
+      "path": "Kajovo_GENERATE_GENERATE_d3b011_create_file_ops_070120260116.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "files\\project\\docs\\README.md",
+      "category": "file_snapshot",
+      "meta": {
+        "path": "project\\docs\\README.md"
+      }
+    },
+    {
+      "path": "Kajovo_GENERATE_GENERATE_d3b011_create_file_ops_070120260116.json",
+      "category": "file_operation",
+      "meta": {
+        "action": "create"
+      }
+    },
+    {
+      "path": "Kajovo_GENERATE_d3b011_GENERATE_receipt_070120260116.json",
+      "category": "receipt",
+      "meta": {
+        "total_cost": 0.471005
+      }
+    }
+  ],
+  "dry_run_summary": null,
+  "dry_run_summary_log": null,
+  "post_run_hooks": [],
+  "design_verification": {
+    "theme": "black-white",
+    "font_family": "Montserrat",
+    "rounded_corners": true,
+    "manifest_reference": "yolo-design/references/design-manifest.md",
+    "notes": "UI changes were applied under yolo-design rules (2.02.000–2.06.001)."
+  },
+  "pricing_details": {
+    "mode": "GENERATE",
+    "model": "gpt-5.1",
+    "summary_steps": [
+      "A1",
+      "A2",
+      "A3"
+    ],
+    "usage": {
+      "input_tokens": 47500,
+      "output_tokens": 150342,
+      "storage_bytes": 601310,
+      "storage_gb": 0.0005600135773420334,
+      "storage_days": 0.0005600135773420334,
+      "vector_store_files": 0,
+      "attachments_bytes": 0,
+      "attachments": [],
+      "files": [
+        {
+          "path": "C:\\Kaja_generator\\OUT\\project\\core\\runtime.py",
+          "size": 200472
+        },
+        {
+          "path": "C:\\Kaja_generator\\OUT\\project\\core\\pipeline.py",
+          "size": 200465
+        },
+        {
+          "path": "C:\\Kaja_generator\\OUT\\project\\docs\\README.md",
+          "size": 200373
+        }
+      ]
+    },
+    "vector_store_ids": [],
+    "cost_breakdown": {
+      "input_cost": 0.095,
+      "output_cost": 0.37585500000000005,
+      "vector_store_cost": 0.0,
+      "storage_cost": 5.600135773420334e-09,
+      "file_api_cost": 0.00015000000000000001,
+      "tool_cost": 0.0,
+      "discount_factor": 1.0
+    },
+    "total_cost": 0.471005,
+    "pricing_summary": {
+      "source": "https://openai.com/pricing",
+      "last_refreshed": null,
+      "verified": false,
+      "status": "Ceník offline / odhad",
+      "error": "Client error '403 Forbidden' for url 'https://openai.com/pricing'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403"
+    },
+    "status": "Ceník offline / odhad",
+    "verified": false,
+    "computed_at": "2026-01-07T00:16:10.100996"
+  },
+  "pricing_catalog": {
+    "source": "https://openai.com/pricing",
+    "last_refreshed": null,
+    "verified": false,
+    "status": "Ceník offline / odhad",
+    "error": "Client error '403 Forbidden' for url 'https://openai.com/pricing'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403"
+  },
+  "timeline": [
+    {
+      "step": "A1",
+      "start": "2026-01-07T00:13:04.649449",
+      "end": "2026-01-07T00:16:09.790301",
+      "duration_s": 185.141,
+      "result": "completed",
+      "details": {
+        "contract": "A1_PLAN"
+      },
+      "ids": {
+        "response_id": "resp_0f678ed20939b9e100695da51118d48192b3d56e24d575808f"
+      }
+    }
+  ],
+  "timeline_log": "RUN_070120260113_b3ae_timeline_070120260116.json"
+}

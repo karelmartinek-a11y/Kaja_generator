@@ -1,0 +1,14 @@
+{
+  "api_key": "",
+  "log_level": "INFO",
+  "max_retries": 3,
+  "timeout": 30,
+  "font_paths": {
+    "bold": "resources/montserrat_bold.ttf",
+    "regular": "resources/montserrat_regular.ttf"
+  },
+  "ui": {
+    "theme": "dark",
+    "language": "en"
+  }
+}

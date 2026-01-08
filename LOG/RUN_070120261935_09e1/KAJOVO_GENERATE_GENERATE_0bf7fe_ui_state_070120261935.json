@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "run_id": "RUN_070120261935_09e1",
+    "response_id": "GENERATE_0bf7fe",
+    "captured_at": "2026-01-07T18:35:09.817376",
+    "project": "KAJOVO",
+    "mode": "GENERATE"
+  },
+  "ui_state": {
+    "project_name": "KAJOVO",
+    "prompt_text": "Vygeneruj program podle zadání, které najdeš v souboru Files API pod id-file: file-PF6bNQdZbxnSERkjgAvwfJ při dodržení standardu designu, který je uložen na FIles API pod id-file: file-XmRFcHGh2VcT2aAWNN9qPb",
+    "in_dir": "",
+    "out_dir": "C:/KAJOVO",
+    "versing_enabled": false,
+    "mode": "GENERATE",
+    "response_id": "",
+    "model": "gpt-5.1-codex-max",
+    "send_as_c": false,
+    "diagnostics": {
+      "windows_in": false,
+      "windows_out": false,
+      "ssh_in": false,
+      "ssh_out": false
+    },
+    "ssh": {
+      "host": "89.221.216.10",
+      "user": "root",
+      "key_path": "",
+      "password": "+Sin8glov8",
+      "port": 10
+    },
+    "attached_file_ids": []
+  }
+}

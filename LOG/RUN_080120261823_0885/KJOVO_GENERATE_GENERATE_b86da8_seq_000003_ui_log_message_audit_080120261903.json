@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261823_0885",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_b86da8",
+    "event": "ui_log_message",
+    "sequence": 3,
+    "logged_at": "2026-01-08T18:03:04.140210"
+  },
+  "details": {
+    "message": "Chyba běhu: A1_PLAN: chybí requirements.",
+    "timestamp_local": "19:03:04",
+    "source": "ui_log"
+  }
+}

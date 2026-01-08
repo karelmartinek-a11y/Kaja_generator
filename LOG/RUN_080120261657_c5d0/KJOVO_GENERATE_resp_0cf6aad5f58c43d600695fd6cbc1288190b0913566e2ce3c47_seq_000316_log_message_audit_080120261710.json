@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261657_c5d0",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_0cf6aad5f58c43d600695fd6cbc1288190b0913566e2ce3c47",
+    "event": "log_message",
+    "sequence": 316,
+    "logged_at": "2026-01-08T16:10:17.008780"
+  },
+  "details": {
+    "event": "log_message",
+    "level": "info",
+    "details": {
+      "message": "A3: zadání zkráceno na ~1624 tokenů."
+    },
+    "timestamp": "2026-01-08T16:10:17.008773"
+  }
+}

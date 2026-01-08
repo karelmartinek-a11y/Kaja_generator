@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261617_314b",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_0f5e2e815034622800695fcc0efe2881a1a5387eae2a0ee6aa",
+    "logged_at": "2026-01-08T15:24:35.486580",
+    "request_id": "e9b48458"
+  },
+  "payload": {
+    "id": "resp_0f5e2e815034622800695fcc0efe2881a1a5387eae2a0ee6aa",
+    "created_at": 1767885839.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0f5e2e815034622800695fcc0f810c81a1b5db16744197231d",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Program „Kája“ je desktopová Windows aplikace pro práci s OpenAI (Responses, Files, Models, Vector store/file_search, Batch). Musí dodržovat JSON kontrakty, nepoužívat markdown, bezpečně zacházet s ID (response_id, batch_id, vector_store_id) a podporovat obnovu běhu z logů. Všechny sekce UI jsou na jedné scrollovatelné ploše, layout 1–3 sloupce dle šířky okna.\\n\\nSekce 16 – GO / exekuce (shrnutí předchozích chunků)\\n- Podpora diagnostiky IN (WINDOWS IN / SSH IN) s tvorbou diagnostických balíků (Windows/Ubuntu), uploadem na Files API, zápisem do diagnostického i mirror manifestu jako externí artefakty a redundancí (instructions, input, případně vector store).\\n- IN krok (MODIFY) vytváří mirror manifest z IN adresáře, respektuje výjimky (venv, .venv, LOG, snapshoty), rozhoduje o kompatibilitě souborů pro Files API (allow/deny list, velikost, typ, bezpečnost, secret scanner), uploaduje kompatibilní soubory a všechny (včetně neuploadovaných) zapisuje do mirror manifestu s důvody.\\n- Podle podpory file_search + vector_store_ids u zvoleného modelu buď vytváří vector store (název s projektem + timestamp, připojené uploadované soubory, mirror manifest a diagnostické soubory), nebo používá fallback pouze s Files API a manifestem (bez vector store/file_search tools, vše redundatně v instructions a input_file).\\n- WINDOWS OUT / SSH OUT: instructions i input musí explicitně žádat skripty pro opravy a soubor readmerepair.txt. Po response se readmerepair.txt zobrazí v ANSWARE, aktivuje se tlačítko SCRIPT (pokud jsou skripty + readmerepair.txt).\\n- Request pipeline: přepínač „SEND AS C (BATCH)“ používá tok C (batch-only, bez IN, bez attached files, bez file_search/vector_store, kontrakt C_FILES_ALL). Jinak:\\n  - GENERATE: A1 (plán bez vstupních souborů) → A2 (FILE STRUCTURE, kontrakt A2_STRUCTURE) → A3 (obsah souborů, kontrakt A3_FILE, chunking > 500 řádků, ukládání do OUT).\\n  - MODIFY: B1 (plán změn nad mirrorovaným projektem, preferenčně s file_search+vector_store, fallback Files API + manifest) → B2 (touched_files, kontrakt B2_STRUCTURE) → B3 (obsah touched files, kontrakt B3_FILE, chunking > 500 řádků, vycházet z aktuální verze souborů, ukládání do OUT).\\n  - QA: jeden request, čistě textová odpověď, žádné soubory, nepoužívá IN ani OUT.\\n- OUT ukládání: při zapnutém VERSING a existenci souborů k uložení se před prvním zápisem vytvoří snapshot dle 12.4 (adresář <ROOT_NAME><DDMMRRRRHHMM> uvnitř root IN/OUT, kopie struktury bez venv/.venv/LOG/snapshotů). Snapshoty se nikdy nezahrnují do IN mirroru, manifestu ani dalších snapshotů. Všechny přijaté soubory (A3/B3/C) se ukládají pod OUT, existující soubory se bez upozornění přepisují (nutno jasně zdokumentovat).\\n- ANSWARE panel: zobrazuje Response ID v titulku a text odpovědi (raw nebo extrahovaný text/JSON). Tlačítka: CTRL+C (kopie Response ID + obsahu), RESPONSE (přenese Response ID do MODE/RESPONSE ID pro previous_response_id), SCRIPT (jen pokud byly skripty + readmerepair.txt; po potvrzení spustí skript bez dry runu, u SSH použije stejné parametry, výsledek v popup, do LOG se ukládá stdout/stderr, návratový kód, audit změn).\\n\\nSekce 17 – File API panel – synchronizace\\n- Po každém uploadu/smazání souborů na Files API (z LOCAL FILES, diagnostiky, mirroru atd.) se musí refreshnout seznam v sekci FILE API.\\n- Po uploadu z tabulky LOCAL FILES se tato tabulka vyprázdní.\\n\\nSekce 18 – Kompatibilní soubory pro Files API\\n- Při výběru souborů pro upload (IN mirror, diagnostika, LOCAL FILES) se preferují běžné textové konfigurační a zdrojové soubory (kód, konfigurace, logy rozumné velikosti).\\n- Binární a extrémně velké soubory jsou nekompatibilní: neuploadují se, ale jejich existence se zaznamená do manifestu s důvodem (binární, příliš velké, deny list atd.).\\n- Citlivé soubory (.env apod.) se defaultně neuploadují; do manifestu se zapíše jejich existence a bezpečný popis (např. seznam klíčů bez hodnot).\\n- Zásada: existence všech souborů v pracovním adresáři musí být v mirroru zachycena, i když nejsou uploadnuty.\\n\\nSekce 19 – Další povinná rozšíření\\n\\n19.1 Spolehlivost a řízení běhu\\n- STOP běhu: v UI je vždy dostupné tlačítko STOP (v progress dialogu). STOP korektně ukončí probíhající operace: zastaví polling batch jobů, pokusí se zrušit uploady (nebo je bezpečně dokončí a označí stav), zabrání zahájení nových requestů v pipeline po stisku. UI přepne dialog do „Stopping...“ a po dokončení ukončovacích kroků dialog zavře.\\n- Po STOP je k dispozici Resume (pokračovat z posledního konzistentního stavu) nebo Close run (definitivní ukončení, ale s možností pozdějšího ručního resume z logu).\\n- Resume po pádu/restartu: program z LOG složky rekonstruuje poslední stav běhu (proběhlé kroky A1/A2/A3, B1/B2/B3, C, QA; uploadnuté soubory a jejich file_id; existující response_id a batch_id; soubory uložené do OUT včetně snapshotu). Při startu, pokud je detekován nedokončený run, nabídne „RESUME LAST RUN“. Resume musí být idempotentní: dokončené kroky se přeskočí, nejasné se provedou znovu bezpečně (např. znovu stáhnout batch result, znovu validovat JSON kontrakt, při nejasnostech ukládat výstup do karantény místo přepsání).\\n- Rate-limit & retry politika: implementovat retry s exponenciálním backoff + jitter pro OpenAI API. Circuit breaker: při opakovaných 429/5xx chybách se na určitou dobu zastaví nové requesty, UI ukáže „Cooling down“ s odhadem času. Retryovat jen transient chyby (429, 5xx, timeouts) do rozumného maxima. Nikdy nere-tryovat chyby validace kontraktů (nevalidní JSON, chybějící pole, porušení schématu). Všechny retry pokusy (důvod, počet, výsledek) se logují.\\n\\n19.2 Bezpečnost práce se soubory a snapshoty\\n- Secret scanner + redakce: před uploadem na Files API (mirror, diagnostika, LOCAL FILES) se provádí základní secret scanning: detekce .env a podobných konfigů, klíčů/tokenů (heuristiky/regexy, API klíče, access tokeny, JWT), privátních klíčů/certifikátů (BEGIN PRIVATE KEY). Default: citlivé soubory neuploadovat, do manifestu zapsat existenci a bezpečný popis (typ tajemství, seznam klíčů bez hodnot). Pokud uživatel v SETTINGS vypne bezpečnostní omezení, program umožní upload i citlivých souborů, ale vždy zobrazí výrazné varování o rizicích (včetně toho, že data mohou skončit v LOG a na serveru OpenAI).\\n- Allow/Deny list přípon a cest: v SETTINGS jsou konfigurovatelné allow/deny listy přípon (např. povolit .py/.js/.txt, zakázat .exe/.dll/.bin) a cest (glob patterny typu **/node_modules/**, **/.git/**). Seznamy jsou oddělené pro IN mirror a diagnostické snapshoty (jiná pravidla). V manifestu (mirror i diagnostickém) musí být vidět, jaké soubory byly vynechány a proč (deny list přípon/cest, velikost, binární typ, citlivý obsah atd.).\\n- Šifrování logů + panic wipe: aplikace podporuje volitelné symetrické šifrování LOG složky nebo jednotlivých log souborů, klíč se ukládá bezpečně (např. DPAPI). Funkce „Panic wipe“ po potvrzení smaže lokální cache (dočasné soubory, stažené batch výsledky, price cache atd.) a volitelně i nešifrované logy (uživatel musí potvrdit). Panic wipe je nevratná a musí být jasně označena v UI.\\n\\n19.3 Vývojářské workflow\\n- Dry-run režim pro MODIFY: v SETTINGS lze zapnout. V dry-run režimu MODIFY pipeline nejprve provede jen B1 (diagnóza a plán) + B2 (touched_files) + případně rozšířený výstup se seznamem změn a rizik. Model vrátí plánované změny, rizika/dopady a přehled touched files. Uživatel musí explicitně potvrdit pokračování („Pokračovat na generování změn“); teprve pak se spustí B3 generování obsahu. Dry-run výstup je logován a součástí run bundle.\\n- Post-run hooks: po uložení souborů do OUT lze volitelně spustit hooky (testy, lint, format) lokálně na Windows nebo přes SSH (oddělená, ale sdílitelná konfigurace). Výstup hooků (stdout, stderr, návratové kódy) se loguje a může být zobrazen v UI.\\n- Diff viewer: UI obsahuje diff viewer pro porovnání původní a nové verze souboru (před/po MODIFY nebo po GENERATE, pokud existovala starší verze). Diff je jen vizuální, neovlivňuje obsah posílaný do AI. Do AI se vždy posílá kompletní obsah dle A3_FILE/B3_FILE, nikdy diff/patch.\\n\\n19.4 Observabilita (kromě LOG souborů)\\n- Run timeline: program vede interní timeline kroků běhu (krok, start/end timestamp, výsledek, související IDs – file_id, response_id, batch_id, vector_store_id). Timeline je viditelná v UI a exportovatelná do LOG.\\n- Export „Run bundle“ (zip): program umí vytvořit zip balík obsahující requesty, response, manifesty, snapshoty (pokud uživatel povolí; jinak jen odkazy), skripty, readmerepair.txt a timeline. Export je dostupný z UI (např. z progress dialogu po dokončení).\\n\\n19.5 Pricing\\n- Program podporuje automatickou aktualizaci ceníku z oficiálních zdrojů (konfigurovatelný endpoint/URL v SETTINGS).\\n- Pro každý běh se ukládá účtenka: usage (input/output tokens), batch discount/pricing, tool calls (file_search), odhad storage-days (z usage_bytes a času držení).\\n- Pokud ceny nelze ověřit (offline, endpoint nedostupný), běh může pokračovat, účtenka je označena jako „odhad / neověřeno“.\\n\\n20) Co musí výstupní program „Kája“ dodat\\n- Plně funkční aplikaci dle UI a logiky, kompletní zdrojové soubory, jasné instrukce pro spuštění (např. pip install -r requirements.txt + python ui_main.py), implementaci kroků/kontraktů A1/A2/A3 a B1/B2/B3, logování, progress dialogy, SAVE/LOAD/LOAD REQUEST, správu API klíče, FILE API management, Windows/SSH diagnostiku (IN snapshot + OUT skripty), vector store management, Batch monitor a tok C, Pricing screen „$“ a účtenky, VERSING dle 12.4.\\n\\n21) KÁJOVO UI DESIGN STANDARD (MASTER v1.0)\\n- Normativní specifikace UI (cs-CZ), klíčová slova MUSÍ/NESMÍ/MĚL BY jsou závazná.\\n\\n22) TOKENS – jediný zdroj pravdy\\n- Barvy (HEX): BÍLÁ #FFFFFF, ČERNÁ #000000, ČERVENÁ #FF0000, ŠEDIVÁ #808080.\\n- Vrstvy prvku: každý prvek má 4 vrstvy (LEM 2 px, OKRAJ 1 px, POZADÍ, OBSAH). Obsahová plocha je uvnitř okraje.\\n- UI SCALE: referenční okno 1280×720 při UI_scale=1.0; UI_scale = min(W/1280, H/720). Škálují se typografie, paddingy, výšky řádků, rozměry ikon, modulů času/datu, tloušťky čar ikon. Neškáluje se tloušťka lemu (2 px), okraje (1 px) a minimální mezera mezi sibling prvky (2 px).\\n- Typografie: jediný povolený font Montserrat (Regular, Bold). Fonty musí být bundlované, načtené při startu; pokud se nepodaří načíst, aplikace zobrazí chybový dialog ve stylu Kájovo a ukončí se. Build by měl kontrolovat hash fontů. Základní velikost písma FS_base=16 px při UI_scale=1.0, výsledná FS=round(FS_base×UI_scale), line-height LH=round(1.25×FS). Nadpisy/sekce/hlavičky tabulek: Montserrat Bold, VŠE VELKÝMI PÍSMENY. Běžný obsah: Montserrat Regular.\\n- Radius: R=max(1, round(0.35×FS)), ostré rohy jsou zakázány.\\n- Rozestupy a standardní rozměry: GAP_MIN=2 px (mezera mezi sibling prvky, lem→lem). Standardní padding pro textové prvky: PAD_X=round(0.8×FS), PAD_Y=round(0.4×FS). Standardní výška řádku seznamů/roletek/tabulek ROW_H=round(1.4×LH). Výška stavového řádku STATUS_H=round(1.6×LH).\\n- Ikony: velikost ICON=round(1.5×FS) (čtverec), outline styl (bez výplně, pokud není řečeno jinak), tloušťka čáry STROKE=max(1, round(0.12×FS)), barva ikony vždy jedna z token barev.\\n\\n23) Obecná pravidla vzhledu\\n1) UI je striktně černobílé; šedivá jen pro neaktivní text/symboly; červená jen pro ukončení/kritické akce a stavy nebezpečí/nedostupné.\\n2) Žádné stíny, gradienty, textury, průhlednosti (kromě overlay vrstev).\\n3) Všechny komponenty musí používat vrstvy LEM/OKRAJ/POZADÍ/OBSAH.\\n4) Překryv je zakázán (výjimky: tooltip, roletka, dialog, overlay scrollbar).\\n5) Změna stavu prvku nesmí měnit layout/rozměry – mění se jen barvy (a případně velikost textu v rámci fit/scale pravidel).\\n\\n24) Interakce a input (globální kontrakty)\\n- Hover: běžné prvky nemají hover efekt. Tooltipy: u tabulek a dropdown položek jen při overflow a po 2 s setrvání.\\n- Tooltip vzhled: lem černý 2 px, okraj bílý 1 px, pozadí bílá, text černý Regular.\\n- Focus a klávesnice: TAB/SHIFT+TAB pro přechod mezi fokusovatelnými prvky, ENTER/MEZERNÍK aktivuje fokusovaný prvek (kromě textových polí). Focus je overlay stav: LEM bílý 2 px, ostatní vrstvy beze změny, bez změny rozměrů/layoutu.\\n- ESC (globální): zavírá overlay prvky v pořadí tooltip → dropdown/combobox roletka → dialog. ESC odpovídá akci CLOSE v dialogu.\\n\\n25) Layout aplikace (záhlaví, sekce, status)\\n- Záhlaví programu: obsahuje název programu a verzi, ovládací prvky a ukončovací prvek (EXIT/QUIT/CLOSE) vpravo. Ukončovací prvek je vždy kritický (červený kontrakt).\\n- Sekce: rámovaná oblast (LEM/OKRAJ/POZADÍ) pro logickou skupinu prvků. Název sekce je součást horního lemu (přeruší horní lem), typografie Bold, VŠE VELKÝMI PÍSMENY.\\n- Stavový řádek (STATUS): výška STATUS_H. Vlevo zobrazuje text aktuálního kroku (Regular) + volitelně progress „teploměr“, vpravo čas (PRAGOTRON) a datum (kalendářová kresba). Čas má formát HH:MM:SS.\\n\\nGlobální pravidla zůstávají: čistý JSON výstup (žádný markdown), žádné diffy v AI odpovědích, redundantní manifesty, bezpečné zacházení s ID, deterministické logování, možnost obnovy běhu z logů, jednotný UI standard a deterministické škálování.\",\"chunk_index\":8,\"chunk_count\":15,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 7131,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 4295,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 11426
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767885875,
+    "store": true
+  }
+}

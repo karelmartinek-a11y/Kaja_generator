@@ -1,0 +1,165 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261823_0885",
+    "project": "KJOVO",
+    "stage": "A1",
+    "response_id": "GENERATE_b86da8",
+    "logged_at": "2026-01-08T17:23:38.979470",
+    "request_id": "5e650cd6"
+  },
+  "payload": {
+    "model": "gpt-5.1",
+    "temperature": 0.2,
+    "instructions": "Jsi senior software architekt a implementátor. MASTER: žádné externí soubory. OUTPUT: VRAŤ POUZE validní JSON. ŽÁDNÝ markdown, žádné komentáře, žádný další text. KONTRAKT A1_PLAN: {\"contract\":\"A1_PLAN\",\"project\":{\"name\":string,\"one_liner\":string,\"target_os\":string,\"language\":string,\"runtime\":string},\"assumptions\":[string],\"requirements\":{\"functional\":[string],\"non_functional\":[string],\"constraints\":[string]},\"architecture\":{\"modules\":[{\"name\":string,\"responsibility\":string}],\"data_flow\":[string],\"error_handling\":[string],\"security_notes\":[string]},\"build_run\":{\"prerequisites\":[string],\"commands\":[string],\"verification\":[string]},\"deliverable_policy\":{\"file_generation_strategy\":\"PLAN->STRUCTURE->FILE_CONTENT\",\"max_lines_per_chunk\":500}}\n\nZADÁNÍ PROGRAMU: Ve Vectore Store je soubor 2ezvhKrAWPcWYHm11aQJKq, kde najdeš zadání porgramu, který porsím vygeneruj. Dodrž při tom standardy designu, které jsou také ve Vectore Store pod YDeLL1L564LE5WPLFKpSK2\n\nSTRIKTNÍ PRAVIDLA (determinismus):\n- Piš plán jako finální specifikaci: používej explicitní názvy modulů, souborů a veřejných API.\n- Architecture.modules musí uvádět konkrétní exporty (funkce/třídy/konstanty) a vazby mezi moduly.\n- Uveď jednotné názvosloví doménových entit a sdílené datové modely.\n- Pokud něco chybí, dej to do assumptions/constraints, nevymýšlej si nové požadavky.\n\nPŘIPOJENÉ SOUBORY (informational):\n- Kajovo_UI_Design_Standard_MASTER_v1.0_AI.md | file_id=file-YDeLL1L564LE5WPLFKpSK2 | purpose=user_data | size=16210 B | dostupnost=vector_store (store_id=vs_695fe816fd988191ae3b2df190aa6aa0)\n- ZADANI_KAJA_FINAL.md | file_id=file-2ezvhKrAWPcWYHm11aQJKq | purpose=user_data | size=200221 B | dostupnost=vector_store (store_id=vs_695fe816fd988191ae3b2df190aa6aa0)\n- Kajovo_UI_Design_Standard_MASTER_v1.0_AI.md | file_id=file-XmRFcHGh2VcT2aAWNN9qPb | purpose=user_data | size=16210 B | dostupnost=vector_store (store_id=vs_695fe816fd988191ae3b2df190aa6aa0)\n\nDESIGN STANDARD (doc/Kajovo_UI_Design_Standard_MASTER_v1.0_AI.md, sha256=90e718f04fecbcb95a14d8c0abad3aa78c8ab499e598314494906bd4b1399d93):\n---\ntitle: \"KÁJOVO UI DESIGN STANDARD\"\ndesignation: \"MASTER\"\nversion: \"MASTER v1.0\"\ndate: \"2026-01-07\"\nstatus: \"ZÁVAZNÉ\"\naudience: \"OpenAI generování programů\"\nlanguage: \"cs-CZ\"\n---\n\n# KÁJOVO UI DESIGN STANDARD (MASTER v1.0)\n\nTento dokument je **normativní specifikace**. Je psaný tak, aby byl použitelný přímo jako vstup pro generování UI (LLM).  \nKlíčová slova: **MUSÍ / NESMÍ / MĚL BY** se vykládají striktně.\n\n## 0. Generační kontrakt (pro OpenAI)\n\n1) Vše, co je označeno „MUSÍ“ nebo „NESMÍ“, je závazné.  \n2) Pokud se dvě pravidla dostanou do konfliktu, platí toto pořadí precedence (od nejsilnějšího):\n   a) TOKENS a KONTRAKTY stavů (sekce 1 a 5)  \n   b) Specifikace komponent (sekce 6)  \n   c) Layout aplikace (sekce 4)  \n   d) Obecná pravidla (sekce 2–3)  \n3) Pokud je nějaká hodnota odvozená (vzorec), musí se použít přesně, včetně zaokrouhlení.  \n4) Jednotky: všechny rozměry jsou v **logických pixelech** (px).  \n5) Zaokrouhlování: `round(x)` = matematické zaokrouhlení na nejbližší celé číslo (0.5 nahoru).  \n6) Nesmí vzniknout překryv prvků (výjimka: overlay vrstvy tooltip/roletka/dialog/scrollbar).\n\n## 1. TOKENS (jediný zdroj pravdy)\n\n### 1.1 Barvy (HEX)\n\n- BÍLÁ: `#FFFFFF`\n- ČERNÁ: `#000000`\n- ČERVENÁ: `#FF0000`\n- ŠEDIVÁ: `#808080`\n\n### 1.2 Vrstvy prvku (pořadí a tloušťky)\n\nKaždý prvek je složen ze čtyř vizuálních vrstev (zvenku dovnitř):\n\n1) **LEM**: 2 px  \n2) **OKRAJ**: 1 px  \n3) **POZADÍ**: vnitřní výplň  \n4) **OBSAH**: text / piktogram / grafika\n\nPozn.: „Obsahová plocha“ = plocha **uvnitř okraje** (uvnitř lemu 2 px a okraje 1 px).\n\n### 1.3 UI SCALE (deterministicky)\n\n- Referenční okno: `1280 × 720` při `UI_scale = 1.0`.\n- Výpočet: `UI_scale = min(W/1280, H/720)` kde `W` a `H` jsou aktuální rozměry okna.\n\nCo se škáluje:\n- typografie, paddingy, výšky řádků, rozměry ikon, rozměry modulů času/datu, tloušťky ikon čar.\n\nCo se **neskáluje**:\n- tloušťka lemu (2 px) a okraje (1 px),\n- minimální mezera mezi sibling prvky (2 px).\n\n### 1.4 Typografie (font kontrakt)\n\nPovolený font:\n- Rodina: **Montserrat**\n- Řezy: **Regular**, **Bold**\n- Jiné fonty/řezy jsou zakázané.\n\nDistribuce fontu (determinismus):\n- Fonty MUSÍ být součástí aplikace (bundled assets/resources).\n- Aplikace NESMÍ spoléhat na systémovou instalaci fontů.\n- Aplikace MUSÍ fonty načíst/registrovat při startu.\n- Pokud font nelze načíst, aplikace MUSÍ zobrazit chybový dialog ve stylu Kájovo a ukončit se (fallback fonty jsou zakázány).\n- Build proces MĚL BY kontrolovat hash souborů fontu (např. SHA‑256), aby se nepokoutně nezměnila verze.\n\nVelikosti:\n- Základní velikost písma při `UI_scale = 1.0`: `FS_base = 16 px`\n- Výsledná velikost písma: `FS = round(FS_base × UI_scale)`\n- Line-height: `LH = round(1.25 × FS)`  *(závazné – aby šlo deterministicky odvozovat rozměry)*\n\nPoužití:\n- Nadpisy / názvy sekcí / hlavičky tabulek: Montserrat **Bold**, **VŠE VELKÝMI PÍSMENY**\n- Běžný obsah a hodnoty: Montserrat **Regular**\n\n### 1.5 Radius (zaoblení)\n\n- Radius všech prvků: `R = max(1, round(0.35 × FS))`  \n- Ostré rohy jsou zakázány.\n\n### 1.6 Rozestupy a standardní rozměry (tokeny)\n\n- Minimální mezera mezi dvěma sibling prvky (vnější hrana lemu → vnější hrana lemu): `GAP_MIN = 2 px`\n- Standardní vnitřní odsazení (padding) pro prvky s textem:\n  - `PAD_X = round(0.8 × FS)`\n  - `PAD_Y = round(0.4 × FS)`\n- Standardní výška řádku seznamů/roletek/tabulek: `ROW_H = round(1.4 × LH)`\n- Výška stavového řádku: `STATUS_H = round(1.6 × LH)`\n\n### 1.7 Ikony (obecný styl)\n\n- Základní velikost ikony: `ICON = round(1.5 × FS)` (čtverec ICON×ICON)\n- Ikony jsou **outline** (bez výplně), pokud není u komponenty výslovně řečeno jinak.\n- Tloušťka čáry ikony: `STROKE = max(1, round(0.12 × FS))`\n- Barva ikony je vždy jedna z token barev (nejčastěji bílá/černá dle stavu).\n- Referenční tvary jsou v PŘÍLOZE A.\n\n## 2. Obecná pravidla vzhledu\n\n1) UI je striktně černobílé. Šedivá pouze pro neaktivní text/symboly. Červená pouze pro ukončení/kritické akce a stavy „nebezpečí/nedostupné“ podle tohoto dokumentu.  \n2) Žádné stíny, gradienty, textury, průhlednosti (mimo overlay vrstvy), ani dekorativní efekty.  \n3) Všechny komponenty MUSÍ používat vrstvy LEM/OKRAJ/POZADÍ/OBSAH.  \n4) Překryv je zakázán (výjimky: tooltip, roletka, dialog, overlay scrollbar).  \n5) Pokud se mění stav prvku, NESMÍ se změnit layout/rozměry – mění se pouze barvy (a u textu případně velikost v rámci pravidel fit/scale).\n\n## 3. Interakce a input (globální kontrakty)\n\n### 3.1 Hover\n\n- Běžné prvky: **žádný hover efekt** (žádná změna barvy ani geometrie).\n- Výjimky (tooltipy):\n  - Tabulky: tooltip se zobrazí **jen pokud obsah buňky nepokryje celý text** (overflow) a uživatel setrvá kurzorem 2 s.\n  - Dropdown/combobox roletka: tooltip se zobrazí **jen pokud text položky nepokryje celý text** a uživatel setrvá kurzorem 2 s.\n\n### 3.2 Focus a klávesnice\n\n- TAB přesouvá focus na další fokusovatelný prvek.\n- SHIFT+TAB přesouvá focus na předchozí fokusovatelný prvek.\n- ENTER nebo MEZERNÍK aktivuje fokusovaný prvek (stisk odpovídá „kliknutí“), **s výjimkou textových polí**.\n\nVizuální indikace focusu (závazné):\n- Focus je overlay stav: **LEM = bílý (#FFFFFF) 2 px**.\n- Ostatní vrstvy (okraj/pozadí/obsah) zůstávají dle aktuálního stavu prvku.\n- Focus NESMÍ měnit rozměry prvku ani rozložení.\n\n### 3.3 ESC (globální)\n\n- ESC zavře otevřený overlay prvek v tomto pořadí:  \n  (1) tooltip (pokud existuje), (2) roletka dropdown/combobox, (3) dialog.  \n- ESC odpovídá akci **CLOSE** v dialogu.\n\n## 4. Layout aplikace (záhlaví, sekce, status)\n\n### 4.1 Záhlaví programu\n\nZáhlaví MUSÍ obsahovat:\n- Název programu a verzi.\n- Ovládací prvky.\n- Ukončovací prvek (EXIT/QUIT/CLOSE) vpravo.\n\nUkončovací prvek je vždy „kritický“ (červený kontrakt).\n\n### 4.2 Sekce\n\nSekce je rámovaná oblast (LEM/OKRAJ/POZADÍ) pro logickou skupinu prvků.\n\nNázev sekce:\n- je součást horního lemu (přeruší horní lem),\n- typografie: Bold, VŠE VELKÝMI PÍSMENY.\n\n(Detailní barvy sekce se řídí barvami a kontrakty stavů; sekce sama není interaktivní.)\n\n### 4.3 Stavový řádek (STATUS)\n\nVýška: `STATUS_H`.\n\nStatus vždy zobrazuje:\n- vlevo: text aktuálního kroku (Regular) + volitelně progress „teploměr“\n- vpravo: čas (PRAGOTRON) a datum (kalendářová kresba)\n\nČas (PRAGOTRON / flap)\n- Formát: `HH:MM:SS` (8 znaků včetně dvojteček).\n- Každý znak je samostatný modul (obdélník se zaoblením R).\n- Modul:\n  - lem: bílý 2 px\n  - okraj: černý 1 px\n  - pozadí: černé\n  - znak: bílý, Montserrat Bold\n- Uprostřed modulu je vodorovná bílá linka 1 px („spára“).\n- Výška modulu: `TIME_H = round(1.2 × LH)`.\n\nDatum (kalendářová kresba)\n- Datum je modul ve stylu ikony kalendáře (zaoblení R, lem/okraj jako ostatní moduly).\n- Uvnitř je horní lišta kalendáře oddělená bílou linkou 1 px.\n- Uvnitř modulu je text `DD.MM.YYYY` (Bold, bílý) vycentrovaný.\n- Referenční tvar a proporce jsou v PŘÍLOZE A.\n\nProgress „teploměr“\n- Teploměr je horizontální indikátor:\n  - rám: lem bílý 2 px, okraj černý 1 px\n  - pozadí: černé\n  - výplň: bílá\n- Odhadnutelný proces: výplň odpovídá 0–100 %.\n- Neodhadnutelný proces: bílý segment se pohybuje tam a zpět v rámci teploměru.\n\n## 5. Kontrakty barevných stavů (globální)\n\n### 5.1 Nečervené interaktivní prvky (3 stavy)\n\nVšechny nečervené interaktivní prvky MUSÍ mít stavy:\n\n- NORMAL\n  - lem: bílý\n  - okraj: černý\n  - pozadí: černé\n  - obsah (text/ikona): bílý\n\n- ACTIVE\n  - lem: bílý\n  - okraj: černý\n  - pozadí: bílý\n  - obsah: černý\n\n- DISABLED\n  - lem: šedivý\n  - okraj: černý\n  - pozadí: černé\n  - obsah: šedivý\n\n### 5.2 Červené (kritické) prvky (2 stavy)\n\nČervený prvek MUSÍ mít jen:\n\n- NORMAL\n  - lem: červený\n  - okraj: černý\n  - pozadí: červené\n  - obsah: černý\n\n- ACTIVE\n  - lem: červený\n  - okraj: černý\n  - pozadí: černé\n  - obsah: červený\n\nPozn.: Focus overlay (sekce 3.2) mění jen lem na bílý i u červeného prvku.\n\n## 6. Komponenty (specifikace)\n\n### 6.1 Tlačítko (button)\n\nVzhled:\n- používá kontrakt stavů dle sekce 5 (nečervené nebo červené).\n- padding: `PAD_X`, `PAD_Y`\n- radius: `R`\n- text: Bold (pokud je to primární volba) nebo Regular (pokud je to sekundární; pokud není jasné, použij Bold)\n\nChování:\n- Klik = aktivace.\n- Klávesnice: focus + ENTER/MEZERNÍK = aktivace.\n\nŠířka vs délka textu (determinismus):\n- Preferovaná šířka: `W_pref = textWidth(FS) + 2×PAD_X + 2×(LEM+OKRAJ)`\n- Skupina tlačítek MŮŽE být roztažená proporcionalně podle `W_pref` (např. „VOLBA1“ vs „VOLBA1VOLBA1“ → delší tlačítko).\n- Pokud dostupný prostor nestačí, použije se algoritmus z 6.6 (text fit/scale).\n\n### 6.2 Přepínač / Toggle, Radio, Checkbox, Klikatelná ikona\n\nVšechny tyto prvky:\n- používají stejné vrstvy a stejný stavový kontrakt (sekce 5),\n- nesmí měnit layout mezi stavy,\n- musí být fokusovatelné a ovladatelné klávesnicí.\n\nIkony:\n- styl dle tokenů (outline, `STROKE`), barva dle stavu.\n\n### 6.3 Tabulka / seznam\n\nObecně:\n- sloupce mají měnitelnou šířku,\n- řádky mají neměnitelnou výšku: `ROW_H`,\n- výběr řádku: vždy invert barvy (ACTIVE kontrakt na celý řádek),\n- kopírování: `CTRL+C` kopíruje vybraný text/buňku/řádek.\n\nTooltip v tabulce:\n- zobrazí se po 2 s nečinnosti kurzoru **jen při overflow**,\n- vzhled tooltipu:\n  - lem: černý 2 px\n  - okraj: bílý 1 px\n  - pozadí: bílá\n  - text: černý (Regular)\n- tooltip je overlay a může překrývat UI.\n\n### 6.4 Dialog\n\nGeometrie:\n- obdélník se zaoblením R, lem bílý 2 px, okraj černý 1 px, pozadí černé.\n\nNázev dialogu:\n- vlevo nahoře, přeruší horní lem stejně jako sekce,\n- Bold, VŠE VELKÝMI PÍSMENY.\n\nObsah:\n- standardně 5 řádků: `5×LH` (vizuálně i výškově).\n- pokud je obsahu více, použije se **vertikální overlay scrollbar** (tokeny sekce 6.7).\n\nAkce (vždy přítomné):\n- Tlačítka: **OK / CANCEL / CLOSE** (vždy).\n- V dialogu je vždy vycentrovaný text (Regular) bez dalšího rámu.\n\nVýznam akcí:\n- OK: potvrdit / provést\n- CANCEL: zahodit změny\n- CLOSE: zavřít bez akce\n- Pokud dialog nemá „změny“, CANCEL a CLOSE se chovají stejně (ale zůstávají přítomné kvůli jednotnosti).\n\nKlávesy:\n- ENTER = OK (pokud focus není v zadávacím textovém poli)\n- ESC = CLOSE\n- TAB/SHIFT+TAB cyklují mezi fokusovatelnými prvky dialogu\n\n### 6.5 Textové pole (v dialogu)\n\nTyp:\n- Zadávací (editable)\n- Zobrazovací (read-only) – vždy umožňuje selection a kopírování\n\nVzhled:\n- lem: bílý 2 px\n- okraj: černý 1 px\n- pozadí: černé\n- text: bílý (Regular)\n- placeholder: šedivý (Regular)\n\nPlaceholder řetězce (pevné):\n- Zadávací pole: `Zde pište...`\n- Zobrazovací pole: `Zde se zobrazí text...`\n\nCaret:\n- pouze u zadávacího pole s focusem,\n- blikající svislá čára střídající bílou a černou.\n\nSelection:\n- vždy inverzní:\n  - vybraný text: černý\n  - pozadí selection: bílá\n\nChování:\n- Zadávací pole: jako textový editor (psaní, mazání, výběr, přepsání výběru).\n- Zobrazovací pole: nelze editovat, ale lze označit text a kopírovat (`CTRL+C`).\n\n### 6.6 Text fit / scale-to-fit / fallback scroll (globální algoritmus)\n\nCíl: text se MUSÍ vejít; scroll je pouze fallback pro technické selhání měření/rendrování.\n\nDefinice:\n- Overflow = obsah přesahuje obsahovou plochu o > 1 px.\n\nAlgoritmus:\n1) Aplikuj globální škálování UI (sekce 1.3).  \n2) Pokud prvek obsahuje jednoprvkový text (label/hodnota), prvek MŮŽE zvětšit šířku v hlavní ose podle `W_pref` (sekce 6.1), pokud to layout dovolí.  \n3) Pokud stále overflow, zmenši obsah (text/ikony) scale-to-fit tak, aby se vešel (bez limitů).  \n4) Znovu přeměř. Pokud stále overflow (framework limit, rounding), povol overlay scrollbar pouze na ose overflow.  \n5) Scroll se NESMÍ aktivovat preventivně.\n\n### 6.7 Scrollbar (posuvný válec)\n\nScrollbar je overlay (neubírá místo).\n\nVzhled:\n- track: černý\n- track okraj: bílý\n- thumb: bílý\n- šířka: `max(6, round(0.8 × FS))`\n\nPokud technologie overlay scrollbar nepodporuje, je povolena výjimka (standardní scrollbar), ale barvy musí odpovídat paletě.\n\n### 6.8 Dropdown (needitovatelný)\n\nVzhled pole:\n- pole je needitovatelný box dle nečerveného kontraktu (sekce 5),\n- vpravo je šipka dolů (referenční ikona), barva dle stavu.\n\nRoletka:\n- otevře se dolů jako overlay,\n- zobrazuje 5 položek; více položek = overlay scrollbar,\n- pozadí: černé, okraj: bílý, oddělovače řádků: bílá linka 1 px,\n- text položek: bílý (Regular).\n\nHover uvnitř roletky:\n- při najetí na řádek se řádek invertuje (bílá plocha, černý text) – pouze uvnitř roletky.\n\nKlávesnice:\n- ŠIPKA DOLŮ otevře roletku a posouvá výběr položek.\n- MEZERNÍK potvrdí položku a zavře roletku.\n- ESC zavře roletku bez změny.\n- Tooltip po 2 s nečinnosti na položce **jen při overflow** (zobrazí celý text u kurzoru).\n\n### 6.9 Combobox (editovatelný)\n\nCombobox = textové pole + roletka.\n\nPole:\n- chová se jako zadávací textové pole (sekce 6.5), plus šipka dolů vpravo.\n\nFiltrování:\n- během psaní se roletka otevře a filtruje položky podle **case-insensitive prefix match** (deterministicky).\n- diakritika se porovnává přesně (žádné „chytré“ přepisování), aby bylo chování deterministické.\n\nKlávesnice:\n- ŠIPKA DOLŮ otevře roletku a posouvá v položkách,\n- ENTER vloží aktuální položku (pokud je roletka otevřená) a zavře,\n- MEZERNÍK v editaci vkládá znak mezery (pokud roletka není v režimu výběru),\n- ESC zavře roletku.\n\nTooltip na položce:\n- po 2 s nečinnosti jen při overflow.\n\n# PŘÍLOHA A – IKONY (REFERENČNÍ TVARY)\n\nVšechny SVG:\n- `viewBox=\"0 0 24 24\"`\n- `stroke-width = STROKE`\n- `stroke-linecap=\"round\"`, `stroke-linejoin=\"round\"`\n- barvu určuje komponenta (dle stavu), tvar je fixní.\n\n## A.1 Šipka dolů (dropdown)\n\n```svg\n<svg viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M6 9 L12 15 L18 9\" />\n</svg>\n```\n\n## A.2 CLOSE (X)\n\n```svg\n<svg viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M7 7 L17 17\" />\n  <path d=\"M17 7 L7 17\" />\n</svg>\n```\n\n## A.3 Kalendář (datum ve status)\n\n```svg\n<svg viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n  <rect x=\"5\" y=\"6\" width=\"14\" height=\"14\" rx=\"2\" ry=\"2\" />\n  <path d=\"M5 10 H19\" />\n  <path d=\"M8 4 V8\" />\n  <path d=\"M16 4 V8\" />\n</svg>\n```\n\nPozn.: Text `DD.MM.YYYY` se kreslí **uvnitř** kalendáře (pod horní lištou), je to UI text, ne součást SVG.\n\n## A.4 INFO (volitelně)\n\n```svg\n<svg viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M12 10 V17\" />\n  <path d=\"M12 7 H12.01\" />\n</svg>\n```\n\n# PŘÍLOHA B – PÍSMO (MONTSERRAT) – DISTRIBUCE\n\nCíl: font je vždy stejný a je součástí programu (determinismus).\n\nMinimální kontrakt:\n1) Přibalit `Montserrat-Regular` a `Montserrat-Bold` (TTF/OTF) do aplikace.  \n2) Při startu fonty zaregistrovat a použít je pro celé UI.  \n3) Zakázat fallback. Pokud registrace selže → chybový dialog + ukončení.  \n4) Pinovat soubory a kontrolovat hash v build pipeline.\n\nImplementační poznámka:\n- Konkrétní API závisí na technologii (web/desktop/mobile). Pro generování programu je podstatný výsledek: font je lokální asset a je aktivně použit.\n\n# PŘÍLOHA C – KONTROLA SHODY (pro automatické testy)\n\nDoporučené testy pro udržení identity napříč projekty:\n- Golden screenshots (hlavní obrazovky + dialog + tabulka + dropdown + combobox) ve 3 velikostech okna (např. 800×600, 1280×720, 1920×1080).\n- Kontrola hash font souborů v CI.\n- Statická kontrola tokenů (barvy, tloušťky, radius, paddingy).",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "ZADÁNÍ PROGRAMU: Ve Vectore Store je soubor 2ezvhKrAWPcWYHm11aQJKq, kde najdeš zadání porgramu, který porsím vygeneruj. Dodrž při tom standardy designu, které jsou také ve Vectore Store pod YDeLL1L564LE5WPLFKpSK2. REDUNDANTNÍ KONTRAKT: vrať pouze JSON dle A1_PLAN (bez md, bez textu navíc).\n\nZADÁNÍ PROGRAMU: Ve Vectore Store je soubor 2ezvhKrAWPcWYHm11aQJKq, kde najdeš zadání porgramu, který porsím vygeneruj. Dodrž při tom standardy designu, které jsou také ve Vectore Store pod YDeLL1L564LE5WPLFKpSK2\n\nPRAVIDLA A KONTRAKT:\nJsi senior software architekt a implementátor. MASTER: žádné externí soubory. OUTPUT: VRAŤ POUZE validní JSON. ŽÁDNÝ markdown, žádné komentáře, žádný další text. KONTRAKT A1_PLAN: {\"contract\":\"A1_PLAN\",\"project\":{\"name\":string,\"one_liner\":string,\"target_os\":string,\"language\":string,\"runtime\":string},\"assumptions\":[string],\"requirements\":{\"functional\":[string],\"non_functional\":[string],\"constraints\":[string]},\"architecture\":{\"modules\":[{\"name\":string,\"responsibility\":string}],\"data_flow\":[string],\"error_handling\":[string],\"security_notes\":[string]},\"build_run\":{\"prerequisites\":[string],\"commands\":[string],\"verification\":[string]},\"deliverable_policy\":{\"file_generation_strategy\":\"PLAN->STRUCTURE->FILE_CONTENT\",\"max_lines_per_chunk\":500}}\n\nSTRIKTNÍ PRAVIDLA (determinismus):\n- Piš plán jako finální specifikaci: používej explicitní názvy modulů, souborů a veřejných API.\n- Architecture.modules musí uvádět konkrétní exporty (funkce/třídy/konstanty) a vazby mezi moduly.\n- Uveď jednotné názvosloví doménových entit a sdílené datové modely.\n- Pokud něco chybí, dej to do assumptions/constraints, nevymýšlej si nové požadavky.\n\nPŘIPOJENÉ SOUBORY (informational):\n- Kajovo_UI_Design_Standard_MASTER_v1.0_AI.md | file_id=file-YDeLL1L564LE5WPLFKpSK2 | purpose=user_data | size=16210 B | dostupnost=vector_store (store_id=vs_695fe816fd988191ae3b2df190aa6aa0)\n- ZADANI_KAJA_FINAL.md | file_id=file-2ezvhKrAWPcWYHm11aQJKq | purpose=user_data | size=200221 B | dostupnost=vector_store (store_id=vs_695fe816fd988191ae3b2df190aa6aa0)\n- Kajovo_UI_Design_Standard_MASTER_v1.0_AI.md | file_id=file-XmRFcHGh2VcT2aAWNN9qPb | purpose=user_data | size=16210 B | dostupnost=vector_store (store_id=vs_695fe816fd988191ae3b2df190aa6aa0)"
+          }
+        ]
+      }
+    ],
+    "ui_state_snapshot": {
+      "ui_state": {
+        "project_name": "KJOVO",
+        "prompt_text": "Ve Vectore Store je soubor 2ezvhKrAWPcWYHm11aQJKq, kde najdeš zadání porgramu, který porsím vygeneruj. Dodrž při tom standardy designu, které jsou také ve Vectore Store pod YDeLL1L564LE5WPLFKpSK2",
+        "in_dir": "",
+        "out_dir": "C:/KAJOVO",
+        "versing_enabled": false,
+        "mode": "GENERATE",
+        "response_id": "",
+        "model": "gpt-5.1",
+        "send_as_c": false,
+        "diagnostics": {
+          "windows_in": false,
+          "windows_out": false,
+          "ssh_in": false,
+          "ssh_out": false
+        },
+        "ssh": {
+          "host": "89.221.216.10",
+          "user": "root",
+          "key_path": "",
+          "password": "+Sin8glov8",
+          "port": 10
+        },
+        "attached_file_ids": [
+          "file-YDeLL1L564LE5WPLFKpSK2",
+          "file-2ezvhKrAWPcWYHm11aQJKq",
+          "file-XmRFcHGh2VcT2aAWNN9qPb"
+        ]
+      },
+      "attached_files": [
+        {
+          "file_id": "file-YDeLL1L564LE5WPLFKpSK2",
+          "filename": "Kajovo_UI_Design_Standard_MASTER_v1.0_AI.md",
+          "purpose": "user_data",
+          "size_bytes": 16210
+        },
+        {
+          "file_id": "file-2ezvhKrAWPcWYHm11aQJKq",
+          "filename": "ZADANI_KAJA_FINAL.md",
+          "purpose": "user_data",
+          "size_bytes": 200221
+        },
+        {
+          "file_id": "file-XmRFcHGh2VcT2aAWNN9qPb",
+          "filename": "Kajovo_UI_Design_Standard_MASTER_v1.0_AI.md",
+          "purpose": "user_data",
+          "size_bytes": 16210
+        }
+      ],
+      "file_api_records": [
+        {
+          "file_id": "file-RfTimA35xfbRDFW2AbNeU5",
+          "filename": "Zadani_Kajovo_Master.md",
+          "purpose": "user_data",
+          "size_bytes": 98425
+        },
+        {
+          "file_id": "file-PF6bNQdZbxnSERkjgAvwfJ",
+          "filename": "ZADANI_KAJA_FINAL.md",
+          "purpose": "user_data",
+          "size_bytes": 200221
+        }
+      ],
+      "vector_stores": [],
+      "vector_store_files": {},
+      "batch_jobs": [
+        {
+          "run_id": "RUN_070120261935_09e1",
+          "project": "KAJOVO",
+          "mode": "GENERATE",
+          "response_id": "resp_0a9d3b88a4a4fa3700695ea7b774348191a36e945885a55934",
+          "status": "completed",
+          "start": "2026-01-07T18:35:10.199790",
+          "end": "2026-01-07T18:36:47.894443",
+          "duration_s": 97.685,
+          "manifest": "KAJOVO_resp_0a9d3b88a4a4fa3700695ea7b774348191a36e945885a55934_run_manifest_070120261936.json",
+          "timeline": "RUN_070120261935_09e1_timeline_070120261936.json",
+          "log_dir": "LOG\\RUN_070120261935_09e1",
+          "diagnostics": []
+        },
+        {
+          "run_id": "RUN_070120261346_84bd",
+          "project": "Kajovo",
+          "mode": "GENERATE",
+          "response_id": "resp_0c08a12b94e2bb5d00695e561008fc81908c8fe24b7f4d81e1",
+          "status": "completed",
+          "start": "2026-01-07T12:46:48.207171",
+          "end": "2026-01-07T12:48:20.327817",
+          "duration_s": 92.112,
+          "manifest": "Kajovo_resp_0c08a12b94e2bb5d00695e561008fc81908c8fe24b7f4d81e1_run_manifest_070120261348.json",
+          "timeline": "RUN_070120261346_84bd_timeline_070120261348.json",
+          "log_dir": "LOG\\RUN_070120261346_84bd",
+          "diagnostics": []
+        },
+        {
+          "run_id": "RUN_070120260113_b3ae",
+          "project": "Kajovo",
+          "mode": "GENERATE",
+          "response_id": "GENERATE_d3b011",
+          "status": "completed",
+          "start": "2026-01-07T00:13:04.268912",
+          "end": "2026-01-07T00:16:10.123766",
+          "duration_s": 185.832,
+          "manifest": "Kajovo_GENERATE_d3b011_run_manifest_070120260116.json",
+          "timeline": "RUN_070120260113_b3ae_timeline_070120260116.json",
+          "log_dir": "LOG\\RUN_070120260113_b3ae",
+          "diagnostics": []
+        },
+        {
+          "run_id": "RUN_040120261548_3af0",
+          "project": "Dry Run Test",
+          "mode": "MODIFY",
+          "response_id": "MODIFY_1c0d5f",
+          "status": "completed",
+          "start": "2026-01-04T14:48:59.735363",
+          "end": "2026-01-04T14:48:59.767914",
+          "duration_s": 0.024,
+          "manifest": "Dry_Run_Test_MODIFY_1c0d5f_run_manifest_040120261548.json",
+          "timeline": "RUN_040120261548_3af0_timeline_040120261548.json",
+          "log_dir": "LOG\\RUN_040120261548_3af0",
+          "diagnostics": []
+        },
+        {
+          "run_id": "RUN_040120261546_3f78",
+          "project": "E2E Diff/Hook Test",
+          "mode": "MODIFY",
+          "response_id": "MODIFY_c683ad",
+          "status": "completed",
+          "start": "2026-01-04T14:46:23.603001",
+          "end": "2026-01-04T14:46:23.687206",
+          "duration_s": 0.061,
+          "manifest": "E2E_Diff_Hook_Test_MODIFY_c683ad_run_manifest_040120261546.json",
+          "timeline": "RUN_040120261546_3f78_timeline_040120261546.json",
+          "log_dir": "LOG\\RUN_040120261546_3f78",
+          "diagnostics": []
+        }
+      ]
+    }
+  }
+}

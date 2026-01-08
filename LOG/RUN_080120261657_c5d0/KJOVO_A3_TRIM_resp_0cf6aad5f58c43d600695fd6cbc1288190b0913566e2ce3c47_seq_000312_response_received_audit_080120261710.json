@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261657_c5d0",
+    "project": "KJOVO",
+    "stage": "A3_TRIM",
+    "response_id": "resp_0cf6aad5f58c43d600695fd6cbc1288190b0913566e2ce3c47",
+    "event": "response_received",
+    "sequence": 312,
+    "logged_at": "2026-01-08T16:10:17.003695"
+  },
+  "details": {
+    "event": "response_received",
+    "level": "info",
+    "details": {
+      "stage": "A3_TRIM",
+      "request_id": "7d0f0513",
+      "response_id": "resp_0494dd7b23a187b900695fd6ce357481928a285eb51a2482b1"
+    },
+    "timestamp": "2026-01-08T16:10:17.003688"
+  }
+}

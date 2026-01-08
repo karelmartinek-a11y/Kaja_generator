@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261510_2cd7",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_020fa7656cd97c6e00695fbc7e3b0c819682439fb81a653adc",
+    "logged_at": "2026-01-08T14:18:07.858695",
+    "request_id": "63c05555"
+  },
+  "payload": {
+    "id": "resp_020fa7656cd97c6e00695fbc7e3b0c819682439fb81a653adc",
+    "created_at": 1767881854.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_020fa7656cd97c6e00695fbc7eb114819684013c72bb3061f3",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Sekce 28.18–28.22 doplňuje FULL Ubuntu (Web Server) Diagnostics standard o další adresáře, soubory a doporučený způsob automatizovaného sběru, včetně příkladu PowerShell one-lineru pro vzdálený sběr z Windows.\\n\\n28.18 cron_webhooks/\\nAdresář `cron_webhooks/` má zachytit plánované úlohy a webhooky:\\n- `crontab_root.txt` – výstup `crontab -l` pro uživatele root.\\n- `crontab_users_listing.txt` – přehled, kteří uživatelé mají vlastní crontab (např. podle obsahu `/var/spool/cron/crontabs` nebo jiného mechanismu).\\n- `system_cron_dirs_tree.txt` – listing adresářů `/etc/cron.*` (hourly, daily, weekly, monthly, d., atd.), aby bylo vidět systémové cron skripty.\\n- `webhook_endpoints_inventory.txt` – inventář webhook endpointů odvozený z nginx a aplikačních konfigurací; obsahuje pouze URL/endpointy a související metadata, ale ne tajemství (žádné tokeny, hesla, signovací klíče).\\n\\n28.19 logs/\\nAdresář `logs/` standardizuje sběr klíčových logů:\\n- `journal_nginx_last500.txt` – `journalctl -u nginx -n 500 --no-pager` (posledních 500 záznamů jednotky nginx).\\n- `journal_app_last500.txt` – `journalctl -u <app> -n 500 --no-pager` pro hlavní aplikační službu, pokud existuje (název jednotky je dán konfigurací nástroje Kája).\\n- `journal_db_last500.txt` – obdobně pro databázovou službu (PostgreSQL/MySQL/MariaDB apod.), pokud existuje.\\n- `syslog_tail.txt` – tail `/var/log/syslog` (na Ubuntu) nebo fallback přes `journalctl` (např. posledních N záznamů), aby byl obecný systémový log.\\n- `auth_log_tail.txt` – tail `/var/log/auth.log` (přihlašování, sudo, SSH); sběr má být opatrný kvůli citlivosti, ale je považován za důležitý pro bezpečnostní a přístupové problémy.\\n- `kernel_log_tail.txt` – `journalctl -k -n 400 --no-pager` (posledních cca 400 kernel logů, pro diagnostiku HW/driver problémů).\\n\\n28.20 virtualization_containers/\\nAdresář `virtualization_containers/` mapuje stav kontejnerizace a případné lokální Kubernetes:\\n- `docker_info.txt` – výstup `docker info`, pokud je Docker nainstalován (informace o verzi, storage driveru, počtu kontejnerů atd.).\\n- `docker_ps.txt` – výstup `docker ps -a` (seznam běžících i zastavených kontejnerů, porty, obrazy).\\n- `docker_compose_files_found.txt` – seznam nalezených `docker-compose*.yml` souborů (jen cesty + metadata, žádný obsah), aby bylo vidět, jaké compose stacky existují.\\n- `k8s_hint.txt` – stručná informace o přítomnosti a stavu microk8s/k3s (např. výstup `microk8s status`, `k3s kubectl get nodes` nebo jen indikace, že je nainstalováno), pro orientační přehled o lokálním Kubernetes.\\n\\n28.21 Automatizovaný sběr – doporučený běh\\nDoporučený postup pro sběr diagnostiky na Ubuntu:\\n1. Spustit bash skript (např. jako root přes SSH), který:\\n   - vytvoří adresář `Diag_YYYYMMDD-HHMMSS/` v definovaném umístění (např. `/root/Diag_<timestamp>`),\\n   - vytvoří v něm podsložky dle standardu (`system/`, `hardware/`, `storage/`, `network/`, `firewall/`, `users_permissions/`, `processes_services/`, `packages/`, `web/`, `nginx/`, `app/`, atd.),\\n   - naplní je výstupy příslušných příkazů.\\n2. Volitelně následně stáhnout celý adresář (nebo jeho ZIP) na Windows pomocí SCP/WinSCP pro další analýzu.\\n\\n28.22 Jednořádkový příkaz z Windows PowerShellu (remote sběr + stažení)\\nJe uvedena varianta A (doporučená) pro vzdálený sběr z Windows pomocí PowerShellu a SSH klíče (bez hesla v příkazu). Princip:\\n- V PowerShellu se nastaví proměnné `$ip` a `$user` (typicky `root`) a proměnná `$script` obsahuje bash skript jako here-string.\\n- Skript na vzdáleném Ubuntu:\\n  - Zapne `set -o pipefail` a `set +e` (pipefail pro lepší detekci chyb v pipe, ale skript se nemá ukončit při první chybě).\\n  - Vytvoří `timestamp=$(date +%Y%m%d-%H%M%S)` a `remote_root=\\\"/root/Diag_${timestamp}\\\"`.\\n  - Vytvoří adresář `remote_root` a postupně podsložky.\\n  - Do jednotlivých souborů zapisuje výstupy příkazů, přesměrované do `> \\\"...\\\" 2>&1` (stdout i stderr), aby byl zachycen i případný error output.\\n\\nKonkrétní části skriptu (výřez):\\n- `system/`:\\n  - `os_release.txt` – `cat /etc/os-release`.\\n  - `uname.txt` – `uname -a` (název souboru se zde mírně liší od dříve definovaného `uname_a.txt`, ale význam je stejný).\\n  - `uptime.txt` – `uptime && who -b`.\\n  - `locale_timezone.txt` – `locale && timedatectl`.\\n  - `hostname_hosts.txt` – `hostnamectl && cat /etc/hosts && cat /etc/hostname`.\\n  - `sysctl_all.txt` – `sysctl -a`.\\n  - `limits_summary.txt` – `ulimit -a && ls /etc/security/limits.conf /etc/security/limits.d 2>/dev/null` (listing, ne nutně obsah všech souborů).\\n  - `systemd_failed_units.txt` – `systemctl --failed`.\\n  - `systemd_running_units.txt` – `systemctl list-units --type=service --state=running`.\\n  - `journal_boot_errors.txt` – `journalctl -b -p err..alert --no-pager`.\\n  - `env_root_sanitized.txt` – `env | grep -v -E '(PASS|KEY|SECRET|TOKEN|PASSWORD)'` (snaha odfiltrovat proměnné s tajemstvími; může být doplněna o další patterny).\\n\\n- `hardware/` (v tomto skriptu je struktura mírně jiná než v textovém standardu, ale účel je podobný):\\n  - `cpu.txt` – `lscpu` (shrnutí CPU).\\n  - `memory_modules.txt` – `dmidecode -t memory` (detailní info o paměťových modulech; může vyžadovat root a je třeba zvážit citlivost).\\n  - `memory_summary.txt` – `free -h`.\\n\\n- `storage/`:\\n  - `volumes.txt` – `lsblk -o NAME,SIZE,TYPE,MOUNTPOINT,FSTYPE`.\\n  - `mount_points.txt` – `mount | column -t`.\\n  - `smart_status.txt` – pokud je dostupný `smartctl`, provede `smartctl -H` pro všechna `/dev/sd?`; jinak vypíše `smartctl missing`. Cílem je jen health status, ne kompletní SMART dump.\\n\\n- `network/`:\\n  - `ipconfig_all.txt` – `ip addr` (adresy rozhraní).\\n  - `adapters_details.txt` – `ip link` (stav rozhraní).\\n  - `dns_client_config.txt` – `resolvectl status || systemd-resolve --status || cat /etc/resolv.conf` (postupný fallback podle dostupnosti nástrojů).\\n  - `hosts_file.txt` – `cat /etc/hosts`.\\n  - `routes.txt` – `ip route`.\\n  - `listening_sockets.txt` – `ss -tunlp` (TCP/UDP naslouchající sockety).\\n\\n- `firewall/`:\\n  - `ufw_status.txt` – `ufw status verbose`.\\n  - `iptables_rules.txt` – `iptables -S && iptables -L -n -v`.\\n  - `nft_ruleset.txt` – `nft list ruleset`.\\n\\n- `users_permissions/`:\\n  - `users_groups.txt` – `getent passwd && getent group`.\\n  - `sudoers_listing.txt` – `cat /etc/sudoers && ls /etc/sudoers.d 2>/dev/null` (v textu standardu je preferován spíše listing a případná redakce obsahu; skript zde aktuálně vypisuje plný obsah `/etc/sudoers`, což je třeba sladit s bezpečnostními zásadami).\\n  - `umask.txt` – `umask`.\\n\\n- `processes_services/`:\\n  - `process_list.txt` – `ps -ef` (seznam procesů; v textovém standardu je preferováno `ps auxfww`, ale účel je podobný – přehled běžících procesů).\\n  - `services_state.txt` – `systemctl list-units --type=service --all`.\\n  - `startup_items.txt` – `systemctl list-unit-files --state=enabled` (služby povolené při startu).\\n\\n- `packages/`:\\n  - `dpkg_list.txt` – `dpkg -l`.\\n  - `apt_policy_key_pkgs.txt` – `apt-cache policy nginx openssl python3 certbot postgresql redis` (verze a repozitáře pro klíčové balíky; v textu standardu je zmíněn i MySQL, zde zatím není zahrnut).\\n  - `snap_list.txt` – `snap list`.\\n\\n- `web/`:\\n  - `web_root_overview.txt` – `find /var/www /srv/www -maxdepth 3 -type d -print 2>/dev/null` (strom document rootů do hloubky 3).\\n  - `static_assets_sizes.csv` – `du -h --max-depth=2 /var/www /srv/www 2>/dev/null | sort -hr` (velikosti složek; formát je spíše textový než čisté CSV, ale účel je zjistit největší složky se statickými daty).\\n  - `web_server_headers_hint.txt` – `curl -I http://127.0.0.1 2>&1 || true` (lokální HTTP dotaz na default host, pro kontrolu hlaviček a odpovědi; `|| true` zajistí, že chyba curl nesrazí skript).\\n\\n- `nginx/`:\\n  - `nginx_version.txt` – `nginx -V`.\\n  - `nginx_test.txt` – `nginx -t`.\\n  - `nginx_conf_tree.txt` – `find /etc/nginx -maxdepth 4 -print 2>/dev/null` (strom konfigurace nginxu).\\n\\n- `app/`:\\n  - `app_dirs_overview.txt` – `find /srv /opt /var/www ~/apps -maxdepth 2 -type d -print 2>/dev/null` (přehled typických aplikačních adresářů).\\n  - Další soubory pro `app/` (env/config soubory, permissions, webhook configs) budou doplněny v pokračování skriptu, aby odpovídaly textovému standardu.\\n\\nSkript konzistentně používá `mkdir -p` před každým zápisem, aby zajistil existenci cílových adresářů, a přesměrovává stderr do souborů, aby bylo možné vidět případné chyby (např. chybějící příkazy). Celkově tato část definuje praktickou implementaci části standardu pro vzdálený sběr, která musí být sladěna s dříve popsanou adresářovou strukturou, názvy souborů a bezpečnostními zásadami (zejména neexportovat tajemství a citlivé konfigurace v plném znění).\",\"chunk_index\":11,\"chunk_count\":15,\"notes\":[\"Zachovat, že 28.18–28.20 definují nové podsložky (cron_webhooks, logs, virtualization_containers) a jejich soubory, včetně omezení na metadata a bez tajemství.\",\"Důležité: v certs/ existuje `tls_private_keys_presence.txt`, který má jen indikovat přítomnost privátních klíčů, ne jejich obsah – to je součást bezpečnostního modelu.\",\"PowerShell varianta A používá SSH klíč a here-string se skriptem; samotné spuštění přes ssh/scp je v textu naznačeno, ale není v tomto výřezu plně rozepsáno – v navazujících částech může být doplněno.\",\"Je třeba sladit drobné rozdíly mezi textovým standardem a ukázkovým skriptem (např. názvy souborů `uname.txt` vs `uname_a.txt`, obsah sudoers, formát CSV vs text), ale význam a účel zůstává stejný.\",\"Skript používá `set -o pipefail` a `set +e`, aby zachytil chyby v pipe, ale neukončil se při první chybě; to je důležité pro robustnost sběru.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 6213,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3293,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 9506
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767881887,
+    "store": true
+  }
+}

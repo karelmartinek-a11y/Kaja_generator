@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261823_0885",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_b86da8",
+    "event": "vector_store_attach_done",
+    "sequence": 13,
+    "logged_at": "2026-01-08T17:23:37.543215"
+  },
+  "details": {
+    "event": "vector_store_attach_done",
+    "level": "info",
+    "details": {
+      "vector_store_id": "vs_695fe816fd988191ae3b2df190aa6aa0",
+      "file_id": "file-2ezvhKrAWPcWYHm11aQJKq"
+    },
+    "timestamp": "2026-01-08T17:23:37.543206"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_d55ad2",
+    "event": "ui_log_message",
+    "sequence": 5,
+    "logged_at": "2026-01-08T12:04:12.102386"
+  },
+  "details": {
+    "message": "A2X: odstraněny duplicitní exporty z agregátorů (15).",
+    "timestamp_local": "13:04:12",
+    "source": "ui_log"
+  }
+}

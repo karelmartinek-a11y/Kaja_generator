@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "project": "KAJOVO",
+    "mode": "GENERATE",
+    "model": "gpt-5.1-codex-max",
+    "response_id": "GENERATE_e9dd5e",
+    "user_spec": "Vygeneruj program podle zadání, které najdeš v souboru Files API pod id-file: file-PF6bNQdZbxnSERkjgAvwfJ při dodržení standardu designu, který je uložen na FIles API pod id-file: file-XmRFcHGh2VcT2aAWNN9qPb",
+    "attachments": [
+      {
+        "file_id": "file-XmRFcHGh2VcT2aAWNN9qPb",
+        "filename": "Kajovo_UI_Design_Standard_MASTER_v1.0_AI.md",
+        "purpose": "user_data",
+        "size_bytes": 16210
+      },
+      {
+        "file_id": "file-PF6bNQdZbxnSERkjgAvwfJ",
+        "filename": "ZADANI_KAJA_FINAL.md",
+        "purpose": "user_data",
+        "size_bytes": 200221
+      }
+    ],
+    "vector_store_ids": [],
+    "diagnostics": [],
+    "captured_at": "2026-01-07T18:34:12.864755",
+    "pricing_catalog": {
+      "source": "https://openai.com/pricing",
+      "last_refreshed": null,
+      "verified": false,
+      "status": "Ceník offline / odhad",
+      "error": "Client error '403 Forbidden' for url 'https://openai.com/pricing'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403"
+    }
+  },
+  "captured_at": "2026-01-07T18:34:12.864769",
+  "run_id": "RUN_070120261934_2f21"
+}

@@ -1,0 +1,89 @@
+{
+  "metadata": {
+    "run_id": "RUN_070120261935_09e1",
+    "project": "KAJOVO",
+    "stage": "A3",
+    "response_id": "resp_0a9d3b88a4a4fa3700695ea77fd1508191acd0b7c5340494c2",
+    "logged_at": "2026-01-07T18:36:18.875866"
+  },
+  "payload": {
+    "id": "resp_0a9d3b88a4a4fa3700695ea77fd1508191acd0b7c5340494c2",
+    "created_at": 1767810943.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi generátor obsahu jednoho konkrétního souboru podle A2_STRUCTURE. OUTPUT: VRAŤ POUZE validní JSON. ŽÁDNÝ markdown ani další text. KRITICKÉ: content je vždy čistý obsah souboru (ne DIFF, ne patch). U chunkingu posílej po částech, které se spojí do kompletního souboru. CHUNK: max 500 řádků v jednom chunku, dlouhé soubory vrať po částech. KONTRAKT A3_FILE: {\"contract\":\"A3_FILE\",\"path\":string,\"chunking\":{\"max_lines\":500,\"chunk_index\":integer,\"chunk_count\":integer,\"has_more\":boolean,\"next_chunk_index\":integer|null},\"content\":string}",
+    "metadata": {},
+    "model": "gpt-5.1-codex-max",
+    "object": "response",
+    "output": [
+      {
+        "id": "rs_0a9d3b88a4a4fa3700695ea78023a88191b7c2d5d3fe5c6b62",
+        "summary": [],
+        "type": "reasoning",
+        "content": null,
+        "encrypted_content": null,
+        "status": null
+      },
+      {
+        "id": "msg_0a9d3b88a4a4fa3700695ea79747e48191a814e18d757863de",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"A3_FILE\",\"path\":\"service.py\",\"chunking\":{\"max_lines\":500,\"chunk_index\":0,\"chunk_count\":1,\"has_more\":false,\"next_chunk_index\":null},\"content\":\"from __future__ import annotations\\n\\nfrom datetime import datetime\\nfrom typing import List, Optional\\n\\nimport repository\\nimport utils\\nfrom models import Priority, Status, Task\\n\\n\\nclass ServiceError(Exception):\\n    \\\"\\\"\\\"Základní výjimka pro aplikační vrstvu.\\\"\\\"\\\"\\n\\n\\nclass ValidationError(ServiceError):\\n    \\\"\\\"\\\"Chyba validace vstupních dat.\\\"\\\"\\\"\\n\\n\\nclass NotFoundError(ServiceError):\\n    \\\"\\\"\\\"Entita nebyla nalezena.\\\"\\\"\\\"\\n\\n\\nclass PersistenceError(ServiceError):\\n    \\\"\\\"\\\"Chyba při práci s perzistencí.\\\"\\\"\\\"\\n\\n\\ndef create_task(\\n    title: str,\\n    description: str,\\n    due: Optional[str],\\n    priority: str,\\n) -> Task:\\n    \\\"\\\"\\\"Vytvoří novou úlohu a uloží ji do perzistence.\\\"\\\"\\\"\\n    normalized_title = _require_text(title, field_name=\\\"title\\\")\\n    normalized_description = description.strip() if description is not None else \\\"\\\"\\n    normalized_priority = _parse_priority(priority)\\n    normalized_due = _normalize_due(due)\\n    now_iso = utils.utcnow_iso()\\n\\n    tasks = _load_tasks()\\n    next_id = repository.get_next_id(tasks)\\n    task = Task(\\n        id=next_id,\\n        title=normalized_title,\\n        description=normalized_description,\\n        due=normalized_due,\\n        priority=normalized_priority,\\n        status=Status.TODO,\\n        created_at=now_iso,\\n        updated_at=now_iso,\\n    )\\n    tasks.append(task)\\n    _save_tasks(tasks)\\n    return task\\n\\n\\ndef list_tasks(\\n    status: Optional[str] = None,\\n    priority: Optional[str] = None,\\n    before: Optional[str] = None,\\n) -> List[Task]:\\n    \\\"\\\"\\\"Vrátí seznam úloh dle filtrů (status, priority, due před datem).\\\"\\\"\\\"\\n    tasks = _load_tasks()\\n    status_filter = _parse_status(status) if status else None\\n    priority_filter = _parse_priority(priority) if priority else None\\n    before_dt = _parse_due_filter(before) if before else None\\n\\n    def _matches(task: Task) -> bool:\\n        if status_filter and task.status != status_filter:\\n            return False\\n        if priority_filter and task.priority != priority_filter:\\n            return False\\n        if before_dt:\\n            if task.due is None:\\n                return False\\n            try:\\n                task_due = utils.parse_iso_datetime(task.due)\\n            except ValueError:\\n                return False\\n            if task_due >= before_dt:\\n                return False\\n        return True\\n\\n    return [task for task in tasks if _matches(task)]\\n\\n\\ndef update_task_status(task_id: int, status: str) -> Task:\\n    \\\"\\\"\\\"Aktualizuje stav úlohy.\\\"\\\"\\\"\\n    numeric_id = _validate_id(task_id)\\n    new_status = _parse_status(status)\\n\\n    tasks = _load_tasks()\\n    task = _find_task(tasks, numeric_id)\\n    if task is None:\\n        raise NotFoundError(f\\\"Task with id {numeric_id} not found\\\")\\n\\n    if task.status != new_status:\\n        task.status = new_status\\n        task.updated_at = utils.utcnow_iso()\\n        _save_tasks(tasks)\\n    return task\\n\\n\\ndef remove_task(task_id: int) -> None:\\n    \\\"\\\"\\\"Odstraní úlohu dle identifikátoru.\\\"\\\"\\\"\\n    numeric_id = _validate_id(task_id)\\n    tasks = _load_tasks()\\n    remaining = [task for task in tasks if task.id != numeric_id]\\n\\n    if len(remaining) == len(tasks):\\n        raise NotFoundError(f\\\"Task with id {numeric_id} not found\\\")\\n\\n    _save_tasks(remaining)\\n\\n\\ndef get_task(task_id: int) -> Task:\\n    \\\"\\\"\\\"Vrátí detail úlohy dle identifikátoru.\\\"\\\"\\\"\\n    numeric_id = _validate_id(task_id)\\n    tasks = _load_tasks()\\n    task = _find_task(tasks, numeric_id)\\n    if task is None:\\n        raise NotFoundError(f\\\"Task with id {numeric_id} not found\\\")\\n    return task\\n\\n\\ndef _find_task(tasks: List[Task], task_id: int) -> Optional[Task]:\\n    for task in tasks:\\n        if task.id == task_id:\\n            return task\\n    return None\\n\\n\\ndef _load_tasks() -> List[Task]:\\n    try:\\n        return repository.load_tasks()\\n    except repository.RepositoryError as exc:  # type: ignore[attr-defined]\\n        raise PersistenceError(str(exc)) from exc\\n\\n\\ndef _save_tasks(tasks: List[Task]) -> None:\\n    try:\\n        repository.save_tasks(tasks)\\n    except repository.RepositoryError as exc:  # type: ignore[attr-defined]\\n        raise PersistenceError(str(exc)) from exc\\n\\n\\ndef _parse_status(value: str) -> Status:\\n    if value is None:\\n        raise ValidationError(\\\"Status is required\\\")\\n    try:\\n        return Status.from_string(value)\\n    except ValueError as exc:\\n        raise ValidationError(f\\\"Invalid status '{value}'. Allowed: {Status.allowed_values()}\\\") from exc\\n\\n\\ndef _parse_priority(value: str) -> Priority:\\n    if value is None:\\n        raise ValidationError(\\\"Priority is required\\\")\\n    try:\\n        return Priority.from_string(value)\\n    except ValueError as exc:\\n        raise ValidationError(f\\\"Invalid priority '{value}'. Allowed: {Priority.allowed_values()}\\\") from exc\\n\\n\\ndef _normalize_due(value: Optional[str]) -> Optional[str]:\\n    if value is None or value == \\\"\\\":\\n        return None\\n    try:\\n        parsed = utils.parse_iso_datetime(value)\\n    except ValueError as exc:\\n        raise ValidationError(\\\"Due date must be valid ISO 8601 datetime (e.g., 2024-12-31 or 2024-12-31T12:00:00)\\\") from exc\\n    return utils.to_iso_datetime(parsed)\\n\\n\\ndef _parse_due_filter(value: str) -> datetime:\\n    try:\\n        parsed = utils.parse_iso_datetime(value)\\n    except ValueError as exc:\\n        raise ValidationError(\\\"Filter 'before' must be valid ISO 8601 datetime\\\") from exc\\n    return parsed\\n\\n\\ndef _require_text(value: str, field_name: str) -> str:\\n    if value is None:\\n        raise ValidationError(f\\\"{field_name} is required\\\")\\n    cleaned = value.strip()\\n    if cleaned == \\\"\\\":\\n        raise ValidationError(f\\\"{field_name} cannot be empty\\\")\\n    return cleaned\\n\\n\\ndef _validate_id(task_id: int) -> int:\\n    if not isinstance(task_id, int):\\n        raise ValidationError(\\\"Task id must be an integer\\\")\\n    if task_id <= 0:\\n        raise ValidationError(\\\"Task id must be a positive integer\\\")\\n    return task_id\\n\"}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 0.985,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": "resp_0a9d3b88a4a4fa3700695ea76a966c8191847693465fc78190",
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "medium",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 1942,
+      "input_tokens_details": {
+        "cached_tokens": 1024
+      },
+      "output_tokens": 4459,
+      "output_tokens_details": {
+        "reasoning_tokens": 2816
+      },
+      "total_tokens": 6401
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767810978,
+    "store": true
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261510_2cd7",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_3c61cb",
+    "event": "ui_log_message",
+    "sequence": 4,
+    "logged_at": "2026-01-08T14:39:14.566417"
+  },
+  "details": {
+    "message": "Chyba běhu: Kontrakt neodpovídá A1_PLAN: None",
+    "timestamp_local": "15:39:14",
+    "source": "ui_log"
+  }
+}

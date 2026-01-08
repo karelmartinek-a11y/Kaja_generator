@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261657_c5d0",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_0cf6aad5f58c43d600695fd6e91cd08190a7edb1489324d851",
+    "event": "run_failed",
+    "sequence": 336,
+    "logged_at": "2026-01-08T16:10:21.825306"
+  },
+  "details": {
+    "event": "run_failed",
+    "level": "error",
+    "details": {
+      "error": "A3: src/spec_end_marker.ts nesplňuje exporty z A2X_FILE_MAP: ['export function isEndOfSpecChunk(chunkId: string): boolean;', 'export const END_OF_SPEC_MARKER_ID: string;']",
+      "type": "ValueError",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3278, in execute\n    files = self._run_generate(user_spec, assets, ui_state, progress_callback, stop_check)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3749, in _run_generate\n    raise ValueError(\n        f\"A3: {path} nesplňuje exporty z A2X_FILE_MAP: {missing_exports}\"\n    )\nValueError: A3: src/spec_end_marker.ts nesplňuje exporty z A2X_FILE_MAP: ['export function isEndOfSpecChunk(chunkId: string): boolean;', 'export const END_OF_SPEC_MARKER_ID: string;']\n"
+    },
+    "timestamp": "2026-01-08T16:10:21.825297"
+  }
+}

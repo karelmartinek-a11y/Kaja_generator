@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261657_c5d0",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_b5c8a9",
+    "event": "ui_log_message",
+    "sequence": 14,
+    "logged_at": "2026-01-08T16:10:31.232882"
+  },
+  "details": {
+    "message": "Chyba běhu: A3: src/spec_end_marker.ts nesplňuje exporty z A2X_FILE_MAP: ['export function isEndOfSpecChunk(chunkId: string): boolean;', 'export const END_OF_SPEC_MARKER_ID: string;']",
+    "timestamp_local": "17:10:31",
+    "source": "ui_log"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261657_c5d0",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_0cf6aad5f58c43d600695fd69950b08190ae9ef1ecf064166f",
+    "event": "log_message",
+    "sequence": 269,
+    "logged_at": "2026-01-08T16:09:09.094474"
+  },
+  "details": {
+    "event": "log_message",
+    "level": "info",
+    "details": {
+      "message": "A3: zadání je příliš dlouhé (6875 tokenů > 6554); spouštím zkracovací dotaz."
+    },
+    "timestamp": "2026-01-08T16:09:09.094467"
+  }
+}

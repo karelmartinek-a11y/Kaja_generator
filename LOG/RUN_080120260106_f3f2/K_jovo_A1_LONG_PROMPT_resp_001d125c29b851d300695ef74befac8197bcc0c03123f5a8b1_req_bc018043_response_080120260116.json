@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260106_f3f2",
+    "project": "Kájovo",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_001d125c29b851d300695ef74befac8197bcc0c03123f5a8b1",
+    "logged_at": "2026-01-08T00:16:17.550288",
+    "request_id": "bc018043"
+  },
+  "payload": {
+    "id": "resp_001d125c29b851d300695ef74befac8197bcc0c03123f5a8b1",
+    "created_at": 1767831371.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_001d125c29b851d300695ef74c6c8c8197a824d06ac32b0924",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento závěrečný CHUNK pouze konstatuje „Konec MASTER zadání.“ a neobsahuje žádné nové technické požadavky, struktury ani pravidla nad rámec toho, co už bylo popsáno v předchozích částech.\\n\\nZ hlediska celkového zadání to znamená:\\n- Uzavření definice šablon a struktur pro diagnostické balíčky (Ubuntu web server + FULL Windows Diagnostics).\\n- Potvrzení, že žádné další sekce, podsložky ani soubory už nejsou součástí MASTER specifikace.\\n- Všechny dříve popsané kontrakty, pravidla, bezpečnostní zásady (redakce citlivých dat, označování `NOT PRESENT`, `ACCESS DENIED` apod.) a struktury adresářů/souborů zůstávají v platnosti beze změny.\\n\\nTento CHUNK tedy pouze signalizuje konec specifikace a nemění ani nerozšiřuje žádnou z dříve definovaných částí.\",\"chunk_index\":15,\"chunk_count\":15,\"notes\":[\"Žádné nové technické instrukce ani struktury; pouze ukončení MASTER zadání.\",\"Všechny předchozí kontrakty, pravidla a návrhy (Ubuntu i Windows diagnostika) zůstávají závazné a kompletní.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4564,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 322,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 4886
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767831376,
+    "store": true
+  }
+}

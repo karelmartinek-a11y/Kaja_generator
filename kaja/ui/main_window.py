@@ -60,6 +60,7 @@ from .. import __version__
 from ..core.log_manager import (
     configure_log_encryption,
     init_run,
+    log_audit_event,
     log_file_operation,
     log_file_upload,
     log_manifest,
@@ -85,6 +86,14 @@ from .dialogs.api_key_dialog import ApiKeyDialog
 from .dialogs.pricing_dialog import PricingDialog
 from .dialogs.settings_dialog import SettingsDialog
 from .section_card import SectionCard
+from .style_tokens import (
+    KJA_BORDER_PX,
+    KJA_RADIUS,
+    PALETTE_BLACK,
+    PALETTE_GRAY,
+    PALETTE_RED,
+    PALETTE_WHITE,
+)
 
 
 class ButtonActiveFilter(QObject):
@@ -117,6 +126,8 @@ class StatusThermometer(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._progress = 0.0
+        self._pulse_offset = 0.0
+        self._pulse_active = False
         self.setMinimumHeight(16)
         self.setMaximumHeight(16)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -125,20 +136,42 @@ class StatusThermometer(QWidget):
         self._progress = max(0.0, min(1.0, ratio))
         self.update()
 
+    def set_pulse_active(self, active: bool) -> None:
+        if self._pulse_active == active:
+            return
+        self._pulse_active = active
+        if not active:
+            self._pulse_offset = 0.0
+        self.update()
+
+    def advance_pulse(self, step: float = 0.06) -> None:
+        if not self._pulse_active:
+            return
+        self._pulse_offset = (self._pulse_offset + step) % 1.0
+        self.update()
+
     def paintEvent(self, event) -> None:
         super().paintEvent(event)
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         rect = self.rect().adjusted(0, 0, -1, -1)
-        pen = QPen(QColor("#fff"))
-        pen.setWidth(1)
+        pen = QPen(QColor(PALETTE_WHITE))
+        pen.setWidth(KJA_BORDER_PX)
         painter.setPen(pen)
         painter.setBrush(Qt.NoBrush)
-        painter.drawRoundedRect(rect, 8, 8)
+        painter.drawRoundedRect(rect, KJA_RADIUS, KJA_RADIUS)
         if self._progress:
             fill_width = max(1, int(rect.width() * self._progress))
             fill_rect = QRect(rect.left(), rect.top(), fill_width, rect.height())
-            painter.fillRect(fill_rect, QColor("#fff"))
+            painter.fillRect(fill_rect, QColor(PALETTE_WHITE))
+        if self._pulse_active:
+            pulse_width = max(8, int(rect.width() * 0.08))
+            travel = rect.width() + pulse_width
+            pulse_x = rect.left() + int(travel * self._pulse_offset) - pulse_width
+            pulse_rect = QRect(pulse_x, rect.top(), pulse_width, rect.height())
+            pulse_color = QColor(PALETTE_GRAY)
+            pulse_color.setAlpha(160)
+            painter.fillRect(pulse_rect, pulse_color)
 
 
 class StatusBar(QFrame):
@@ -164,6 +197,10 @@ class StatusBar(QFrame):
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._refresh_time)
         self._timer.start(1000)
+        self._pulse_timer = QTimer(self)
+        self._pulse_timer.timeout.connect(self._advance_pulse)
+        self._pulse_timer.start(180)
+        self._progress_ratio = 0.0
         self._progress_start: Optional[datetime] = None
         self._refresh_time()
         self.mark_idle()
@@ -185,13 +222,17 @@ class StatusBar(QFrame):
         percent = int(round(max(0.0, min(1.0, ratio)) * 100))
         self._progress_label.setText(f"{percent}%")
         self._countdown_label.setText(self._compute_eta(ratio))
+        self._progress_ratio = ratio
+        self._thermometer.set_pulse_active(ratio < 1.0)
 
     def mark_idle(self, message: str = "PROGRAM NIC NEDĚLÁ") -> None:
         self._progress_start = None
         self._state_label.setText(message.upper())
         self._thermometer.set_progress(0.0)
+        self._thermometer.set_pulse_active(False)
         self._progress_label.setText("0%")
         self._countdown_label.setText("ETA: N/A")
+        self._progress_ratio = 0.0
 
     def _compute_eta(self, ratio: float) -> str:
         if not self._progress_start or ratio <= 0 or ratio >= 1:
@@ -201,6 +242,13 @@ class StatusBar(QFrame):
             return "ETA: N/A"
         remaining = elapsed * (1.0 - ratio) / ratio
         return f"ETA: {int(remaining)} s"
+
+    def _advance_pulse(self) -> None:
+        if self._progress_start and self._progress_ratio < 1.0:
+            self._thermometer.set_pulse_active(True)
+            self._thermometer.advance_pulse()
+        else:
+            self._thermometer.set_pulse_active(False)
 
 
 class MainWindow(QMainWindow):
@@ -259,6 +307,9 @@ class MainWindow(QMainWindow):
         self._diff_status_label = QLabel("Diff viewer čeká na spuštění runu.")
         self._status_bar = StatusBar(self)
         self._last_run_ui_state: UiState | None = None
+        self._active_run_artifacts: RunArtifacts | None = None
+        self._active_response_id = ""
+        self._ui_audit_sequence = 0
 
         self._init_ui()
         self._apply_manifest_styles()
@@ -520,7 +571,7 @@ class MainWindow(QMainWindow):
     def _build_config_section(self) -> QWidget:
         self._init_controls()
         return QWidget()
-        group = QGroupBox("Konfigurace")
+        group = QGroupBox("KONFIGURACE")
         group_layout = QVBoxLayout(group)
         toolbar = QHBoxLayout()
         self.api_key_button = QPushButton("API-KEY")
@@ -658,7 +709,7 @@ class MainWindow(QMainWindow):
         self._diag_warning_label = QLabel()
         self._diag_warning_label.setWordWrap(True)
         layout.addWidget(self._diag_warning_label, 7, 0, 1, 4)
-        ssh_group = QGroupBox("SSH cíl")
+        ssh_group = QGroupBox("SSH CÍL")
         ssh_layout = QGridLayout(ssh_group)
         ssh_layout.setColumnStretch(1, 1)
         ssh_layout.addWidget(QLabel("Host / IP"), 0, 0)
@@ -689,7 +740,8 @@ class MainWindow(QMainWindow):
         header.setFrameShape(QFrame.StyledPanel)
         header.setAttribute(Qt.WA_StyledBackground, True)
         header.setStyleSheet(
-            "QFrame#app_header { border:2px solid #fff; background:#000; border-radius:12px; }"
+            f"QFrame#app_header {{ border:{KJA_BORDER_PX}px solid {PALETTE_WHITE}; "
+            f"background:{PALETTE_BLACK}; border-radius:{KJA_RADIUS}px; }}"
         )
         layout = QVBoxLayout(header)
         layout.setContentsMargins(24, 12, 24, 12)
@@ -824,7 +876,7 @@ class MainWindow(QMainWindow):
         row.addWidget(self.ssh_out_checkbox)
         layout.addLayout(row)
         layout.addWidget(self._diag_warning_label)
-        ssh_group = QGroupBox("SSH cíl")
+        ssh_group = QGroupBox("SSH CÍL")
         ssh_layout = QGridLayout(ssh_group)
         ssh_layout.setColumnStretch(1, 1)
         ssh_layout.addWidget(QLabel("Host / IP"), 0, 0)
@@ -1087,7 +1139,9 @@ class MainWindow(QMainWindow):
         layout.setSpacing(6)
         header = QHBoxLayout()
         header.setContentsMargins(0, 0, 0, 0)
-        header.addWidget(QLabel("Run timeline"))
+        header_label = QLabel("RUN TIMELINE")
+        header_label.setStyleSheet("font-weight: bold;")
+        header.addWidget(header_label)
         header.addStretch()
         self._timeline_export_button = QPushButton("EXPORT")
         self._register_button(self._timeline_export_button)
@@ -1096,7 +1150,7 @@ class MainWindow(QMainWindow):
         layout.addLayout(header)
         self._timeline_table = QTableWidget(0, 4)
         self._timeline_table.setHorizontalHeaderLabels(
-            ["Step", "Result", "Duration", "Details"]
+            [label.upper() for label in ["Step", "Result", "Duration", "Details"]]
         )
         self._timeline_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self._timeline_table.horizontalHeader().setMinimumSectionSize(0)
@@ -1112,7 +1166,9 @@ class MainWindow(QMainWindow):
         layout.setSpacing(6)
         header = QHBoxLayout()
         header.setContentsMargins(0, 0, 0, 0)
-        header.addWidget(QLabel("IN ↔ OUT diff"))
+        header_label = QLabel("IN ↔ OUT DIFF")
+        header_label.setStyleSheet("font-weight: bold;")
+        header.addWidget(header_label)
         header.addStretch()
         refresh_button = QPushButton("REFRESH")
         self._register_button(refresh_button)
@@ -1609,6 +1665,9 @@ class MainWindow(QMainWindow):
         request_snapshot = self._build_request_snapshot(ui_state)
         run_artifacts = init_run(self._root_dir)
         response_id = PipelineExecutor.generate_response_id(mode)
+        self._active_run_artifacts = run_artifacts
+        self._active_response_id = response_id
+        self._ui_audit_sequence = 0
         ui_state_log = log_ui_state(run_artifacts, ui_state, response_id=response_id)
         executor = PipelineExecutor(
             self._root_dir,
@@ -1646,11 +1705,14 @@ class MainWindow(QMainWindow):
             idle_message = "PIPELINE PŘERUŠENA"
         except Exception as exc:  # pragma: no cover - failure paths
             QMessageBox.critical(self, "Chyba běhu", str(exc))
+            self._append_log(f"Chyba běhu: {exc}")
             idle_message = "CHYBA BĚHU"
         finally:
             if self._progress_dialog:
                 self._progress_dialog.close()
                 self._progress_dialog = None
+            self._active_run_artifacts = None
+            self._active_response_id = ""
             self._status_bar.mark_idle(idle_message)
 
     def _on_new_clicked(self) -> None:
@@ -2447,6 +2509,26 @@ class MainWindow(QMainWindow):
     def _append_log(self, message: str) -> None:
         timestamp = datetime.now().strftime("%H:%M:%S")
         self.log_edit.appendPlainText(f"[{timestamp}] {message}")
+        if self._active_run_artifacts:
+            self._ui_audit_sequence += 1
+            stage = self._last_run_ui_state.mode if self._last_run_ui_state else ""
+            project = self._last_run_ui_state.project_name if self._last_run_ui_state else ""
+            try:
+                log_audit_event(
+                    self._active_run_artifacts,
+                    {
+                        "message": message,
+                        "timestamp_local": timestamp,
+                        "source": "ui_log",
+                    },
+                    stage=stage,
+                    project_name=project or "",
+                    response_id=self._active_response_id,
+                    event="ui_log_message",
+                    sequence=self._ui_audit_sequence,
+                )
+            except Exception:
+                pass
 
     def _resolve_pricing_db_path(self) -> Path:
         db_path = Path(self._settings.db_path)
@@ -2484,7 +2566,7 @@ class MainWindow(QMainWindow):
         self._diag_warning_label.setText(
             f"Diagnostické varování {status}; admin: {admin_user}"
         )
-        color = "#fff" if ack else "#ff0000"
+        color = PALETTE_WHITE if ack else PALETTE_RED
         self._diag_warning_label.setStyleSheet(f"color: {color}; font-weight: bold;")
 
     def _update_pricing_status_label(self) -> None:
@@ -2493,7 +2575,7 @@ class MainWindow(QMainWindow):
         source = summary.get("source") or "lokální"
         refreshed = summary.get("last_refreshed") or "nikdy"
         verified = summary.get("verified", False)
-        color = "#fff" if verified else "#ff0000"
+        color = PALETTE_WHITE if verified else PALETTE_RED
         status_text = status.upper()
         text = f"Ceník: {status_text}; Zdroj: {source}; Aktuálně: {refreshed}"
         self._pricing_status_label.setText(text)
@@ -2520,130 +2602,213 @@ class MainWindow(QMainWindow):
         if app:
             app.setFont(font)
             palette = app.palette()
-            palette.setColor(QPalette.ColorRole.Window, QColor("#000"))
-            palette.setColor(QPalette.ColorRole.Base, QColor("#000"))
-            palette.setColor(QPalette.ColorRole.AlternateBase, QColor("#000"))
-            palette.setColor(QPalette.ColorRole.Button, QColor("#000"))
-            palette.setColor(QPalette.ColorRole.ButtonText, QColor("#fff"))
-            palette.setColor(QPalette.ColorRole.Text, QColor("#fff"))
-            palette.setColor(QPalette.ColorRole.WindowText, QColor("#fff"))
-            palette.setColor(QPalette.ColorRole.ToolTipBase, QColor("#000"))
-            palette.setColor(QPalette.ColorRole.ToolTipText, QColor("#fff"))
-            palette.setColor(QPalette.ColorRole.Highlight, QColor("#fff"))
-            palette.setColor(QPalette.ColorRole.HighlightedText, QColor("#000"))
+            palette.setColor(QPalette.ColorRole.Window, QColor(PALETTE_BLACK))
+            palette.setColor(QPalette.ColorRole.Base, QColor(PALETTE_BLACK))
+            palette.setColor(QPalette.ColorRole.AlternateBase, QColor(PALETTE_BLACK))
+            palette.setColor(QPalette.ColorRole.Button, QColor(PALETTE_BLACK))
+            palette.setColor(QPalette.ColorRole.ButtonText, QColor(PALETTE_WHITE))
+            palette.setColor(QPalette.ColorRole.Text, QColor(PALETTE_WHITE))
+            palette.setColor(QPalette.ColorRole.WindowText, QColor(PALETTE_WHITE))
+            palette.setColor(QPalette.ColorRole.ToolTipBase, QColor(PALETTE_BLACK))
+            palette.setColor(QPalette.ColorRole.ToolTipText, QColor(PALETTE_WHITE))
+            palette.setColor(QPalette.ColorRole.Highlight, QColor(PALETTE_WHITE))
+            palette.setColor(QPalette.ColorRole.HighlightedText, QColor(PALETTE_BLACK))
             app.setPalette(palette)
-        style = """
-QMainWindow, QWidget, QDialog, QScrollArea {
-    background: #000;
-    color: #fff;
+        style = f"""
+QMainWindow, QWidget, QDialog, QScrollArea {{
+    background: {PALETTE_BLACK};
+    color: {PALETTE_WHITE};
     font-family: 'Montserrat';
-}
-QLabel {
-    color: #fff;
-}
-QGroupBox {
-    border: 2px solid #fff;
-    border-radius: 14px;
-    margin-top: 24px;
+}}
+QLabel {{
+    color: {PALETTE_WHITE};
+}}
+QGroupBox {{
+    border: {KJA_BORDER_PX}px solid {PALETTE_WHITE};
+    border-radius: {KJA_RADIUS}px;
+    margin-top: 16px;
     padding: 12px;
-    background: #000;
-}
-QLineEdit, QPlainTextEdit, QComboBox, QSpinBox, QDoubleSpinBox {
-    background: #000;
-    color: #fff;
-    border: 1px solid #fff;
-    border-radius: 10px;
-    selection-background-color: #fff;
-    selection-color: #000;
-}
-QPlainTextEdit {
-    border-radius: 12px;
-}
-QTableWidget {
-    border: 1px solid #fff;
-    background: #000;
-    gridline-color: #fff;
-}
-QHeaderView::section {
-    background: #000;
-    color: #fff;
-    border: 1px solid #fff;
+    background: {PALETTE_BLACK};
+}}
+QGroupBox::title {{
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 0 6px;
+    color: {PALETTE_WHITE};
+    background: {PALETTE_BLACK};
+    font-weight: bold;
+}}
+QLineEdit, QPlainTextEdit, QComboBox, QSpinBox, QDoubleSpinBox {{
+    background: {PALETTE_BLACK};
+    color: {PALETTE_WHITE};
+    border: {KJA_BORDER_PX}px solid {PALETTE_WHITE};
+    border-radius: {KJA_RADIUS}px;
+    selection-background-color: {PALETTE_WHITE};
+    selection-color: {PALETTE_BLACK};
+}}
+QLineEdit:hover, QPlainTextEdit:hover, QComboBox:hover, QSpinBox:hover, QDoubleSpinBox:hover {{
+    background: {PALETTE_BLACK};
+    color: {PALETTE_WHITE};
+    border-color: {PALETTE_WHITE};
+}}
+QLineEdit:focus, QPlainTextEdit:focus, QComboBox:focus, QSpinBox:focus, QDoubleSpinBox:focus {{
+    background: {PALETTE_WHITE};
+    color: {PALETTE_BLACK};
+    border-color: {PALETTE_WHITE};
+}}
+QLineEdit:disabled, QPlainTextEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled {{
+    background: {PALETTE_BLACK};
+    color: {PALETTE_GRAY};
+    border-color: {PALETTE_RED};
+}}
+QTableWidget {{
+    border: {KJA_BORDER_PX}px solid {PALETTE_WHITE};
+    border-radius: {KJA_RADIUS}px;
+    background: {PALETTE_BLACK};
+    gridline-color: {PALETTE_WHITE};
+}}
+QTableWidget::item:selected {{
+    background: {PALETTE_WHITE};
+    color: {PALETTE_BLACK};
+}}
+QTableWidget::item:hover {{
+    background: {PALETTE_BLACK};
+    color: {PALETTE_WHITE};
+}}
+QHeaderView::section {{
+    background: {PALETTE_BLACK};
+    color: {PALETTE_WHITE};
+    border: {KJA_BORDER_PX}px solid {PALETTE_WHITE};
+    border-radius: {KJA_RADIUS}px;
     padding: 6px;
     font-weight: bold;
-}
-QCheckBox::indicator, QRadioButton::indicator {
+}}
+QListWidget {{
+    border: {KJA_BORDER_PX}px solid {PALETTE_WHITE};
+    border-radius: {KJA_RADIUS}px;
+    background: {PALETTE_BLACK};
+    color: {PALETTE_WHITE};
+}}
+QListWidget::item:selected {{
+    background: {PALETTE_WHITE};
+    color: {PALETTE_BLACK};
+}}
+QListWidget::item:hover {{
+    background: {PALETTE_BLACK};
+    color: {PALETTE_WHITE};
+}}
+QComboBox QAbstractItemView {{
+    background: {PALETTE_BLACK};
+    color: {PALETTE_WHITE};
+    border: {KJA_BORDER_PX}px solid {PALETTE_WHITE};
+    selection-background-color: {PALETTE_WHITE};
+    selection-color: {PALETTE_BLACK};
+}}
+QComboBox QAbstractItemView::item:hover {{
+    background: {PALETTE_BLACK};
+    color: {PALETTE_WHITE};
+}}
+QCheckBox, QRadioButton {{
+    color: {PALETTE_WHITE};
+}}
+QCheckBox:disabled, QRadioButton:disabled {{
+    color: {PALETTE_GRAY};
+}}
+QCheckBox::indicator, QRadioButton::indicator {{
     width: 16px;
     height: 16px;
-    border: 1px solid #fff;
-    border-radius: 4px;
-    background: #000;
-}
-QCheckBox::indicator:checked, QRadioButton::indicator:checked {
-    background: #fff;
-}
-QCheckBox::indicator:disabled, QRadioButton::indicator:disabled {
-    border-color: #ff0000;
-}
-QPushButton {
-    background: #000;
-    color: #fff;
-    border: 2px solid #fff;
-    border-radius: 12px;
+    border: {KJA_BORDER_PX}px solid {PALETTE_WHITE};
+    border-radius: {KJA_RADIUS}px;
+    background: {PALETTE_BLACK};
+}}
+QCheckBox::indicator:checked, QRadioButton::indicator:checked {{
+    background: {PALETTE_WHITE};
+}}
+QCheckBox::indicator:hover, QRadioButton::indicator:hover {{
+    border-color: {PALETTE_WHITE};
+    background: {PALETTE_BLACK};
+}}
+QCheckBox::indicator:disabled, QRadioButton::indicator:disabled {{
+    border-color: {PALETTE_RED};
+    background: {PALETTE_BLACK};
+}}
+QPushButton {{
+    background: {PALETTE_BLACK};
+    color: {PALETTE_WHITE};
+    border: {KJA_BORDER_PX}px solid {PALETTE_WHITE};
+    border-radius: {KJA_RADIUS}px;
     padding: 6px 14px;
     min-height: 30px;
-}
+}}
+QPushButton:hover {{
+    background: {PALETTE_BLACK};
+    color: {PALETTE_WHITE};
+    border-color: {PALETTE_WHITE};
+}}
 QPushButton:pressed,
 QPushButton:checked,
-QPushButton[active="true"] {
-    background: #fff;
-    color: #000;
-    border-color: #fff;
-}
-QPushButton:disabled {
-    border-color: #ff0000;
-    color: #808080;
-    background: #000;
-}
-QPushButton[danger="true"] {
-    background: #ff0000;
-    border-color: #ff0000;
-    color: #000;
+QPushButton[active="true"] {{
+    background: {PALETTE_WHITE};
+    color: {PALETTE_BLACK};
+    border-color: {PALETTE_WHITE};
+}}
+QPushButton:disabled {{
+    border-color: {PALETTE_RED};
+    color: {PALETTE_GRAY};
+    background: {PALETTE_BLACK};
+}}
+QPushButton[danger="true"] {{
+    background: {PALETTE_RED};
+    border-color: {PALETTE_RED};
+    color: {PALETTE_BLACK};
     font-weight: bold;
-}
+}}
 QPushButton[danger="true"]:pressed,
-QPushButton[danger="true"][active="true"] {
-    background: #000;
-    color: #ff0000;
-    border-color: #ff0000;
-}
-QPushButton[park_control="true"] {
+QPushButton[danger="true"][active="true"] {{
+    background: {PALETTE_BLACK};
+    color: {PALETTE_RED};
+    border-color: {PALETTE_RED};
+}}
+QProgressBar {{
+    border: {KJA_BORDER_PX}px solid {PALETTE_WHITE};
+    border-radius: {KJA_RADIUS}px;
+    background: {PALETTE_BLACK};
+    color: {PALETTE_WHITE};
+}}
+QProgressBar::chunk {{
+    background: {PALETTE_WHITE};
+}}
+QFrame#status_bar, QStatusBar {{
+    border: {KJA_BORDER_PX}px solid {PALETTE_WHITE};
+    border-radius: {KJA_RADIUS}px;
+    background: {PALETTE_BLACK};
+}}
+QFrame#status_bar QLabel {{
+    color: {PALETTE_WHITE};
+}}
+QScrollBar:vertical, QScrollBar:horizontal {{
+    background: {PALETTE_BLACK};
+    margin: 0px;
+}}
+QScrollBar:vertical {{
+    width: 8px;
+}}
+QScrollBar:horizontal {{
+    height: 8px;
+}}
+QScrollBar::handle {{
+    background: {PALETTE_WHITE};
+    border-radius: {KJA_RADIUS}px;
+    min-height: 20px;
+    min-width: 20px;
+}}
+QScrollBar::add-line, QScrollBar::sub-line {{
     border: none;
-    border-radius: 14px;
-    background: #000;
-    color: #fff;
-    padding: 0;
-}
-QPushButton[park_control="true"][active="true"] {
-    background: #fff;
-    color: #000;
-}
-QProgressBar {
-    border: 1px solid #fff;
-    border-radius: 10px;
-    background: #000;
-    color: #fff;
-}
-QProgressBar::chunk {
-    background: #fff;
-}
-QFrame#status_bar, QStatusBar {
-    border: 1px solid #fff;
-    border-radius: 12px;
-    background: #000;
-}
-QFrame#status_bar QLabel {
-    color: #fff;
-}
+    background: none;
+}}
+QScrollBar::add-page, QScrollBar::sub-page {{
+    background: {PALETTE_BLACK};
+}}
 """
         if app:
             app.setStyleSheet(style)
@@ -2779,7 +2944,9 @@ class SectionDragHandle(QLabel):
         self.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         font = QFont("Montserrat", 12, QFont.Bold)
         self.setFont(font)
-        self.setStyleSheet("color:#fff; border:none; background:#000; padding:0;")
+        self.setStyleSheet(
+            f"color:{PALETTE_WHITE}; border:none; background:{PALETTE_BLACK}; padding:0;"
+        )
 
     def mousePressEvent(self, event) -> None:
         if event.button() == Qt.LeftButton:
@@ -2814,10 +2981,10 @@ class SectionWidget(QFrame):
         self._workspace = workspace
         self.setObjectName("section_frame")
         self.setAttribute(Qt.WA_StyledBackground, True)
-        self.setStyleSheet("background:#000;")
+        self.setStyleSheet(f"background:{PALETTE_BLACK};")
         self.setMinimumSize(0, 0)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self._border_radius = 12
+        self._border_radius = KJA_RADIUS
         self._layout = QVBoxLayout(self)
         self._base_margin = 0
         self._base_spacing = 8
@@ -2885,11 +3052,17 @@ class SectionWidget(QFrame):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         rect = self.rect().adjusted(0, 0, -1, -1)
-        pen = QPen(QColor("#fff"))
-        pen.setWidth(1)
+        pen = QPen(QColor(PALETTE_WHITE))
+        pen.setWidth(KJA_BORDER_PX)
         painter.setPen(pen)
         painter.setBrush(Qt.NoBrush)
         painter.drawRoundedRect(rect, self._border_radius, self._border_radius)
+        inner_rect = rect.adjusted(1, 1, -1, -1)
+        inner_radius = max(0, self._border_radius - 1)
+        inner_pen = QPen(QColor(PALETTE_BLACK))
+        inner_pen.setWidth(KJA_BORDER_PX)
+        painter.setPen(inner_pen)
+        painter.drawRoundedRect(inner_rect, inner_radius, inner_radius)
 
         if not self._drag_handle:
             return
@@ -2902,7 +3075,7 @@ class SectionWidget(QFrame):
 
         if gap_end > gap_start:
             fill_rect = QRect(gap_start, rect.top(), max(1, gap_end - gap_start), self._border_radius)
-            painter.fillRect(fill_rect, QColor("#000"))
+            painter.fillRect(fill_rect, QColor(PALETTE_BLACK))
         left_end = gap_start
         right_start = gap_end
         if left_end > rect.left() + self._border_radius:
@@ -2913,7 +3086,7 @@ class SectionWidget(QFrame):
     def _gap_width(self) -> int:
         font = self._drag_handle.font()
         metrics = QFontMetrics(font)
-        return max(8, metrics.horizontalAdvance("A"))
+        return metrics.horizontalAdvance("A")
 
 
 class ParkTile(QFrame):
@@ -2924,7 +3097,8 @@ class ParkTile(QFrame):
         self.setObjectName("park_tile")
         self.setFrameShape(QFrame.NoFrame)
         self.setStyleSheet(
-            "QFrame#park_tile { background:#000; border:1px solid #fff; border-radius:12px; }"
+            f"QFrame#park_tile {{ background:{PALETTE_BLACK}; "
+            f"border:{KJA_BORDER_PX}px solid {PALETTE_WHITE}; border-radius:{KJA_RADIUS}px; }}"
         )
         self.setCursor(QCursor(Qt.OpenHandCursor))
         self.setMinimumSize(0, 0)
@@ -2934,7 +3108,7 @@ class ParkTile(QFrame):
         self._label = QLabel(title)
         self._label.setAlignment(Qt.AlignCenter)
         self._label.setWordWrap(True)
-        self._label.setStyleSheet("color:#fff; font-weight: bold;")
+        self._label.setStyleSheet(f"color:{PALETTE_WHITE}; font-weight: bold;")
         self._label.setMinimumSize(0, 0)
         self._label.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         layout.addWidget(self._label, 1)
@@ -2947,7 +3121,9 @@ class ParkTile(QFrame):
         font = self._label.font()
         font.setPointSize(max(1, font_size))
         self._label.setFont(font)
-        self._label.setStyleSheet(f"color:#fff; padding:{max(0, padding)}px;")
+        self._label.setStyleSheet(
+            f"color:{PALETTE_WHITE}; padding:{max(0, padding)}px;"
+        )
 
     def mousePressEvent(self, event) -> None:
         if event.button() == Qt.LeftButton:
@@ -3094,7 +3270,10 @@ class ColumnArea(QFrame):
         self._index = index
         self.setAcceptDrops(True)
         self.setFrameShape(QFrame.NoFrame)
-        self.setStyleSheet("background:#000; border:1px solid #fff; border-radius:12px;")
+        self.setStyleSheet(
+            f"background:{PALETTE_BLACK}; border:{KJA_BORDER_PX}px solid {PALETTE_WHITE}; "
+            f"border-radius:{KJA_RADIUS}px;"
+        )
         self.setMinimumSize(0, 0)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._layout = QVBoxLayout(self)
@@ -3107,7 +3286,7 @@ class ColumnArea(QFrame):
         self._splitter.setMinimumSize(0, 0)
         self._splitter.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._splitter.setStyleSheet(
-            "QSplitter::handle { background:#808080; }"
+            f"QSplitter::handle {{ background:{PALETTE_GRAY}; }}"
             "QSplitter::handle:horizontal { width:1px; }"
             "QSplitter::handle:vertical { height:1px; }"
         )
@@ -3239,7 +3418,7 @@ class WorkspacePane(QWidget):
         self._columns_splitter.setHandleWidth(1)
         self._columns_splitter.setChildrenCollapsible(True)
         self._columns_splitter.setStyleSheet(
-            "QSplitter::handle { background:#808080; }"
+            f"QSplitter::handle {{ background:{PALETTE_GRAY}; }}"
             "QSplitter::handle:horizontal { width:1px; }"
             "QSplitter::handle:vertical { height:1px; }"
         )
@@ -3249,8 +3428,8 @@ class WorkspacePane(QWidget):
         self._palette_frame.setObjectName("park_panel")
         self._palette_frame.setFrameShape(QFrame.NoFrame)
         self._palette_frame.setStyleSheet(
-            "QFrame#park_panel { border:2px solid #fff; border-radius:12px; background:#000; }"
-            "QFrame#park_panel * { border: none; }"
+            f"QFrame#park_panel {{ border:{KJA_BORDER_PX}px solid {PALETTE_WHITE}; "
+            f"border-radius:{KJA_RADIUS}px; background:{PALETTE_BLACK}; }}"
         )
         self._palette_layout = QVBoxLayout(self._palette_frame)
         self._palette_layout.setContentsMargins(12, 12, 12, 12)

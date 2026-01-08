@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260216_99fb",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_0f37fcba5727529100695f091be10081969250618fabde7448",
+    "logged_at": "2026-01-08T01:32:52.891974",
+    "request_id": "fb1336fa"
+  },
+  "payload": {
+    "id": "resp_0f37fcba5727529100695f091be10081969250618fabde7448",
+    "created_at": 1767835931.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0f37fcba5727529100695f091ca9208196942e4f0363386e3f",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Plán A1_PLAN pro projekt \\\"CrossPlatformDiagSuite\\\" pokračuje definicí dalších funkčních, nefunkčních požadavků a architektonických omezení, navázaných na předchozí části zadání.\\n\\nDoplňující funkční požadavky (pokračování seznamu):\\n- Všechny diagnostické moduly (collectors) musí vracet výsledky ve sjednoceném datovém modelu, ideálně pomocí Python `dataclasses` (nebo ekvivalentní struktury). Tím se zajistí konzistentní reprezentace entit jako SystemInfo, CpuInfo, MemoryInfo, DiskInfo, NetworkInterfaceInfo, ProcessInfo, ServiceInfo, EventLogEntry, DiagnosticRunSummary atd.\\n- Serializace těchto datových tříd do JSON a textových výstupů musí být centralizovaná v jednom modulu/vrstvě, nikoli řešena ad-hoc v jednotlivých diagnostických modulech. To umožní jednotný formát, snadnější údržbu a validaci výstupů.\\n- V build procesu musí být implementována kontrola integrity distribuovaných fontů (zejména Montserrat) – např. pomocí SHA-256 hashů. Volitelně může být tato kontrola spuštěna i při startu aplikace, aby se ověřilo, že fontové soubory nebyly poškozeny nebo nahrazeny.\\n- Musí být dodány základní automatizované testy (unit a integration) pro klíčové části systému: parsování manifestu (MANIFEST.md/manifest.json), běh diagnostického scénáře (orchestrace modulů), serializaci dat do JSON/textu a výpočty UI scale (UI_scale a odvozené tokeny). Tyto testy mají sloužit jako minimální regresní sada.\\n\\nNefunkční požadavky:\\n- Diagnostický balík musí být čitelný a spustitelný na běžných enterprise strojích bez nutnosti administrátorských zásahů, pokud konkrétní diagnostické kroky nevyžadují zvýšená oprávnění (např. přístup k některým logům nebo systémovým informacím). Defaultní scénáře mají fungovat v běžném uživatelském kontextu.\\n- Běh plné (FULL) diagnostiky by měl na průměrném stroji skončit do cca 5 minut, pokud nejsou aktivovány explicitně náročné testy (např. rozsáhlé prohledávání logů). Výkonové nároky mají být rozumné a předvídatelné.\\n- Aplikace musí být deterministická: stejné vstupy, konfigurace a prostředí musí vést ke stejným výstupům, včetně layoutu UI a velikostí prvků. To je důležité pro porovnávání běhů, testování a golden screenshoty.\\n- UI musí být plně černobílé, s použitím šedé pro neaktivní prvky a červené pouze pro kritické akce a stavy (např. destruktivní operace, chyby), v souladu s Kájovo UI Design Standardem. Žádné jiné barvy nejsou povoleny.\\n- UI nesmí používat stíny, gradienty, textury ani průhlednosti, s výjimkou overlay prvků (tooltip, roletka, dialog, scrollbar), kde je omezená průhlednost povolena dle standardu.\\n- Všechny interaktivní prvky (tlačítka, dropdowny, comboboxy, tabulky, textová pole atd.) musí být plně ovladatelné klávesnicí a musí mít konzistentní indikaci focusu: bílý lem o tloušťce 2 px vykreslený jako overlay, nikoli změnou layoutu.\\n- Layout UI nesmí měnit rozměry prvků při změně stavu (NORMAL/ACTIVE/DISABLED). Při změně stavu se mění pouze barvy (případně tloušťka/typ lemu), ale ne šířky, výšky ani pozice prvků, aby se zabránilo poskakování layoutu.\\n- Scrollbar musí být overlay (neovlivňuje layout, překrývá obsah). Pokud to zvolený framework neumožňuje, musí být použit nejbližší možný ekvivalent, ale stále s dodržením barevných a stylových požadavků.\\n- Aplikace musí být robustní vůči chybám jednotlivých diagnostických modulů: selhání jednoho modulu nesmí ukončit celý běh diagnostiky. Chyba se musí zalogovat a vhodně zobrazit (v GUI i CLI), ale ostatní moduly/scénáře pokračují, pokud to dává smysl.\\n- Logování musí být srozumitelné, strukturované a časově označené (timestampy), aby bylo možné zpětně analyzovat průběh diagnostiky, identifikovat chyby a výkonové problémy.\\n- Kód musí být modulární, s jasně definovanými rozhraními mezi jádrem diagnostiky (orchestrátor, manifest, shared models), jednotlivými diagnostickými moduly (collectors) a UI vrstvou (CLI/GUI). To podporuje testovatelnost a rozšiřitelnost.\\n- Kód musí být psán s ohledem na přenositelnost mezi Linux a Windows. Má se spoléhat primárně na standardní knihovnu Pythonu a dobře podporované, licenčně kompatibilní knihovny třetích stran (např. psutil, pywin32), pokud původní zadání neurčuje jinak.\\n- Build proces musí být reprodukovatelný a skriptovatelný (např. pomocí make, PowerShell skriptů, pyproject/poetry/pip-tools). Nemají být vyžadovány ruční kroky, aby bylo možné deterministicky vytvářet distribuce.\\n- Distribuce musí být možná jako jeden archiv (ZIP), který obsahuje všechny potřebné soubory: samotné skripty/aplikaci, fonty (Montserrat), případný embedded Python runtime a další assety. Uživatel má být schopen archiv rozbalit a spustit bez dalších instalací.\\n- Aplikace nesmí vyžadovat připojení k internetu pro základní funkčnost diagnostiky. Síť může být použita pouze pro volitelné testy konektivity, pokud jsou explicitně spuštěny.\\n- UI musí být testovatelné pomocí tzv. golden screenshotů ve třech referenčních velikostech okna (např. 800×600, 1280×720, 1920×1080). Tyto screenshoty slouží ke kontrole shody s design standardem (rozložení, velikosti, barvy, typografie).\\n- Font Montserrat musí být vždy načítán z lokálních assetů (součást distribuce). Nesmí existovat závislost na systémových fontech nebo online zdrojích.\\n- Všechny chyby musí být uživatelsky srozumitelně zobrazeny: v GUI formou dialogů (s textem chyby a případně návrhem dalšího kroku), v CLI formou textových hlášek. Zároveň musí být všechny chyby zalogovány do logu diagnostiky.\\n- Diagnostika by měla minimalizovat zátěž systému (CPU, disk, síť) a neměla by významně ovlivnit běžící produkční zátěž. Např. log scanování by mělo být rozumně omezené nebo konfigurovatelné.\\n- Kód musí být navržen tak, aby umožňoval budoucí rozšíření o další operační systémy (např. macOS, *BSD) nebo nové diagnostické oblasti bez nutnosti zásadního refaktoringu jádra.\\n\\nOmezení a kontrakty (constraints):\\n- Přesná struktura adresářů, názvy souborů a obsah MANIFEST.md pro Linux a Windows jsou definovány v předchozích částech zadání. Tento plán je nesmí měnit; pouze na ně odkazuje jako na existující kontrakt. Implementace se jim musí přizpůsobit.\\n- Konkrétní volba GUI frameworku pro Windows (např. PySide6 vs. tkinter) není v tomto plánu fixována. Zvolený framework však musí umožnit dodržení Kájovo UI Design Standardu (typografie, layout, barvy, overlay prvky, focus, atd.).\\n- Nesmí být použity žádné externí soubory mimo ty, které jsou součástí distribuovaného balíku (včetně fontů). Aplikace nesmí stahovat assety z internetu (fonty, ikony, knihovny, konfigurace) ani při běhu, ani při instalaci.\\n- Nesmí být zavedeny nové funkční požadavky, které nejsou v souladu s původním zadáním. Tento plán pouze strukturuje, zpřesňuje a konkretizuje architekturu a rozhraní nad již existující specifikací.\\n- Diagnostické moduly nesmí provádět nevratné změny systému (mazání souborů, změny registru, změny konfigurace, úpravy služeb atd.), pokud to původní zadání výslovně nepovoluje. Diagnostika je primárně read-only.\\n- Použití knihoven třetích stran musí být omezeno na běžně dostupné a licenčně kompatibilní balíky (např. psutil, pywin32), pokud původní zadání neklade další omezení. Nesmí být použity problematické licence.\\n- UI musí používat výhradně barvy definované v TOKENS (bílá, černá, šedivá, červená) a tloušťky lemů/okrajů dle standardu. Žádné jiné barvy ani vlastní odstíny nejsou povoleny.\\n- Všechny rozměry UI (velikosti písma, paddingy, výšky řádků, rozměry ikon, radiusy, tloušťky čar) musí být odvozeny z UI_scale, FS_base, LH, R, PAD_X, PAD_Y, ICON, STROKE a dalších tokenů definovaných ve standardu. Ručně zadané absolutní hodnoty jsou zakázány.\\n- Algoritmus pro text fit/scale-to-fit/scroll musí být implementován deterministicky. Scrollbary se nesmí aktivovat preventivně; objeví se až při skutečném overflow, které nelze vyřešit scale-to-fit.\\n- Fallback fonty jsou zakázány. Pokud se nepodaří načíst Montserrat z lokálních assetů, aplikace musí zobrazit chybový dialog a ukončit se. Nesmí automaticky přepnout na systémový font.\\n- Překryv UI prvků je zakázán, s výjimkou overlay prvků (tooltip, roletka, dialog, scrollbar), které mohou překrývat ostatní prvky dle standardu.\\n- Všechny interaktivní prvky musí mít definované stavy NORMAL/ACTIVE/DISABLED (nebo NORMAL/ACTIVE pro červené prvky) s přesně definovanými barevnými kontrakty. Tyto stavy musí být konzistentně implementovány napříč UI.\\n- Tento plán záměrně neobsahuje konkrétní implementační detaily pro jednotlivé diagnostické příkazy (např. konkrétní volání systemd, journalctl, Get-WmiObject, PowerShell cmdlety). Ty jsou považovány za součást původního zadání a budou implementovány v rámci modulů podle něj.\\n- Vzhledem k tomu, že kompletní původní zadání není v tomto kontextu plně k dispozici, jsou některé názvy modulů a datových modelů v plánu zvoleny genericky (např. SystemInfo, CpuInfo, core.manifest). Při implementaci musí být tyto názvy sladěny s přesnými názvy a strukturami z původního zadání.\\n\\nArchitektura – začátek sekce modules:\\n- V části `architecture.modules` se začíná definovat modul `core.manifest`:\\n  - Odpovědnost: správa MANIFESTu pro diagnostické běhy a moduly.\\n  - Exporty: třída `ManifestLoader` (metoda `load_manifest(path) -> Manifest`), třída `ManifestWriter` (metoda `write_run_manifest(run_summary: DiagnosticRunSummary, output_dir: str) -> str`), dataclass `Manifest`, funkce `validate_manifest(manifest: Manifest) -> None`.\\n  - Vazby: modul používá `shared_models` pro datové typy a je používán z `core.runner` a z CLI/GUI pro zobrazení informací o manifestu a bězích.\\n- Následuje nástin modulu `core.shared_models` (text je uprostřed věty a bude pokračovat v dalším chunku), který má obsahovat sdílené datové modely pro diagnostické entity a běhy.\\n\\nCelkově tento chunk doplňuje předchozí části o detailní nefunkční požadavky (determinismus, výkon, UI styl, testovatelnost, přenositelnost), bezpečnostní a distribuční omezení (žádné stahování z internetu, integrita fontů, embedded runtime) a začíná rozepisovat architektonické moduly, zejména správu manifestu a sdílené datové modely. Všechna pravidla a kontrakty z původního zadání zůstávají závazná a tento plán je nesmí měnit, pouze nad nimi definuje architekturu a API.\",\"chunk_index\":2,\"chunk_count\":10,\"notes\":[\"Tento chunk doplňuje funkční požadavky o sjednocený datový model a centralizovanou serializaci, zavádí kontrolu integrity fontů a základní automatizované testy.\",\"Nefunkční požadavky kladou důraz na determinismus, výkon (do 5 minut), nízkou zátěž systému, přenositelnost, modulárnost kódu, reprodukovatelný build a offline provoz.\",\"UI požadavky jsou velmi striktní: černobílý design s červenou pro kritické stavy, žádné stíny/gradienty, overlay scrollbary, konzistentní focus indikace, žádný překryv prvků mimo overlay, všechny rozměry odvozené z tokenů a deterministický text fit algoritmus.\",\"Font Montserrat je povinný, načítaný pouze z lokálních assetů, bez fallbacků; při selhání načtení se aplikace musí ukončit po zobrazení chyby.\",\"Plán nesmí měnit existující MANIFEST strukturu ani adresářové konvence; konkrétní diagnostické příkazy zůstávají definovány v původním zadání mimo tento plán.\",\"Začíná se definovat architektonický modul core.manifest (loader, writer, validace) a naznačuje se existence core.shared_models pro sdílené datové typy.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 3554,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3462,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 7016
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767835972,
+    "store": true
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_04382a060e79c95600695f9c0ffb708195a599315b58eb63c1",
+    "logged_at": "2026-01-08T12:00:01.720639",
+    "request_id": "2cae0e9b"
+  },
+  "payload": {
+    "id": "resp_04382a060e79c95600695f9c0ffb708195a599315b58eb63c1",
+    "created_at": 1767873552.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_04382a060e79c95600695f9c10aa1c819589d9d8851ef39006",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk doplňuje A1_PLAN / MASTER zadání o detaily běhu, chybové scénáře, bezpečnost a build/run instrukce, navazuje na již popsanou architekturu DiagMaster (čistě CLI, read-only, deterministická adresářová struktura, žádná archivace ani externí komunikace, rekonstruovatelnost z výstupního stromu a JSON MANIFESTů).\\n\\nDoplňující kroky datového toku (navazující na předchozí body):\\n- 11) core.manifest.collect_manifest_file_entries projde výsledky kroků (DiagnosticStepResult) a pro jednotlivé soubory vytvoří ManifestFileEntry. Výstupem je mapování section_name -> seznam ManifestFileEntry, které se následně použije při tvorbě sekčních MANIFESTů.\\n- 12) core.manifest.build_section_manifest vytvoří ManifestSection pro každou logickou sekci (např. system_info, network, storage, processes, services, logs). Následně core.manifest.write_section_manifest zapíše tyto sekční MANIFESTy do příslušných podsložek v adresářové struktuře běhu, na cesty určené core.fs_layout (např. MANIFEST_system_info.json v podsložce system_info).\\n- 13) core.manifest.build_root_manifest vytvoří ManifestRoot, který obsahuje metadata běhu (DiagnosticRun) a odkazy na jednotlivé sekční MANIFESTy (ManifestSectionRef). core.manifest.write_root_manifest zapíše tento kořenový MANIFEST (např. MANIFEST_ROOT.json) do kořenového adresáře běhu.\\n- 14) core.return_code.compute_exit_code vyhodnotí výsledky kroků a konfiguraci kritických kroků (DiagnosticConfig) a vrátí návratový kód procesu. Rozlišuje se EXIT_SUCCESS, EXIT_PARTIAL_FAILURE, EXIT_CRITICAL_FAILURE a EXIT_CONFIG_ERROR, přičemž pravidla musí být deterministická a odvoditelná z MANIFESTů a konfigurace.\\n- 15) core.cli.run_from_cli vrátí návratový kód procesu volajícímu prostředí (typicky main/entry point). Tato funkce propojuje parsování CLI, běh diagnostiky (core.runner.run_diagnostics), tvorbu MANIFESTů a výpočet návratového kódu do jednoho CLI rozhraní.\\n\\nError handling (globální strategie chybového zpracování):\\n- Chyby parsování CLI argumentů: core.cli.parse_cli_args při nevalidních argumentech vypíše chybovou zprávu na stderr, zobrazí stručnou nápovědu a běh skončí s návratovým kódem EXIT_CONFIG_ERROR. Tím se zamezí spuštění diagnostiky s nejednoznačnou nebo chybnou konfigurací.\\n- Chyby načtení nebo validace konfiguračního souboru: core.config.load_config při nečitelném nebo nevalidním konfiguračním souboru zaloguje chybu (přes core.logging) a běh se ukončí s EXIT_CONFIG_ERROR. Konfigurace tedy musí být buď korektní, nebo se diagnostika vůbec nespustí.\\n- Chyby při vytváření adresářové struktury: core.fs_layout.create_run_root může vyhodit výjimku (např. nedostatečná práva, neexistující cesta, kolize jmen). Tato výjimka je zachycena v core.runner.run_diagnostics, chyba je zalogována a proces skončí s EXIT_CRITICAL_FAILURE, protože bez kořenového adresáře a podsložek nelze deterministicky pokračovat.\\n- Chyby při spouštění externích příkazů: core.exec.run_command zachytí výjimky (např. příkaz neexistuje, problém se spuštěním, timeout). V takovém případě nastaví exit_code na speciální hodnotu (např. -1), vyplní error_message a status kroku (v DiagnosticStepResult) se nastaví na ERROR nebo TIMEOUT. Tyto informace se promítnou do MANIFESTů a logů, aby bylo možné přesně rekonstruovat, co selhalo.\\n- Chyby při zápisu souborů (výstupy kroků, MANIFESTy, logy): tyto chyby jsou zachyceny a zalogovány. Odpovídající krok nebo fáze je označena jako FAILED. Pokud jde o kritickou část (např. zápis kořenového MANIFESTu), běh se ukončí s EXIT_CRITICAL_FAILURE, protože bez kořenového MANIFESTu by nebyla zajištěna rekonstruovatelnost.\\n- Neočekávané výjimky na nejvyšší úrovni: core.runner.run_diagnostics obsahuje globální try/except, který zachytí nečekané chyby, pokud možno je zaloguje (run.log) a vrátí EXIT_CRITICAL_FAILURE. Tím se zamezí nekontrolovanému pádu procesu bez jasného návratového kódu.\\n- Každý DiagnosticStepResult obsahuje error_message pro detailní popis chyby. Tento text je zapsán i do sekčních MANIFESTů, takže i bez logů lze z JSON rekonstruovat, proč krok selhal.\\n- V případě částečných selhání (např. některé nekritické kroky selžou, ale kritické projdou) se běh dokončí, všechny dostupné výstupy a MANIFESTy se zapíší a návratový kód bude EXIT_PARTIAL_FAILURE podle pravidel v core.return_code.compute_exit_code.\\n\\nSecurity notes (bezpečnostní zásady nástroje):\\n- Nástroj nesmí spouštět žádné příkazy, které mění konfiguraci systému; všechny příkazy musí být čistě read-only diagnostické. To platí pro Linux i Windows kroky (os_linux.steps, os_windows.steps) a je součástí MASTER zadání.\\n- Všechny parametry, které se promítají do shell příkazů, musí být validovány a escapovány, aby se zabránilo injekci. Preferuje se spouštění příkazů bez shell=True (přímé volání subprocess s list[str]), čímž se minimalizuje riziko shell injection.\\n- Nástroj nesmí zapisovat citlivá data mimo určený výstupní adresář. Cesty musí být normalizovány a nesmí umožnit path traversal mimo root_dir (např. žádné \\\"..\\\" úniky). core.fs_layout je zodpovědný za deterministické a bezpečné generování cest.\\n- Nástroj nesmí odesílat žádná data po síti; veškeré výstupy zůstávají lokálně na stroji, kde diagnostika běží. To platí i pro případné budoucí rozšíření – žádné HTTP/HTTPS, žádné uploady.\\n- Přístup k výstupním adresářům by měl být omezen oprávněními OS (např. pouze pro uživatele, který diagnostiku spustil). Nastavení práv je však závislé na prostředí a není explicitně vynucováno nástrojem, pokud to není jinde v MASTER zadání specifikováno.\\n- Logy a MANIFESTy mohou obsahovat citlivé systémové informace (např. názvy hostitelů, IP adresy, uživatelská jména v cestách, konfigurace služeb). Uživatel je odpovědný za jejich bezpečné uchování, přenos a případnou anonymizaci mimo nástroj.\\n- Nástroj by měl minimalizovat množství osobních údajů ve výstupech. Pokud jsou takové informace nevyhnutelné (např. uživatelská jména v cestách domovských adresářů), musí být jejich přítomnost očekávaná a zdokumentovaná v MANIFESTech, aby bylo jasné, kde se mohou nacházet.\\n\\nBuild & run (instrukce pro sestavení a spuštění):\\n- Prerekvizity:\\n  - Nainstalovaný Python 3.12 nebo kompatibilní verze dle cílového prostředí.\\n  - Dostupnost standardních systémových nástrojů pro Linux a Windows, jak byly definovány v jiných částech MASTER zadání (konkrétní příkazy pro jednotlivé diagnostické kroky).\\n  - Dostatečná přístupová práva k systémovým informacím (sudo/Administrator podle potřeby konkrétních kroků, např. pro čtení některých logů nebo konfigurací).\\n  - Možnost zápisu do zvoleného výstupního adresáře (kde se vytvoří kořenový adresář běhu a podsložky).\\n\\n- Příklady příkazů pro použití nástroje:\\n  - Instalace závislostí (pokud jsou definovány v requirements.txt):\\n    - `python -m pip install -r requirements.txt`\\n  - Spuštění Linux FULL diagnostiky:\\n    - `python -m diagmaster --full-linux --output-dir /cesta/k/vystupu`\\n  - Spuštění Windows FULL diagnostiky:\\n    - `python -m diagmaster --full-windows --output-dir C:\\\\\\\\cesta\\\\\\\\k\\\\\\\\vystupu`\\n  - Zobrazení nápovědy:\\n    - `python -m diagmaster --help`\\n  - Zobrazení verze nástroje:\\n    - `python -m diagmaster --version`\\n  - Dry-run bez provedení kroků (pouze zobrazení plánovaných kroků, bez vytváření adresářů a souborů):\\n    - `python -m diagmaster --full-linux --dry-run`\\n\\n- Verifikace správné funkce a determinismu:\\n  - Po spuštění FULL diagnostiky musí vzniknout kořenový adresář běhu s očekávanými podsložkami (system_info, network, storage, processes, services, logs atd.), jak je definováno v MASTER zadání a implementováno v core.fs_layout.\\n  - V kořenovém adresáři musí existovat kořenový MANIFEST (např. MANIFEST_ROOT.json) a log soubor run.log. Tyto soubory musí obsahovat informace umožňující rekonstruovat průběh běhu.\\n  - V každé hlavní podsložce musí existovat odpovídající sekční MANIFEST (např. MANIFEST_system_info.json) s detailními záznamy o krocích a souborech (včetně cest, statusů, časů, error_message atd.).\\n  - Opakované spuštění s totožnou konfigurací a stejným výstupním base adresářem musí vytvářet deterministicky pojmenované adresáře běhů (např. podle run_id generovaného core.models) a konzistentní strukturu výstupů. Obsah se může lišit podle stavu systému, ale struktura a pojmenování musí být deterministické.\\n  - Při selhání kritického kroku musí být návratový kód nenulový (EXIT_CRITICAL_FAILURE nebo EXIT_PARTIAL_FAILURE podle pravidel) a v MANIFESTech musí být krok označen jako FAILED nebo ERROR, včetně detailního popisu v error_message.\\n  - Parametr --dry-run nesmí vytvářet žádné výstupní soubory ani adresáře; má pouze vypisovat plánované kroky (např. na stdout) a případně návrh struktury, aniž by se cokoli měnilo na disku.\\n  - Nástroj nesmí provádět ZIP ani jinou archivaci; všechny výstupy musí být přímo dostupné v adresářové struktuře (soubory logů, textové výstupy příkazů, JSON MANIFESTy). To je důležité pro transparentnost a snadnou inspekci.\\n  - Nástroj musí běžet na podporovaných Linux distribucích i podporovaných verzích Windows. Rozdíly ve výstupech (např. jiné příkazy, jiné formáty) musí odpovídat rozdílům OS, ale celkový koncept struktury, MANIFESTů a determinismu musí být zachován.\\n\\nDeliverable policy (strategie generování výstupních souborů v rámci projektu):\\n- file_generation_strategy: \\\"PLAN->STRUCTURE->FILE_CONTENT\\\" – nejprve se vytvoří plán (A1/A2), poté adresářová a souborová struktura (A2_STRUCTURE) a nakonec konkrétní obsah souborů (A3+). To zajišťuje konzistenci mezi návrhem a implementací.\\n- max_lines_per_chunk: 500 – omezení pro generování obsahu souborů v dalších fázích, aby se velké soubory dělily na menší části.\\n\\nNa konci chunku začíná A2_STRUCTURE, která definuje kořenový adresář projektu \\\"diagmaster\\\" a první soubor:\\n- root: \\\"diagmaster\\\" – název kořenového adresáře repozitáře/balíčku.\\n- files[0]:\\n  - path: \\\"pyproject.toml\\\" – konfigurační soubor pro balíček a build systém.\\n  - purpose: obsahuje metadata projektu DiagMaster, název balíčku \\\"diagmaster\\\", entry point konzolové aplikace \\\"diagmaster = diagmaster.__main__:main\\\" a runtime závislosti. Neslouží k importu symbolů, pouze jako build metadata.\\n  - language: \\\"toml\\\".\\n  - generated_in_phase: \\\"A3\\\" – obsah bude generován v další fázi.\\n\\nTento chunk tedy doplňuje tok běhu o závěrečné kroky (tvorba MANIFESTů, výpočet návratového kódu, návrat z CLI), definuje jednotnou strategii chybového zpracování a bezpečnostní zásady, popisuje způsob sestavení a spuštění nástroje a začíná specifikaci struktury repozitáře (A2_STRUCTURE) s pyproject.toml jako prvním souborem. Všechna globální omezení (determinismus, read-only, žádná archivace, žádná externí komunikace, rekonstruovatelnost z adresářové struktury a MANIFESTů) zůstávají v plné platnosti a jsou v těchto částech explicitně podporována.\",\"chunk_index\":4,\"chunk_count\":7,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4184,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3266,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 7450
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767873601,
+    "store": true
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A1",
+    "response_id": "resp_0c3996f011c1c60700695f98a68ae08192b4642c6c9876b22c",
+    "event": "chunk_compress_result",
+    "sequence": 37,
+    "logged_at": "2026-01-08T11:45:31.558449"
+  },
+  "details": {
+    "event": "chunk_compress_result",
+    "level": "info",
+    "details": {
+      "stage": "A1",
+      "label": "dialog",
+      "chunk_index": 2,
+      "chunk_count": 15,
+      "summary_chars": 10415
+    },
+    "timestamp": "2026-01-08T11:45:31.558443"
+  }
+}

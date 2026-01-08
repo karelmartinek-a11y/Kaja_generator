@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261657_c5d0",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "GENERATE_b5c8a9",
+    "event": "response_log_written",
+    "sequence": 216,
+    "logged_at": "2026-01-08T16:08:18.445029"
+  },
+  "details": {
+    "event": "response_log_written",
+    "level": "info",
+    "details": {
+      "stage": "A1_LONG_PROMPT",
+      "request_id": "0d5b5c8c",
+      "response_id": "resp_0e1fe9e06e3eca4c00695fd66ccd70819496a19daa3899e60e",
+      "response_log": "KJOVO_A1_LONG_PROMPT_resp_0e1fe9e06e3eca4c00695fd66ccd70819496a19daa3899e60e_req_0d5b5c8c_response_080120261708.json"
+    },
+    "timestamp": "2026-01-08T16:08:18.445023"
+  }
+}

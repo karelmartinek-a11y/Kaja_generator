@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261510_2cd7",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_05829833b1ba65a800695fbb6e05ac819787207699cf00b0ba",
+    "logged_at": "2026-01-08T14:13:42.492779",
+    "request_id": "722b3369"
+  },
+  "payload": {
+    "id": "resp_05829833b1ba65a800695fbb6e05ac819787207699cf00b0ba",
+    "created_at": 1767881582.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_05829833b1ba65a800695fbb6e80a081978eb0f603d6ecbe6b",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Navazuje se na předchozí definice UI a pipeline.\\n\\nDoplňky k DIAGNOSTICS – SSH IN / WINDOWS IN a OUT:\\n- SSH IN (pokud je zvoleno a po zadání IP/autentizace nebo použití údajů ze SETTINGS):\\n  - provede stažení diagnostického snímku vzdáleného systému (diagnostický balík dle sekce 27: Full Ubuntu (Web Server) Diagnostics).\\n- Diagnostický balík (ať už z WINDOWS IN nebo SSH IN):\\n  - nahraje se na Files API,\\n  - zapíše se do mirror manifestu (včetně popisu obsahu a časových údajů – timestampů),\\n  - jeho file_id se uvede v instructions,\\n  - zároveň se přiloží do input jako input_file,\\n  - pokud je aktivní vector store, diagnostické soubory se navíc připojí do vector store s atributy, např.:\\n    - source = \\\"diagnostics\\\",\\n    - scope = \\\"windows\\\" nebo \\\"ssh\\\",\\n    - captured_at = čas pořízení.\\n\\nWINDOWS OUT / SSH OUT:\\n- Při spuštění „KÁJO GO“ program do instructions i do input redundantně zapíše očekávání, že výstup musí obsahovat:\\n  - vlastní skript (pro opravu / změnu systému),\\n  - soubor readmerepair.txt s popisem změny systému a návodem k ručnímu použití.\\n- Pro SSH OUT platí, že skript má být spustitelný na Windows PC a je navržen tak, aby z Windows provedl změny na vzdáleném SSH serveru stejným typem přístupu, jaký byl použit při SSH IN (stejný protokol/typ autentizace).\\n\\nBezpečnostní upozornění pro diagnostiku:\\n- Diagnostické snapshoty mohou obsahovat citlivá data.\\n  - Před prvním použitím WINDOWS/SSH diagnostiky musí program zobrazit varování a vyžádat si explicitní potvrzení uživatele.\\n- Pokud je v SETTINGS maskování tajemství (masking of secrets) vypnuto (OFF), program musí upozornit, že citlivé údaje mohou skončit v LOG.\\n\\nSSH UI (aktivuje se, pokud je zvoleno SSH IN nebo SSH OUT):\\n- Program se uživatele dotáže na:\\n  - uživatelské jméno (default = root),\\n  - IP adresu,\\n  - způsob autentizace:\\n    - SSH key (povinně podporovaný způsob),\\n    - heslo (volitelný fallback),\\n  - sudo se nepoužívá, pracuje se přímo jako root.\\n\\n12.6 Sekce „MODE“\\nObsah UI:\\n- Tlačítko „GENERATE“.\\n- Tlačítko „MODIFY“.\\n- Tlačítko „QA“.\\n- Textové pole „RESPONSE ID“.\\n\\nPravidla výběru režimu:\\n- Vždy může být zvoleno pouze jedno z tlačítek GENERATE / MODIFY / QA (mutually exclusive).\\n- Zároveň musí být vždy zvolen alespoň jeden režim (nelze mít stav bez režimu).\\n\\nVýznam režimů a vazba na IN/OUT adresáře:\\n- GENERATE:\\n  - nesmí být zvolen IN adresář (IN PATH musí být prázdný / neaktivní),\\n  - musí být zvolen OUT adresář.\\n- MODIFY:\\n  - musí být zvolen jak IN, tak OUT adresář.\\n- QA:\\n  - nesmí být zvolen ani IN, ani OUT adresář,\\n  - do instructions i do input se explicitně uvede, že se očekává čistě textová odpověď bez generování souborů.\\n\\nPole RESPONSE ID:\\n- Umožňuje ruční zadání Response-ID.\\n- Pokud je vyplněno:\\n  - použije se v requestu jako previous_response_id (řetězení na předchozí odpověď).\\n- Pokud není vyplněno:\\n  - request se bere jako nový, bez previous_response_id.\\n\\n12.7 Sekce „Model OpenAI“\\nObsah UI:\\n- Tlačítko „GET MODELS“.\\n- Roletka (dropdown) pro výběr OpenAI modelu.\\n\\nChování:\\n- Po stisknutí „GET MODELS“ se pro aktuálně uložený API key načte seznam dostupných OpenAI modelů.\\n- Dropdown se aktualizuje podle získaného seznamu.\\n- Vybraný model zůstává v roletce zobrazen (persistuje výběr, dokud jej uživatel nezmění nebo nedojde k chybě / resetu).\\n\\n12.8 Sekce „BATCH MONITOR“\\nFunkce a UI:\\n- Zobrazuje seznam batch jobů, minimálně tzv. „otevřené“ joby (všechny kromě completed / failed / cancelled / expired).\\n- Tlačítko „REFRESH“ pro opětovné načtení aktuálního stavu batch jobů z API.\\n- Zobrazení stavu (status) a času vytvoření každého jobu.\\n- Tlačítko „DOWNLOAD RESULT“ (aktivní, pokud je job hotový a API poskytuje výsledek ke stažení).\\n- Tlačítko „OPEN LOG“ – odkaz do příslušného LOG adresáře / souboru pro daný batch.\\n- Tlačítko „CANCEL“ – pokud to API umožňuje a uživatel chce job zrušit.\\n\\n12.9 Sekce „GO“\\nObsah UI:\\n- Tlačítko „KÁJO GO“.\\n- Přepínač „SEND AS C (BATCH)“.\\n\\nChování:\\n- Stisk „KÁJO GO“ spustí kompletní zpracování podle aktuálního nastavení všech sekcí (Zadání, Připojené soubory, IN/OUT, MODE, DIAGNOSTICS, atd.).\\n- Kroky se provádějí automaticky v definovaném pořadí.\\n- Během běhu se zobrazuje progress dialog s:\\n  - detailními kroky,\\n  - procentuálním průběhem,\\n  - odhadem času (ETA), pokud je k dispozici.\\n- Veškeré dění se loguje do adresáře LOG/ (včetně chyb, varování, detailů requestů a odpovědí, podle globálních pravidel logování).\\n- Přepínač „SEND AS C (BATCH)“ určuje, zda se má použít batch režim (tok C) místo standardního A/B/QA requestu (detailní logika batch režimu je definována v jiných částech zadání).\\n\\n12.10 Sekce „ANSWARE“ (výstup textové odpovědi)\\nObsah UI:\\n- Dialogové okno (text area) o výšce cca 6 řádků.\\n- Nadpis dialogového okna zobrazuje Response ID poslední odpovědi.\\n- V samotném okně se zobrazuje textová odpověď z posledního response.\\n\\nTlačítka pod oknem:\\n- „CTRL+C“.\\n- „RESPONSE“.\\n- „SCRIPT“.\\n\\nFunkce tlačítek:\\n- CTRL+C:\\n  - zkopíruje obsah dialogového okna včetně Response ID do systémové schránky,\\n  - vložení musí být jako neformátovaný (plain) text.\\n- RESPONSE:\\n  - zkopíruje přijaté Response ID z poslední odpovědi do pole MODE / RESPONSE ID (pro snadné navázání dalšího requestu na stejný chain).\\n- SCRIPT:\\n  - je aktivní pouze tehdy, pokud poslední response obsahovala skript + soubor readmerepair.txt (tj. odpovídá očekávání z WINDOWS OUT / SSH OUT režimu),\\n  - po stisknutí:\\n    - program zobrazí potvrzovací dialog s jasným varováním o nevratnosti prováděných změn,\\n    - po potvrzení spustí skript bez dry runu,\\n    - u SSH skriptu použije stejné IP, uživatelské jméno a klíč/heslo, které byly zadány při odesílání requestu (tyto údaje jsou součástí run state),\\n    - uživatel je informován o výsledku ve vyskakovacím okně (success/fail, případně shrnutí),\\n    - do LOG se uloží stdout, stderr, návratový kód a audit provedených změn (pokud skript takový audit poskytuje).\\n\\n12.11 Sekce „LOCAL FILES“\\nObsah UI:\\n- Tabulka lokálních souborů (zobrazuje cca 3–5 souborů, při větším počtu vertikální scroll).\\n- Tlačítka pod tabulkou:\\n  - „VLOŽ“.\\n  - „UPLOAD“.\\n\\nChování:\\n- „VLOŽ“:\\n  - otevře dialog pro výběr souboru/souborů z lokálního systému,\\n  - vybrané soubory se přidají do tabulky LOCAL FILES (lze vybrat více souborů najednou),\\n  - každý řádek v tabulce má ikonu pro smazání daného souboru z tabulky (bez mazání z disku).\\n- „UPLOAD“:\\n  - všechny soubory z tabulky se uploadují na Files API s purpose \\\"user data\\\",\\n  - po úspěšném uploadu:\\n    - se automaticky aktualizuje přehled souborů v sekci FILE API (aby byly nově nahrané soubory vidět),\\n    - tabulka LOCAL FILES se vyprázdní.\\n\\n12.12 Sekce „FILE API“\\nObsah UI:\\n- Tabulka souborů z Files API (zobrazuje cca 4 soubory, jinak scroll).\\n- Tlačítka pod tabulkou:\\n  - „PŘIPOJ“.\\n  - „SMAŽ“.\\n  - „DEL ALL“.\\n\\nChování:\\n- Tabulka podporuje multi-select (kliknutím lze vybrat více souborů).\\n- „PŘIPOJ“:\\n  - vybrané soubory se přesunou (logicky, v rámci UI) do sekce „Připojené soubory“ a stanou se součástí aktuálního zadání (budou pak automaticky zahrnuty do instructions a input jako \\\"pro informaci\\\").\\n- „SMAŽ“:\\n  - vybrané soubory se smažou na Files API (a tím i z tabulky FILE API),\\n  - operace se loguje.\\n- „DEL ALL“:\\n  - smaže na Files API všechny soubory (globální mazání),\\n  - operace musí být potvrzena uživatelem (implicitní požadavek na bezpečnost, i když zde není explicitně napsán) a loguje se.\\n\\n12.13 Sekce „VECTOR STORES“\\nFunkce a cíle:\\n- Umožňuje:\\n  - zobrazit seznam aktuálně založených vector store,\\n  - zjistit, co v nich je (seznam souborů a jejich atributů),\\n  - prohlížet detailní obsah,\\n  - ručně nastavovat atributy souborů (metadata),\\n  - jednotlivé soubory ze store vyřazovat (odstranit) nebo znovu zařazovat,\\n  - nastavovat expiraci vector store.\\n\\nPovinné prvky:\\n- List všech vector store (minimálně ID, název, stav, případně usage/velikost, pokud API poskytuje).\\n- Detail vybraného store:\\n  - zobrazení expirace (view) a možnost její aktualizace (update),\\n  - seznam souborů ve store + jejich attributes (např. původní PATH, source, scope, captured_at, další metadata),\\n  - možnost odstranit soubor ze store,\\n  - možnost přidat soubor do store z Files API (výběr souboru z FILE API a jeho připojení do daného vector store),\\n  - zobrazení usage / velikosti, pokud to API poskytuje.\\n- Všechny změny (přidání/odebrání souboru, změna atributů, změna expirace) se musí logovat s informací, co bylo změněno a kdy.\\n\\n13) OpenAI request pipeline – logika A/B variant + tok C (úvod)\\n13.1 Základní pravidla request builderu (platí pro A/B/QA):\\n- Temperature policy:\\n  - Jakmile je cílem vracet obsah výstupního souboru (kroky A3_FILE a B3_FILE), musí být temperature = 0.0.\\n  - Pro všechny ostatní requesty používat temperature v rozsahu 0.0–0.2 (default 0.2, pokud není specifický důvod snížit).\\n- Redundance výstupu:\\n  - Vždy implementovat redundantní zadání očekávaného výstupu:\\n    - v instructions je kontrakt (co má model udělat, jaký výstup se očekává),\\n    - v input je tentýž kontrakt zopakován (redundantně), aby se minimalizovalo riziko nepochopení.\\n- Projekt:\\n  - Pokud je vyplněn „Název projektu“, použít ho jako identifikátor v každém requestu (v instructions, v log souborech, v názvech vector store, manifestů, účtenek apod.).\\n- Připojené soubory:\\n  - Všechny soubory v sekci „Připojené soubory“ musí být v requestu:\\n    1) vyjmenované v instructions jako „pro informaci“ (každý soubor zvlášť, s uvedením file_id a případně stručného popisu),\\n    2) zároveň přiložené v input jako input_file části.\\n\\nVšechna dříve definovaná globální pravidla (robustnost, logování, bezpečné fallbacky, neblokující UI, práce s IN/OUT, mirror manifesty, vector store, LOAD/LOAD REQUEST, atd.) zůstávají v platnosti a vztahují se i na zde popsané sekce MODE, Model OpenAI, BATCH MONITOR, GO, ANSWARE, LOCAL FILES, FILE API, VECTOR STORES a na základní pravidla request builderu.\",\"chunk_index\":4,\"chunk_count\":15,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 5499,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3426,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 8925
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767881622,
+    "store": true
+  }
+}

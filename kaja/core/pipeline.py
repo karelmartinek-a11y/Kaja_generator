@@ -7,6 +7,7 @@ import re
 import shutil
 import subprocess
 import time
+import traceback
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -15,6 +16,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tupl
 
 from .design_standard import design_standard_block
 from .log_manager import (
+    log_audit_event,
     log_file_operation,
     log_file_snapshot,
     log_file_upload,
@@ -212,10 +214,12 @@ class PipelineExecutor:
         create_dir(self._out_root)
         self._buffers: Dict[str, List[str]] = {}
         self._log_entries: List[Dict[str, Any]] = []
+        self._audit_sequence = 0
         self._ui_state_log_path: Path | None = None
         self._pricing_receipt_path: Path | None = None
         self._ui_state: UiState | None = None
         self._response_id = ""
+        self._api_response_id = ""
         self._diagnostic_packages: Dict[str, DiagnosticPackage] = {}
         self._diagnostic_uploads: List[Dict[str, Any]] = []
         self._timeline: List[Dict[str, Any]] = []
@@ -297,6 +301,11 @@ class PipelineExecutor:
     def _notify_progress(self, message: str) -> None:
         if self._progress_callback:
             self._progress_callback(message, self._last_progress_ratio)
+        self._audit_event(
+            "progress_update",
+            {"message": message, "ratio": self._last_progress_ratio},
+            level="info",
+        )
 
     def _load_request_templates(self) -> None:
         if self._request_templates:
@@ -416,6 +425,19 @@ class PipelineExecutor:
                 assets.attachments_in_vector_store = True
                 assets.attachments_as_input_files = False
         if mode != "MODIFY":
+            self._audit_event(
+                "request_assets_prepared",
+                {
+                    "mode": mode,
+                    "attachments": len(assets.attachments),
+                    "attachment_ids": len(attachment_ids),
+                    "vector_store_id": assets.vector_store_id,
+                    "file_search_enabled": assets.file_search_enabled,
+                    "attachments_in_vector_store": assets.attachments_in_vector_store,
+                    "attachments_as_input_files": assets.attachments_as_input_files,
+                },
+                stage=mode,
+            )
             return assets
         in_root = Path(ui_state.in_dir)
         if not in_root.exists():
@@ -442,6 +464,21 @@ class PipelineExecutor:
         assets.mirror_entries = mirror_entries
         assets.mirror_manifest = mirror_manifest
         assets.diagnostics = diagnostics
+        self._audit_event(
+            "request_assets_prepared",
+            {
+                "mode": mode,
+                "attachments": len(assets.attachments),
+                "attachment_ids": len(attachment_ids),
+                "vector_store_id": assets.vector_store_id,
+                "file_search_enabled": assets.file_search_enabled,
+                "attachments_in_vector_store": assets.attachments_in_vector_store,
+                "attachments_as_input_files": assets.attachments_as_input_files,
+                "mirror_entries": len(mirror_entries),
+                "diagnostics": len(diagnostics),
+            },
+            stage=mode,
+        )
         return assets
 
     def _prepare_attachments(
@@ -459,6 +496,7 @@ class PipelineExecutor:
                 local_path.exists()
                 and (not file_id or file_id.startswith("ATT_"))
             )
+            uploaded_id = None
             if needs_upload:
                 uploaded_id = self._upload_file(
                     local_path,
@@ -467,6 +505,19 @@ class PipelineExecutor:
                 )
                 if uploaded_id:
                     file_id = uploaded_id
+            self._audit_event(
+                "attachment_prepared",
+                {
+                    "filename": record.filename,
+                    "file_id": file_id or "",
+                    "uploaded_id": uploaded_id or "",
+                    "purpose": record.purpose or "user_data",
+                    "size_bytes": size_bytes,
+                    "needs_upload": needs_upload,
+                    "local_exists": local_path.exists(),
+                },
+                stage=self._ui_state.mode if self._ui_state else "",
+            )
             prepared.append(
                 AttachmentInfo(
                     file_id=file_id,
@@ -547,6 +598,20 @@ class PipelineExecutor:
                         },
                     )
             entries.append(entry)
+        reason_counts: Dict[str, int] = {}
+        for entry in entries:
+            if entry.reason:
+                reason_counts[entry.reason] = reason_counts.get(entry.reason, 0) + 1
+        self._audit_event(
+            "mirror_entries_summary",
+            {
+                "total": len(entries),
+                "uploaded": len([entry for entry in entries if entry.uploaded]),
+                "reasons": reason_counts,
+                "vector_store_id": vector_store_id or "",
+            },
+            stage=self._ui_state.mode if self._ui_state else "",
+        )
         return entries
 
     def _create_mirror_manifest(
@@ -660,6 +725,15 @@ class PipelineExecutor:
                         },
                     )
                 entries.append(entry)
+        self._audit_event(
+            "diagnostics_upload_summary",
+            {
+                "entries": len(entries),
+                "uploads": len(self._diagnostic_uploads),
+                "vector_store_id": vector_store_id or "",
+            },
+            stage=self._ui_state.mode if self._ui_state else "",
+        )
         return entries
 
     def _create_vector_store(self, project: str) -> str | None:
@@ -667,15 +741,36 @@ class PipelineExecutor:
             return None
         timestamp = datetime.utcnow().strftime("%d%m%Y%H%M")
         name = f"{project}{timestamp}"
+        self._audit_event(
+            "vector_store_create",
+            {"project": project, "name": name},
+            stage=self._ui_state.mode if self._ui_state else "",
+        )
         try:
             response = self._client.create_vector_store(name)
         except Exception as exc:
             self._log(f"Vytvoření vector store selhalo: {exc}")
+            self._audit_exception(
+                "vector_store_create_failed",
+                exc,
+                stage=self._ui_state.mode if self._ui_state else "",
+            )
             return None
         store_id = response.get("id") or response.get("vector_store_id")
         if not store_id:
             self._log("Vector store nebyl vytvořen (chybí ID).")
+            self._audit_event(
+                "vector_store_create_missing_id",
+                {"project": project, "name": name},
+                stage=self._ui_state.mode if self._ui_state else "",
+                level="warning",
+            )
             return None
+        self._audit_event(
+            "vector_store_created",
+            {"project": project, "name": name, "vector_store_id": store_id},
+            stage=self._ui_state.mode if self._ui_state else "",
+        )
         return str(store_id)
 
     def _add_vector_store_file(
@@ -685,6 +780,15 @@ class PipelineExecutor:
         attributes: Dict[str, Any],
     ) -> None:
         try:
+            self._audit_event(
+                "vector_store_attach_start",
+                {
+                    "vector_store_id": store_id,
+                    "file_id": file_id,
+                    "attributes": attributes,
+                },
+                stage=self._ui_state.mode if self._ui_state else "",
+            )
             self._client.add_vector_store_file(store_id, file_id, attributes=attributes)
             vs_payload = {
                 "project": self._ui_state.project_name if self._ui_state else "",
@@ -700,21 +804,69 @@ class PipelineExecutor:
                 "vector_store",
                 {"vector_store_id": store_id},
             )
+            self._audit_event(
+                "vector_store_attach_done",
+                {
+                    "vector_store_id": store_id,
+                    "file_id": file_id,
+                },
+                stage=self._ui_state.mode if self._ui_state else "",
+            )
         except Exception as exc:
             self._log(f"Vector store attach ({store_id}) selhalo: {exc}")
+            self._audit_exception(
+                "vector_store_attach_failed",
+                exc,
+                stage=self._ui_state.mode if self._ui_state else "",
+            )
 
     def _upload_file(self, path: Path, *, purpose: str, scope: str) -> str | None:
         if not self._client:
             self._log(f"OpenAI client není dostupný; upload {path} přeskočen.")
+            self._audit_event(
+                "file_upload_skipped",
+                {
+                    "path": str(path),
+                    "purpose": purpose,
+                    "scope": scope,
+                },
+                stage=self._ui_state.mode if self._ui_state else "",
+                level="warning",
+            )
             return None
+        self._audit_event(
+            "file_upload_start",
+            {
+                "path": str(path),
+                "purpose": purpose,
+                "scope": scope,
+                "size": path.stat().st_size if path.exists() else 0,
+            },
+            stage=self._ui_state.mode if self._ui_state else "",
+        )
         try:
             upload_result = self._client.upload_file(path, purpose=purpose)
         except Exception as exc:
             self._log(f"Upload {path} selhal: {exc}")
+            self._audit_exception(
+                "file_upload_failed",
+                exc,
+                stage=self._ui_state.mode if self._ui_state else "",
+            )
             return None
         file_id = upload_result.get("id") or upload_result.get("file_id")
         if not file_id:
             self._log(f"Upload {path} selhal: chybí file_id.")
+            self._audit_event(
+                "file_upload_missing_id",
+                {
+                    "path": str(path),
+                    "purpose": purpose,
+                    "scope": scope,
+                },
+                stage=self._ui_state.mode if self._ui_state else "",
+                level="warning",
+            )
             return None
         payload = {
             "scope": scope,
@@ -728,6 +880,16 @@ class PipelineExecutor:
         }
         upload_log = log_file_upload(self._run, payload)
         self._register_log_entry(upload_log, "file_upload", {"scope": scope})
+        self._audit_event(
+            "file_upload_done",
+            {
+                "path": str(path),
+                "purpose": purpose,
+                "scope": scope,
+                "file_id": file_id,
+            },
+            stage=self._ui_state.mode if self._ui_state else "",
+        )
         return str(file_id)
 
     def _summarize_env_keys(self, path: Path) -> str:
@@ -751,6 +913,8 @@ class PipelineExecutor:
         candidate = ui_state.response_id.strip()
         if candidate:
             return candidate
+        if self._api_response_id:
+            return self._api_response_id
         return fallback or ""
 
     def _render_template_text(self, text: str, replacements: Dict[str, str]) -> str:
@@ -1078,12 +1242,40 @@ class PipelineExecutor:
         if not cleaned:
             return cleaned
         context_limit = self._model_context_limit(ui_state.model)
-        max_chunk_tokens = max(512, int(context_limit * 0.2))
+        chunk_ratio = 0.2
+        max_chunk_tokens = max(512, int(context_limit * chunk_ratio))
         max_chunk_chars = max_chunk_tokens * 4
         chunks = self._split_text_into_chunks(cleaned, max_chunk_chars)
         summary = ""
         chunk_count = len(chunks)
+        self._audit_event(
+            "chunk_split",
+            {
+                "stage": stage,
+                "label": label,
+                "chunk_count": chunk_count,
+                "total_chars": len(cleaned),
+                "max_chunk_chars": max_chunk_chars,
+                "max_chunk_tokens": max_chunk_tokens,
+                "chunk_ratio": chunk_ratio,
+                "depth": depth,
+                "max_tokens": max_tokens,
+            },
+            stage=stage,
+        )
         for idx, chunk in enumerate(chunks):
+            self._audit_event(
+                "chunk_compress_request",
+                {
+                    "stage": stage,
+                    "label": label,
+                    "chunk_index": idx + 1,
+                    "chunk_count": chunk_count,
+                    "chunk_chars": len(chunk),
+                    "summary_chars": len(summary),
+                },
+                stage=stage,
+            )
             self._notify_progress(f"{stage}: komprimuji {label} ({idx + 1}/{chunk_count})")
             payload = self._build_long_prompt_payload(
                 stage,
@@ -1104,7 +1296,19 @@ class PipelineExecutor:
                 update_response_id=False,
             )
             summary = self._parse_long_prompt_response(response)
-        if self._estimate_tokens(summary) > max_tokens and depth < 1:
+            self._audit_event(
+                "chunk_compress_result",
+                {
+                    "stage": stage,
+                    "label": label,
+                    "chunk_index": idx + 1,
+                    "chunk_count": chunk_count,
+                    "summary_chars": len(summary),
+                },
+                stage=stage,
+            )
+        summary_tokens = self._estimate_tokens(summary)
+        if summary_tokens > max_tokens and depth < 1:
             return self._compress_text_by_chunks(
                 stage,
                 f"{label}_reshrink",
@@ -1113,11 +1317,112 @@ class PipelineExecutor:
                 max_tokens,
                 depth=depth + 1,
             )
-        if self._estimate_tokens(summary) > max_tokens:
-            raise ValueError(
-                f"{stage}: shrnutí je stále příliš dlouhé ({self._estimate_tokens(summary)} tokenů)."
+        summary_tokens = self._estimate_tokens(summary)
+        if summary_tokens > max_tokens and depth < 2:
+            tightened = max(64, int(max_tokens * 0.7))
+            self._audit_event(
+                "chunk_compress_retry",
+                {
+                    "stage": stage,
+                    "label": label,
+                    "summary_tokens": summary_tokens,
+                    "max_tokens": max_tokens,
+                    "tightened_max_tokens": tightened,
+                },
+                stage=stage,
+                level="warning",
             )
+            return self._compress_text_by_chunks(
+                stage,
+                f"{label}_tight",
+                summary,
+                ui_state,
+                tightened,
+                depth=depth + 1,
+            )
+        summary_tokens = self._estimate_tokens(summary)
+        if summary_tokens > max_tokens:
+            self._audit_event(
+                "chunk_compress_too_long",
+                {
+                    "stage": stage,
+                    "label": label,
+                    "summary_tokens": summary_tokens,
+                    "max_tokens": max_tokens,
+                },
+                stage=stage,
+                level="warning",
+            )
+            trimmed = self._hard_trim_text(summary, max_tokens).strip()
+            self._audit_event(
+                "chunk_compress_hard_trim",
+                {
+                    "stage": stage,
+                    "label": label,
+                    "summary_tokens": summary_tokens,
+                    "trimmed_tokens": self._estimate_tokens(trimmed),
+                    "max_tokens": max_tokens,
+                },
+                stage=stage,
+                level="warning",
+            )
+            return trimmed
         return summary.strip()
+
+    def _compress_prompt_texts_by_chunks(
+        self,
+        stage: str,
+        instructions: str,
+        input_text: str,
+        ui_state: UiState,
+        max_tokens: int,
+    ) -> Tuple[str, str]:
+        if not instructions and not input_text:
+            return instructions, input_text
+        per_field_tokens = max(128, int(max_tokens * 0.45))
+        self._audit_event(
+            "prompt_chunk_compress_start",
+            {
+                "stage": stage,
+                "max_tokens": max_tokens,
+                "per_field_tokens": per_field_tokens,
+                "instructions_chars": len(instructions or ""),
+                "input_chars": len(input_text or ""),
+            },
+            stage=stage,
+        )
+        compressed_instructions = (
+            self._compress_text_by_chunks(
+                stage,
+                "instructions",
+                instructions,
+                ui_state,
+                per_field_tokens,
+            )
+            if instructions
+            else ""
+        )
+        compressed_input = (
+            self._compress_text_by_chunks(
+                stage,
+                "input_text",
+                input_text,
+                ui_state,
+                per_field_tokens,
+            )
+            if input_text
+            else ""
+        )
+        self._audit_event(
+            "prompt_chunk_compress_done",
+            {
+                "stage": stage,
+                "instructions_chars": len(compressed_instructions or ""),
+                "input_chars": len(compressed_input or ""),
+            },
+            stage=stage,
+        )
+        return compressed_instructions, compressed_input
 
     def _prepare_dialog_content(
         self,
@@ -1128,22 +1433,48 @@ class PipelineExecutor:
         dialog = content.strip() or "(není zadáno)"
         max_tokens = self._max_request_tokens(ui_state.model)
         max_dialog_tokens = max(128, int(max_tokens * 0.5))
-        if self._estimate_tokens(dialog) <= max_dialog_tokens:
+        estimated_tokens = self._estimate_tokens(dialog)
+        self._audit_event(
+            "dialog_tokens_estimate",
+            {
+                "stage": stage,
+                "estimated_tokens": estimated_tokens,
+                "max_tokens": max_dialog_tokens,
+            },
+            stage=stage,
+        )
+        if estimated_tokens <= max_dialog_tokens:
             return dialog
         self._log(
             f"{stage}: zadání je dlouhé ({self._estimate_tokens(dialog)} tokenů); "
             "komprimuji po chunkech."
         )
-        return self._compress_text_by_chunks(
+        compressed = self._compress_text_by_chunks(
             stage,
             "dialog",
             dialog,
             ui_state,
             max_dialog_tokens,
         )
+        self._audit_event(
+            "dialog_tokens_compressed",
+            {
+                "stage": stage,
+                "estimated_tokens": self._estimate_tokens(compressed),
+                "max_tokens": max_dialog_tokens,
+            },
+            stage=stage,
+        )
+        return compressed
 
     def _extract_response_text(self, response: Dict[str, Any]) -> str:
         if not response:
+            self._audit_event(
+                "response_text_missing",
+                {"reason": "empty_response"},
+                stage=self._ui_state.mode if self._ui_state else "",
+                level="error",
+            )
             raise ValueError("Response je prázdná.")
         if isinstance(response.get("output_text"), str):
             return response["output_text"].strip()
@@ -1171,6 +1502,15 @@ class PipelineExecutor:
             content = message.get("content")
             if isinstance(content, str):
                 return content.strip()
+        self._audit_event(
+            "response_text_missing",
+            {
+                "reason": "no_text_fields",
+                "keys": list(response.keys()) if isinstance(response, dict) else [],
+            },
+            stage=self._ui_state.mode if self._ui_state else "",
+            level="error",
+        )
         raise ValueError("Nelze extrahovat text odpovědi z response.")
 
     def _extract_json_block(self, text: str, start_index: int) -> str:
@@ -1236,7 +1576,8 @@ class PipelineExecutor:
         except UnicodeDecodeError:
             return text
 
-    def _try_parse_json_candidate(self, text: str) -> Any | None:
+    def _try_parse_json_candidate(self, text: str) -> Tuple[Any | None, bool]:
+        used_unescape = False
         try:
             payload = json.loads(text)
         except json.JSONDecodeError:
@@ -1245,15 +1586,16 @@ class PipelineExecutor:
             stripped = payload.strip()
             if stripped[:1] in "{[":
                 try:
-                    return json.loads(stripped)
+                    return json.loads(stripped), used_unescape
                 except json.JSONDecodeError:
-                    return None
-            return None
+                    return None, used_unescape
+            return None, used_unescape
         if payload is not None:
-            return payload
+            return payload, used_unescape
         if self._looks_escaped_json(text):
             unescaped = self._unescape_json_text(text)
             if unescaped != text:
+                used_unescape = True
                 try:
                     payload = json.loads(unescaped)
                 except json.JSONDecodeError:
@@ -1262,13 +1604,13 @@ class PipelineExecutor:
                     stripped = payload.strip()
                     if stripped[:1] in "{[":
                         try:
-                            return json.loads(stripped)
+                            return json.loads(stripped), used_unescape
                         except json.JSONDecodeError:
-                            return None
-                    return None
+                            return None, used_unescape
+                    return None, used_unescape
                 if payload is not None:
-                    return payload
-        return None
+                    return payload, used_unescape
+        return None, used_unescape
 
     def _select_payload_object(
         self,
@@ -1292,12 +1634,30 @@ class PipelineExecutor:
         expected_contract: str,
     ) -> Dict[str, Any]:
         fallback: Dict[str, Any] | None = None
+        candidate_count = 0
+        parsed_count = 0
+        unescape_count = 0
         for candidate in self._iter_json_candidates(text):
-            payload = self._try_parse_json_candidate(candidate)
+            candidate_count += 1
+            payload, used_unescape = self._try_parse_json_candidate(candidate)
+            if used_unescape:
+                unescape_count += 1
             if payload is None:
                 continue
+            parsed_count += 1
             selected = self._select_payload_object(payload, expected_contract)
             if selected is not None:
+                self._audit_event(
+                    "json_coerce_match",
+                    {
+                        "expected_contract": expected_contract,
+                        "candidate_count": candidate_count,
+                        "parsed_count": parsed_count,
+                        "unescape_count": unescape_count,
+                        "response_chars": len(text),
+                    },
+                    stage=expected_contract,
+                )
                 return selected
             if fallback is None and isinstance(payload, dict):
                 fallback = payload
@@ -1307,13 +1667,457 @@ class PipelineExecutor:
                         fallback = item
                         break
         if fallback is not None:
+            self._audit_event(
+                "json_coerce_fallback",
+                {
+                    "expected_contract": expected_contract,
+                    "candidate_count": candidate_count,
+                    "parsed_count": parsed_count,
+                    "unescape_count": unescape_count,
+                    "response_chars": len(text),
+                },
+                stage=expected_contract,
+                level="warning",
+            )
             return fallback
+        self._audit_event(
+            "json_coerce_failed",
+            {
+                "expected_contract": expected_contract,
+                "candidate_count": candidate_count,
+                "parsed_count": parsed_count,
+                "unescape_count": unescape_count,
+                "response_chars": len(text),
+            },
+            stage=expected_contract,
+            level="error",
+        )
         raise ValueError("Nenalezen validní JSON payload.")
+
+    def _repair_json_brackets(self, text: str) -> Tuple[str, bool]:
+        if not text:
+            return text, False
+        out: List[str] = []
+        stack: List[str] = []
+        in_string = False
+        escape = False
+        changed = False
+        for char in text:
+            if in_string:
+                out.append(char)
+                if escape:
+                    escape = False
+                elif char == "\\":
+                    escape = True
+                elif char == '"':
+                    in_string = False
+                continue
+            if char == '"':
+                in_string = True
+                out.append(char)
+                continue
+            if char in "{[":
+                stack.append(char)
+                out.append(char)
+                continue
+            if char in "}]":
+                if not stack:
+                    changed = True
+                    continue
+                opener = stack.pop()
+                expected = "}" if opener == "{" else "]"
+                if char != expected:
+                    changed = True
+                    out.append(expected)
+                else:
+                    out.append(char)
+                continue
+            out.append(char)
+        if stack:
+            changed = True
+            while stack:
+                opener = stack.pop()
+                out.append("}" if opener == "{" else "]")
+        return "".join(out), changed
+
+    def _extract_repair_source_text(self, text: str) -> str:
+        if not text:
+            return text
+        start = text.find("{")
+        end = text.rfind("}")
+        if start >= 0 and end > start:
+            return text[start : end + 1]
+        return text
+
+    def _build_json_repair_payload(
+        self,
+        expected_contract: str,
+        raw_text: str,
+        ui_state: UiState,
+    ) -> Dict[str, Any]:
+        instructions = (
+            "Jsi JSON repair modul. VraĹĄ pouze validnĂ­ JSON bez markdownu. "
+            "Oprav pouze syntaxi (zĂˇvorky, ÄŤĂˇrky, uvozovky, escapovĂˇnĂ­). "
+            "NesmĂ­Ĺˇ mÄ›nit vĂ˝znam ani pĹ™idĂˇvat novĂ˝ obsah. "
+            f"MUSĂŤ obsahovat top-level contract='{expected_contract}'."
+        )
+        input_text = (
+            f"EXPECTED_CONTRACT: {expected_contract}\n"
+            "RAW_TEXT:\n<<<\n"
+            f"{raw_text}\n"
+            ">>>\n\n"
+            "VRAĹ¤ opravenĂ˝ JSON:"
+        )
+        return {
+            "model": ui_state.model or "gpt-4o",
+            "temperature": 0.0,
+            "instructions": instructions,
+            "input": [
+                {
+                    "role": "user",
+                    "content": [{"type": "input_text", "text": input_text}],
+                }
+            ],
+        }
+
+    def _repair_json_with_model(
+        self,
+        expected_contract: str,
+        raw_text: str,
+    ) -> Dict[str, Any] | None:
+        if not self._client or not self._ui_state:
+            return None
+        source_text = self._extract_repair_source_text(raw_text)
+        max_tokens = self._max_request_tokens(self._ui_state.model)
+        if self._estimate_tokens(source_text) > max_tokens:
+            self._audit_event(
+                "response_json_repair_skipped",
+                {
+                    "expected_contract": expected_contract,
+                    "reason": "source_too_long",
+                    "text_chars": len(source_text),
+                    "max_tokens": max_tokens,
+                },
+                stage=expected_contract,
+                level="warning",
+            )
+            return None
+        self._notify_progress(f"{expected_contract}: opravuji JSON")
+        payload = self._build_json_repair_payload(
+            expected_contract,
+            source_text,
+            self._ui_state,
+        )
+        if not self._model_capabilities.get("supports_temperature", False):
+            payload.pop("temperature", None)
+        response = self._send_request(
+            f"{expected_contract}_REPAIR",
+            payload,
+            self._ui_state,
+            update_response_id=False,
+        )
+        repaired_text = self._extract_response_text(response)
+        return self._coerce_json_payload(repaired_text, expected_contract)
+
+    def _attempt_json_repair(
+        self,
+        text: str,
+        expected_contract: str,
+        assets: RequestAssets | None,
+        error: Exception,
+    ) -> Dict[str, Any] | None:
+        repaired_text, changed = self._repair_json_brackets(text)
+        if changed:
+            self._audit_event(
+                "response_json_repair_attempt",
+                {
+                    "expected_contract": expected_contract,
+                    "method": "bracket_repair",
+                    "text_chars": len(text),
+                    "error": str(error),
+                },
+                stage=expected_contract,
+                level="warning",
+            )
+            try:
+                payload = self._coerce_json_payload(repaired_text, expected_contract)
+                self._validate_contract(payload, expected_contract, assets)
+            except Exception as exc:
+                self._audit_event(
+                    "response_json_repair_failed",
+                    {
+                        "expected_contract": expected_contract,
+                        "method": "bracket_repair",
+                        "error": str(exc),
+                    },
+                    stage=expected_contract,
+                    level="warning",
+                )
+            else:
+                self._audit_event(
+                    "response_json_repair_success",
+                    {
+                        "expected_contract": expected_contract,
+                        "method": "bracket_repair",
+                    },
+                    stage=expected_contract,
+                )
+                return payload
+        self._audit_event(
+            "response_json_repair_attempt",
+            {
+                "expected_contract": expected_contract,
+                "method": "model_repair",
+                "text_chars": len(text),
+                "error": str(error),
+            },
+            stage=expected_contract,
+            level="warning",
+        )
+        payload = self._repair_json_with_model(expected_contract, text)
+        if payload is None:
+            return None
+        try:
+            self._validate_contract(payload, expected_contract, assets)
+        except Exception as exc:
+            self._audit_event(
+                "response_json_repair_failed",
+                {
+                    "expected_contract": expected_contract,
+                    "method": "model_repair",
+                    "error": str(exc),
+                },
+                stage=expected_contract,
+                level="warning",
+            )
+            return None
+        self._audit_event(
+            "response_json_repair_success",
+            {
+                "expected_contract": expected_contract,
+                "method": "model_repair",
+            },
+            stage=expected_contract,
+        )
+        return payload
 
     def _estimate_tokens(self, text: str) -> int:
         if not text:
             return 0
         return max(1, len(text) // 4)
+
+    def _hard_trim_text(self, text: str, max_tokens: int) -> str:
+        max_chars = max_tokens * 4
+        if len(text) <= max_chars:
+            return text
+        marker = "\n...\n"
+        if max_chars <= len(marker):
+            return text[:max_chars]
+        head = int(max_chars * 0.7)
+        tail = max_chars - head - len(marker)
+        if tail <= 0:
+            return text[:max_chars]
+        return text[:head] + marker + text[-tail:]
+
+    def _ensure_core_instructions_block(
+        self,
+        text: str,
+        core_instructions: str,
+        *,
+        prefix: str = "",
+    ) -> str:
+        if not core_instructions:
+            return text
+        if core_instructions in (text or ""):
+            return text
+        block = f"{prefix}{core_instructions}" if prefix else core_instructions
+        if not text:
+            return block
+        return f"{text}\n\n{block}"
+
+    @staticmethod
+    def _infer_language(path: str) -> str:
+        suffix = Path(path).suffix.lower()
+        if suffix == ".py":
+            return "python"
+        if suffix in {".md", ".markdown"}:
+            return "markdown"
+        if suffix in {".txt", ".log"}:
+            return "text"
+        if suffix == ".json":
+            return "json"
+        if suffix in {".js", ".jsx"}:
+            return "javascript"
+        if suffix in {".ts", ".tsx"}:
+            return "typescript"
+        return "text"
+
+    @staticmethod
+    def _infer_purpose(path: str) -> str:
+        suffix = Path(path).suffix.lower()
+        if suffix in {".md", ".markdown"}:
+            return "docs"
+        if suffix in {".txt", ".log"}:
+            return "text"
+        return "module"
+
+    def _normalize_a2x_payload(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        if not isinstance(payload, dict):
+            return payload
+        fixes = {
+            "root_set": False,
+            "files_total": 0,
+            "files_kept": 0,
+            "files_skipped": 0,
+            "imports_converted": 0,
+            "exports_fixed": 0,
+            "purpose_filled": 0,
+            "language_filled": 0,
+            "invariants_set": False,
+        }
+        root = payload.get("root")
+        if not isinstance(root, str) or not root.strip():
+            payload["root"] = "project"
+            fixes["root_set"] = True
+        invariants = payload.get("invariants")
+        if not isinstance(invariants, list):
+            payload["invariants"] = []
+            fixes["invariants_set"] = True
+        files = payload.get("files")
+        normalized_files: List[Dict[str, Any]] = []
+        if isinstance(files, list):
+            for entry in files:
+                fixes["files_total"] += 1
+                if not isinstance(entry, dict):
+                    fixes["files_skipped"] += 1
+                    continue
+                path = entry.get("path") or entry.get("source") or entry.get("file")
+                if not isinstance(path, str) or not path.strip():
+                    fixes["files_skipped"] += 1
+                    continue
+                purpose = entry.get("purpose")
+                if not isinstance(purpose, str) or not purpose.strip():
+                    purpose = self._infer_purpose(path)
+                    fixes["purpose_filled"] += 1
+                language = entry.get("language")
+                if not isinstance(language, str) or not language.strip():
+                    language = self._infer_language(path)
+                    fixes["language_filled"] += 1
+                exports = entry.get("exports")
+                normalized_exports: List[Dict[str, Any]] = []
+                if isinstance(exports, list):
+                    for export in exports:
+                        if isinstance(export, str):
+                            normalized_exports.append(
+                                {
+                                    "name": export,
+                                    "kind": "function",
+                                    "signature": f"{export}()",
+                                }
+                            )
+                            fixes["exports_fixed"] += 1
+                            continue
+                        if not isinstance(export, dict):
+                            continue
+                        name = export.get("name") or export.get("symbol")
+                        if not isinstance(name, str) or not name.strip():
+                            continue
+                        kind = export.get("kind") or "function"
+                        signature = export.get("signature") or name
+                        normalized_exports.append(
+                            {"name": name, "kind": kind, "signature": signature}
+                        )
+                        if (
+                            not export.get("kind")
+                            or not export.get("signature")
+                            or export.get("symbol")
+                        ):
+                            fixes["exports_fixed"] += 1
+                imports = entry.get("imports")
+                normalized_imports: List[Dict[str, Any]] = []
+                if isinstance(imports, list):
+                    for imp in imports:
+                        if isinstance(imp, str):
+                            normalized_imports.append({"path": imp, "symbols": ["*"]})
+                            fixes["imports_converted"] += 1
+                            continue
+                        if not isinstance(imp, dict):
+                            continue
+                        if "path" in imp and isinstance(imp.get("symbols"), list):
+                            normalized_imports.append(
+                                {"path": imp.get("path"), "symbols": imp.get("symbols")}
+                            )
+                            continue
+                        name = imp.get("name")
+                        source = imp.get("source")
+                        if isinstance(source, str) and isinstance(name, str):
+                            normalized_imports.append(
+                                {"path": source, "symbols": [name]}
+                            )
+                            fixes["imports_converted"] += 1
+                normalized_files.append(
+                    {
+                        "path": path,
+                        "purpose": purpose,
+                        "language": language,
+                        "exports": normalized_exports,
+                        "imports": normalized_imports,
+                    }
+                )
+                fixes["files_kept"] += 1
+        else:
+            payload["files"] = []
+            fixes["files_skipped"] += 1
+        payload["files"] = normalized_files
+        self._audit_event(
+            "a2x_normalized",
+            fixes,
+            stage="A2X",
+            level="warning" if fixes["files_skipped"] else "info",
+        )
+        return payload
+
+    def _contract_for_template(self, template_key: str) -> str:
+        if template_key == "A1":
+            return "A1_PLAN"
+        if template_key == "A2":
+            return "A2_STRUCTURE"
+        if template_key == "A3":
+            return "A3_FILE"
+        if template_key == "B1":
+            return "B1_PLAN"
+        if template_key == "B2":
+            return "B2_STRUCTURE"
+        if template_key == "B3":
+            return "B3_FILE"
+        if template_key == "A2X":
+            return FILE_MAP_CONTRACT
+        return ""
+
+    def _ensure_contract_presence(
+        self,
+        text: str,
+        template_key: str,
+        *,
+        max_tokens: int,
+    ) -> str:
+        contract = self._contract_for_template(template_key)
+        if not contract:
+            return text
+        if contract in (text or ""):
+            return text
+        anchor = f"KONTRAKT: {contract}. VRAŤ POUZE JSON dle kontraktu."
+        if not text:
+            return anchor
+        max_chars = max_tokens * 4
+        combined = f"{text}\n\n{anchor}"
+        if len(combined) <= max_chars:
+            return combined
+        allowance = max_chars - len(anchor) - 2
+        if allowance <= 0:
+            return anchor[:max_chars]
+        trimmed = text[:allowance]
+        return f"{trimmed}\n\n{anchor}"
 
     def _model_context_limit(self, model: str | None) -> int:
         if not model:
@@ -1361,7 +2165,26 @@ class PipelineExecutor:
     ) -> None:
         max_tokens = self._max_request_tokens(ui_state.model)
         estimated = self._estimate_payload_tokens(payload)
+        self._audit_event(
+            "payload_token_estimate",
+            {
+                "stage": stage,
+                "estimated_tokens": estimated,
+                "max_tokens": max_tokens,
+            },
+            stage=stage,
+        )
         if estimated > max_tokens:
+            self._audit_event(
+                "payload_too_long",
+                {
+                    "stage": stage,
+                    "estimated_tokens": estimated,
+                    "max_tokens": max_tokens,
+                },
+                stage=stage,
+                level="warning",
+            )
             raise ValueError(
                 f"{stage}: request je příliš dlouhý ({estimated} tokenů > {max_tokens}). "
                 "Zkraťte zadání nebo jej rozdělte na části."
@@ -1429,17 +2252,81 @@ class PipelineExecutor:
         max_tokens = self._max_request_tokens(ui_state.model)
         context_limit = self._model_context_limit(ui_state.model)
         estimated = self._estimate_request_tokens(instructions, input_text)
+        self._audit_event(
+            "prompt_tokens_estimate",
+            {
+                "stage": stage,
+                "estimated_tokens": estimated,
+                "max_tokens": max_tokens,
+                "context_limit": context_limit,
+            },
+            stage=stage,
+        )
         if estimated <= max_tokens:
             return instructions, input_text
         if estimated > context_limit:
-            raise ValueError(
-                f"{stage}: zadání je příliš dlouhé i pro dotaz na zkrácení "
-                f"({estimated} tokenů > {context_limit}). "
-                "Zkraťte zadání nebo jej rozdělte na části."
+            self._audit_event(
+                "prompt_tokens_over_context",
+                {
+                    "stage": stage,
+                    "estimated_tokens": estimated,
+                    "context_limit": context_limit,
+                },
+                stage=stage,
+                level="warning",
             )
+            self._log(
+                f"{stage}: zadání je příliš dlouhé ({estimated} tokenů > {context_limit}); "
+                "komprimuji instructions/input_text po chunkech."
+            )
+            instructions, input_text = self._compress_prompt_texts_by_chunks(
+                stage,
+                instructions,
+                input_text,
+                ui_state,
+                max_tokens,
+            )
+            estimated = self._estimate_request_tokens(instructions, input_text)
+            self._audit_event(
+                "prompt_tokens_after_chunk_compress",
+                {
+                    "stage": stage,
+                    "estimated_tokens": estimated,
+                    "max_tokens": max_tokens,
+                    "context_limit": context_limit,
+                },
+                stage=stage,
+            )
+            if estimated <= max_tokens:
+                return instructions, input_text
+            if estimated > context_limit:
+                self._audit_event(
+                    "prompt_tokens_still_over_context",
+                    {
+                        "stage": stage,
+                        "estimated_tokens": estimated,
+                        "context_limit": context_limit,
+                    },
+                    stage=stage,
+                    level="warning",
+                )
+                raise ValueError(
+                    f"{stage}: zadání je příliš dlouhé i po chunk kompresi "
+                    f"({estimated} tokenů > {context_limit}). "
+                    "Zkraťte zadání nebo jej rozdělte na části."
+                )
         self._log(
             f"{stage}: zadání je příliš dlouhé ({estimated} tokenů > {max_tokens}); "
             "spouštím zkracovací dotaz."
+        )
+        self._audit_event(
+            "prompt_trim_request",
+            {
+                "stage": stage,
+                "estimated_tokens": estimated,
+                "max_tokens": max_tokens,
+            },
+            stage=stage,
         )
         trim_payload = self._build_prompt_trim_payload(
             stage,
@@ -1449,6 +2336,16 @@ class PipelineExecutor:
             max_tokens,
         )
         if self._estimate_payload_tokens(trim_payload) > context_limit:
+            self._audit_event(
+                "prompt_trim_payload_too_long",
+                {
+                    "stage": stage,
+                    "estimated_tokens": estimated,
+                    "context_limit": context_limit,
+                },
+                stage=stage,
+                level="warning",
+            )
             raise ValueError(
                 f"{stage}: zadání je příliš dlouhé i pro dotaz na zkrácení "
                 f"({estimated} tokenů > {context_limit}). "
@@ -1466,6 +2363,16 @@ class PipelineExecutor:
             trimmed_input,
         )
         if trimmed_estimate > max_tokens:
+            self._audit_event(
+                "prompt_trim_still_too_long",
+                {
+                    "stage": stage,
+                    "trimmed_tokens": trimmed_estimate,
+                    "max_tokens": max_tokens,
+                },
+                stage=stage,
+                level="warning",
+            )
             raise ValueError(
                 f"{stage}: zkrácené zadání je stále příliš dlouhé "
                 f"({trimmed_estimate} tokenů > {max_tokens}). "
@@ -1473,6 +2380,15 @@ class PipelineExecutor:
             )
         self._log(
             f"{stage}: zadání zkráceno na ~{trimmed_estimate} tokenů."
+        )
+        self._audit_event(
+            "prompt_trim_success",
+            {
+                "stage": stage,
+                "trimmed_tokens": trimmed_estimate,
+                "max_tokens": max_tokens,
+            },
+            stage=stage,
         )
         return trimmed_instructions, trimmed_input
 
@@ -1571,6 +2487,25 @@ class PipelineExecutor:
                 "pricing_status": self._price_catalog.status_text(),
             }
         )
+        self._audit_event(
+            "pricing_step_recorded",
+            {
+                "stage": stage,
+                "model": ui_state.model or "gpt-4o",
+                "response_id": response.get("id") or response.get("response_id") or "",
+                "estimated_tokens": {
+                    "input": estimated_input_tokens,
+                    "output": estimated_output_tokens,
+                },
+                "actual_tokens": {
+                    "input": actual_input_tokens,
+                    "output": actual_output_tokens,
+                },
+                "estimated_total": estimated_total,
+                "actual_total": actual_total,
+            },
+            stage=stage,
+        )
 
     def _build_request_payload(
         self,
@@ -1636,14 +2571,41 @@ class PipelineExecutor:
             input_text,
             ui_state,
         )
+        max_tokens = self._max_request_tokens(ui_state.model)
+        instructions = self._ensure_contract_presence(
+            instructions,
+            template_key,
+            max_tokens=max_tokens,
+        )
+        input_text = self._ensure_contract_presence(
+            input_text,
+            template_key,
+            max_tokens=max_tokens,
+        )
+        combined_tokens = self._estimate_request_tokens(instructions, input_text)
+        if combined_tokens > max_tokens:
+            allowance = max(64, max_tokens - self._estimate_tokens(instructions))
+            input_text = self._hard_trim_text(input_text, allowance).strip()
+            self._audit_event(
+                "prompt_contract_trim",
+                {
+                    "stage": template_key,
+                    "estimated_tokens": combined_tokens,
+                    "max_tokens": max_tokens,
+                    "input_allowance_tokens": allowance,
+                },
+                stage=template_key,
+                level="warning",
+            )
         template["instructions"] = instructions
-        template["input"] = self._build_input_parts(
+        input_parts = self._build_input_parts(
             input_text,
             assets,
             include_attachments=include_attachments,
             include_mirror=include_mirror,
             include_diagnostics=include_diagnostics,
         )
+        template["input"] = input_parts
         if previous_response_id:
             template["previous_response_id"] = previous_response_id
         else:
@@ -1661,6 +2623,23 @@ class PipelineExecutor:
         if not self._model_capabilities.get("supports_temperature", False):
             template.pop("temperature", None)
         self._ensure_payload_within_limits(template_key, template, ui_state)
+        self._audit_event(
+            "request_payload_built",
+            {
+                "stage": template_key,
+                "model": model,
+                "instructions_chars": len(instructions or ""),
+                "input_chars": len(input_text or ""),
+                "input_parts": len(input_parts) if isinstance(input_parts, list) else 0,
+                "previous_response_id": previous_response_id or "",
+                "tools_enabled": "tools" in template,
+                "temperature": template.get("temperature"),
+                "attachments": len(assets.attachments),
+                "vector_store_id": assets.vector_store_id,
+                "file_search_enabled": assets.file_search_enabled,
+            },
+            stage=template_key,
+        )
         return template
 
     def _send_request(
@@ -1689,16 +2668,61 @@ class PipelineExecutor:
         self._register_log_entry(
             request_log, "request", {"stage": stage, "request_id": request_id}
         )
+        request_text = self._extract_request_text(payload)
+        self._audit_event(
+            "request_log_written",
+            {
+                "stage": stage,
+                "request_id": request_id,
+                "request_log": self._relative_log_path(request_log),
+                "request_chars": len(request_text),
+                "estimated_tokens": self._estimate_tokens(request_text),
+            },
+            stage=stage,
+        )
         allowed_keys = {"model", "temperature", "instructions", "input", "previous_response_id", "tools"}
         api_payload = {k: v for k, v in payload.items() if k in allowed_keys}
         temp_adjusted = False
         tools_adjusted = False
+        self._audit_event(
+            "api_payload_prepared",
+            {
+                "stage": stage,
+                "request_id": request_id,
+                "payload_keys": list(api_payload.keys()),
+                "has_temperature": "temperature" in api_payload,
+                "has_tools": "tools" in api_payload,
+                "previous_response_id": api_payload.get("previous_response_id", ""),
+            },
+            stage=stage,
+        )
         self._notify_progress(f"{stage}: odesílám request")
+        attempt = 0
         while True:
+            attempt += 1
+            self._audit_event(
+                "api_call_attempt",
+                {
+                    "stage": stage,
+                    "request_id": request_id,
+                    "attempt": attempt,
+                    "payload_keys": list(api_payload.keys()),
+                },
+                stage=stage,
+            )
             try:
                 response = self._client.create_response(api_payload)
+                self._audit_event(
+                    "api_call_success",
+                    {
+                        "stage": stage,
+                        "request_id": request_id,
+                    },
+                    stage=stage,
+                )
                 break
             except Exception as exc:
+                self._audit_exception("api_call_error", exc, stage=stage)
                 message = str(exc).lower()
                 if (
                     not temp_adjusted
@@ -1710,6 +2734,16 @@ class PipelineExecutor:
                     self._log("Model nepodporuje temperature; opakuji bez temperature.")
                     api_payload.pop("temperature", None)
                     self._model_capabilities["supports_temperature"] = False
+                    self._audit_event(
+                        "api_payload_adjust",
+                        {
+                            "stage": stage,
+                            "request_id": request_id,
+                            "reason": "temperature_unsupported",
+                        },
+                        stage=stage,
+                        level="warning",
+                    )
                     continue
                 if not tools_adjusted and ("file_search" in message or "tool" in message):
                     if "tools" in api_payload:
@@ -1719,22 +2753,44 @@ class PipelineExecutor:
                         if assets is not None:
                             assets.file_search_enabled = False
                             assets.vector_store_id = None
+                        self._audit_event(
+                            "api_payload_adjust",
+                            {
+                                "stage": stage,
+                                "request_id": request_id,
+                                "reason": "tools_unsupported",
+                            },
+                            stage=stage,
+                            level="warning",
+                        )
                         continue
                 raise
         current_response_id = (
             response.get("id")
             or response.get("response_id")
             or response.get("run_id")
+            or self._api_response_id
             or self._response_id
         )
-        self._response_id = current_response_id
+        if update_response_id:
+            self._api_response_id = current_response_id
         self._notify_progress(f"{stage}: odpověď přijata")
+        self._audit_event(
+            "response_received",
+            {
+                "stage": stage,
+                "request_id": request_id,
+                "response_id": current_response_id,
+                "base_response_id": self._response_id,
+            },
+            stage=stage,
+        )
         response_log = log_response(
             self._run,
             response,
             stage=stage,
             project_name=ui_state.project_name or "Kaja",
-            response_id=current_response_id,
+            response_id=self._response_id,
             request_id=request_id,
         )
         self._register_log_entry(
@@ -1742,9 +2798,20 @@ class PipelineExecutor:
             "response",
             {
                 "stage": stage,
-                "response_id": current_response_id,
+                "response_id": self._response_id,
+                "api_response_id": current_response_id,
                 "request_id": request_id,
             },
+        )
+        self._audit_event(
+            "response_log_written",
+            {
+                "stage": stage,
+                "request_id": request_id,
+                "response_id": current_response_id,
+                "response_log": self._relative_log_path(response_log),
+            },
+            stage=stage,
         )
         try:
             self._record_pricing_step(stage, api_payload, response, ui_state)
@@ -1760,11 +2827,83 @@ class PipelineExecutor:
         assets: RequestAssets | None = None,
     ) -> Dict[str, Any]:
         text = self._extract_response_text(response)
+        self._audit_event(
+            "response_text_extracted",
+            {
+                "expected_contract": expected_contract,
+                "text_chars": len(text),
+            },
+            stage=expected_contract,
+        )
         try:
             payload = self._coerce_json_payload(text, expected_contract)
         except ValueError as exc:
-            raise ValueError(f"Odpověď není validní JSON pro {expected_contract}: {exc}") from exc
-        self._validate_contract(payload, expected_contract, assets)
+            self._audit_event(
+                "response_json_invalid",
+                {
+                    "expected_contract": expected_contract,
+                    "error": str(exc),
+                },
+                stage=expected_contract,
+                level="error",
+            )
+            repaired = self._attempt_json_repair(
+                text,
+                expected_contract,
+                assets,
+                exc,
+            )
+            if repaired is not None:
+                return repaired
+            raise ValueError(
+                f"Odpov?? nen? validn? JSON pro {expected_contract}: {exc}"
+            ) from exc
+        if (
+            expected_contract
+            and isinstance(payload, dict)
+            and payload.get("contract") != expected_contract
+        ):
+            previous_contract = payload.get("contract")
+            payload["contract"] = expected_contract
+            self._audit_event(
+                "response_contract_repaired",
+                {
+                    "expected_contract": expected_contract,
+                    "previous_contract": previous_contract,
+                },
+                stage=expected_contract,
+                level="warning",
+            )
+        if expected_contract == FILE_MAP_CONTRACT:
+            payload = self._normalize_a2x_payload(payload)
+        try:
+            self._validate_contract(payload, expected_contract, assets)
+        except ValueError as exc:
+            self._audit_event(
+                "response_contract_invalid",
+                {
+                    "expected_contract": expected_contract,
+                    "error": str(exc),
+                },
+                stage=expected_contract,
+                level="warning",
+            )
+            repaired = self._attempt_json_repair(
+                text,
+                expected_contract,
+                assets,
+                exc,
+            )
+            if repaired is not None:
+                return repaired
+            raise
+        self._audit_event(
+            "response_json_validated",
+            {
+                "expected_contract": expected_contract,
+            },
+            stage=expected_contract,
+        )
         return payload
 
     def _validate_contract(
@@ -1822,6 +2961,78 @@ class PipelineExecutor:
             if entry.get("generated_in_phase") != "A3":
                 raise ValueError("A2_STRUCTURE.generated_in_phase musí být 'A3'.")
 
+    def _is_export_aggregator_path(self, path: str) -> bool:
+        name = Path(path).name.lower()
+        return name in {
+            "__init__.py",
+            "__init__.pyi",
+            "index.js",
+            "index.jsx",
+            "index.ts",
+            "index.tsx",
+            "index.mjs",
+            "index.cjs",
+        }
+
+    def _dedupe_a2x_exports(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+        files = payload.get("files")
+        if not isinstance(files, list):
+            return []
+        export_locations: Dict[str, List[Dict[str, Any]]] = {}
+        for entry in files:
+            if not isinstance(entry, dict):
+                continue
+            path = entry.get("path")
+            exports = entry.get("exports", [])
+            if not isinstance(path, str) or not isinstance(exports, list):
+                continue
+            for export in exports:
+                if not isinstance(export, dict):
+                    continue
+                name = export.get("name")
+                if not isinstance(name, str) or not name.strip():
+                    continue
+                export_locations.setdefault(name, []).append(
+                    {"path": path, "entry": entry}
+                )
+        removed: List[Dict[str, Any]] = []
+        unresolved: List[Dict[str, Any]] = []
+        for name, locations in export_locations.items():
+            if len(locations) <= 1:
+                continue
+            aggregator = [item for item in locations if self._is_export_aggregator_path(item["path"])]
+            non_aggregator = [item for item in locations if not self._is_export_aggregator_path(item["path"])]
+            if aggregator and non_aggregator:
+                kept_paths = [item["path"] for item in non_aggregator]
+                for item in aggregator:
+                    exports = item["entry"].get("exports", [])
+                    if not isinstance(exports, list):
+                        continue
+                    new_exports = [exp for exp in exports if exp.get("name") != name]
+                    if len(new_exports) != len(exports):
+                        item["entry"]["exports"] = new_exports
+                        removed.append(
+                            {
+                                "name": name,
+                                "removed_from": item["path"],
+                                "kept": kept_paths,
+                            }
+                        )
+            else:
+                unresolved.append(
+                    {"name": name, "paths": [item["path"] for item in locations]}
+                )
+        if removed or unresolved:
+            self._audit_event(
+                "a2x_export_dedupe",
+                {"removed": removed, "unresolved": unresolved},
+                stage="A2X",
+                level="warning" if unresolved else "info",
+            )
+        if removed:
+            self._log(f"A2X: odstraněny duplicitní exporty z agregátorů ({len(removed)}).")
+        return unresolved
+
     def _validate_a2x_file_map(self, payload: Dict[str, Any]) -> None:
         root = payload.get("root")
         if not isinstance(root, str) or not root.strip():
@@ -1829,6 +3040,10 @@ class PipelineExecutor:
         files = payload.get("files")
         if not isinstance(files, list):
             raise ValueError("A2X_FILE_MAP.files musí být list.")
+        unresolved_duplicates = self._dedupe_a2x_exports(payload)
+        if unresolved_duplicates:
+            names = ", ".join(sorted({item["name"] for item in unresolved_duplicates}))
+            raise ValueError(f"A2X_FILE_MAP duplicitní export {names}.")
         expected = {path for path in self._expected_a2_paths if isinstance(path, str)}
         seen: set[str] = set()
         export_names: set[str] = set()
@@ -2151,9 +3366,32 @@ class PipelineExecutor:
             self._out_root = self._root_dir / "OUT"
         create_dir(self._out_root)
         self._model_capabilities = self._determine_model_capabilities(ui_state.model)
+        self._audit_event(
+            "model_capabilities_in_use",
+            {"model": ui_state.model or "", **self._model_capabilities},        
+            stage=mode,
+        )
         requested_vector_store_ids = list(vector_store_ids)
         response_id = response_id or self.generate_response_id(mode)
         self._response_id = response_id
+        self._api_response_id = ""
+        self._audit_event(
+            "run_start",
+            {
+                "mode": mode,
+                "model": ui_state.model or "",
+                "project": ui_state.project_name or "",
+                "response_id": response_id,
+                "user_spec_chars": len(user_spec or ""),
+                "attachments": len(attachments),
+                "attachments_bytes": sum(record.size_bytes or 0 for record in attachments),
+                "vector_store_requested": list(vector_store_ids),
+                "diagnostics": self._describe_diagnostics(ui_state),
+                "out_dir": ui_state.out_dir or "",
+                "in_dir": ui_state.in_dir or "",
+            },
+            stage=mode,
+        )
         self._collect_diagnostics_if_needed(ui_state, response_id)
         assets = self._prepare_request_assets(mode, ui_state, attachments)
         vector_store_in_use = [assets.vector_store_id] if assets.vector_store_id else []
@@ -2202,20 +3440,49 @@ class PipelineExecutor:
         if self._diagnostic_uploads:
             manifest_context["diagnostics_uploads"] = self._diagnostic_uploads
 
-        if mode == "GENERATE":
-            files = self._run_generate(user_spec, assets, ui_state, progress_callback, stop_check)
-            summary_steps.extend(["A1", "A2", "A2X", "A3"])
-        elif mode == "MODIFY":
-            files = self._run_modify(user_spec, assets, ui_state, progress_callback, stop_check)
-            summary_steps.extend(["B1", "B2", "B3"])
-        elif mode == "QA":
-            files = self._run_qa(user_spec, assets, ui_state, progress_callback, stop_check)
-            summary_steps.append("QA")
-        elif mode == "C":
-            files = self._run_send_as_c(user_spec, assets, ui_state, progress_callback, stop_check)
-            summary_steps.append("C")
-        else:
-            raise ValueError(f"Nedefinovaný režim pipeline: {mode}")
+        try:
+            if mode == "GENERATE":
+                files = self._run_generate(user_spec, assets, ui_state, progress_callback, stop_check)
+                summary_steps.extend(["A1", "A2", "A2X", "A3"])
+            elif mode == "MODIFY":
+                files = self._run_modify(user_spec, assets, ui_state, progress_callback, stop_check)
+                summary_steps.extend(["B1", "B2", "B3"])
+            elif mode == "QA":
+                files = self._run_qa(user_spec, assets, ui_state, progress_callback, stop_check)
+                summary_steps.append("QA")
+            elif mode == "C":
+                files = self._run_send_as_c(user_spec, assets, ui_state, progress_callback, stop_check)
+                summary_steps.append("C")
+            else:
+                raise ValueError(f"Nedefinovaný režim pipeline: {mode}")
+        except PipelineCancelled as exc:
+            self._finish_timeline_entry(
+                run_context,
+                "cancelled",
+                {"response_id": self._response_id},
+            )
+            self._audit_event(
+                "run_cancelled",
+                {
+                    "mode": mode,
+                    "response_id": self._response_id,
+                    "error": str(exc),
+                },
+                stage=mode,
+                level="warning",
+            )
+            raise
+        except Exception as exc:
+            self._finish_timeline_entry(
+                run_context,
+                "failed",
+                {
+                    "response_id": self._response_id,
+                    "error": str(exc),
+                },
+            )
+            self._audit_exception("run_failed", exc, stage=mode)
+            raise
         hook_results = self._run_post_hooks(ui_state)
         final_response_id = self._response_id
 
@@ -2338,6 +3605,20 @@ class PipelineExecutor:
         else:
             self._log(f"Cena runu: {total_cost:.4f} USD")
         progress_callback("Dokončeno", 1.0)
+        self._audit_event(
+            "run_completed",
+            {
+                "mode": mode,
+                "response_id": final_response_id,
+                "files_written": len(files),
+                "duration_s": round(duration, 3),
+                "total_cost": display_total,
+                "total_cost_estimated": total_cost,
+                "total_cost_actual": actual_total,
+                "timeline_entries": len(self._timeline),
+            },
+            stage=mode,
+        )
         return PipelineResult(
             mode=mode,
             run_id=self._run.run_id,
@@ -2379,7 +3660,7 @@ class PipelineExecutor:
         a1_data = self._parse_json_response(a1_response, "A1_PLAN", assets=assets)
         progress_callback("A2: struktura souborů", 0.25)
         self._ensure_not_cancelled(stop_check)
-        a2_previous = self._resolve_previous_response_id(ui_state, self._response_id)
+        a2_previous = self._resolve_previous_response_id(ui_state, self._api_response_id)
         a2_payload = self._build_request_payload(
             "A2",
             {},
@@ -2392,7 +3673,7 @@ class PipelineExecutor:
         )
         a2_response = self._send_request("A2", a2_payload, ui_state, assets)
         a2_data = self._parse_json_response(a2_response, "A2_STRUCTURE", assets=assets)
-        a2_response_id = self._response_id
+        a2_response_id = self._api_response_id
         files = a2_data.get("files", [])
         self._validate_script_expectation_in_structure(files, ui_state, "A2_STRUCTURE")
         self._expected_a2_paths = [
@@ -2459,6 +3740,41 @@ class PipelineExecutor:
             a2x_input,
             ui_state,
         )
+        a2x_instructions = self._ensure_core_instructions_block(
+            a2x_instructions,
+            core_instructions,
+        )
+        a2x_input = self._ensure_core_instructions_block(
+            a2x_input,
+            core_instructions,
+            prefix="PRAVIDLA A KONTRAKT:\n",
+        )
+        max_tokens = self._max_request_tokens(ui_state.model)
+        a2x_instructions = self._ensure_contract_presence(
+            a2x_instructions,
+            "A2X",
+            max_tokens=max_tokens,
+        )
+        a2x_input = self._ensure_contract_presence(
+            a2x_input,
+            "A2X",
+            max_tokens=max_tokens,
+        )
+        combined_tokens = self._estimate_request_tokens(a2x_instructions, a2x_input)
+        if combined_tokens > max_tokens:
+            allowance = max(64, max_tokens - self._estimate_tokens(a2x_instructions))
+            a2x_input = self._hard_trim_text(a2x_input, allowance).strip()
+            self._audit_event(
+                "prompt_contract_trim",
+                {
+                    "stage": "A2X",
+                    "estimated_tokens": combined_tokens,
+                    "max_tokens": max_tokens,
+                    "input_allowance_tokens": allowance,
+                },
+                stage="A2X",
+                level="warning",
+            )
         a2x_instructions = self._build_instructions_text(
             a2x_instructions,
             assets,
@@ -2632,7 +3948,7 @@ class PipelineExecutor:
         b1_data = self._parse_json_response(b1_response, "B1_PLAN", assets=assets)
         progress_callback("B2: identifikace souborů", 0.25)
         self._ensure_not_cancelled(stop_check)
-        b2_previous = self._resolve_previous_response_id(ui_state, self._response_id)
+        b2_previous = self._resolve_previous_response_id(ui_state, self._api_response_id)
         b2_payload = self._build_request_payload(
             "B2",
             {},
@@ -2645,7 +3961,7 @@ class PipelineExecutor:
         )
         b2_response = self._send_request("B2", b2_payload, ui_state, assets)
         b2_data = self._parse_json_response(b2_response, "B2_STRUCTURE", assets=assets)
-        b2_response_id = self._response_id
+        b2_response_id = self._api_response_id
         touched_files = b2_data.get("touched_files", [])
         self._validate_script_expectation_in_structure(touched_files, ui_state, "B2_STRUCTURE")
         if self._settings.dry_run_modify:
@@ -2925,21 +4241,26 @@ class PipelineExecutor:
             response.get("id")
             or response.get("response_id")
             or response.get("run_id")
+            or self._api_response_id
             or self._response_id
         )
         if update_response_id:
-            self._response_id = current_response_id
+            self._api_response_id = current_response_id
         response_log = log_response(
             self._run,
             response,
             stage="C",
             project_name=ui_state.project_name or "Kaja",
-            response_id=current_response_id,
+            response_id=self._response_id,
         )
         self._register_log_entry(
             response_log,
             "response",
-            {"stage": "C", "response_id": current_response_id},
+            {
+                "stage": "C",
+                "response_id": self._response_id,
+                "api_response_id": current_response_id,
+            },
         )
         try:
             self._record_pricing_step("C", request_payload, response, ui_state)
@@ -2987,22 +4308,51 @@ class PipelineExecutor:
             "source": "defaults",
         }
         if not model or not self._client:
+            self._audit_event(
+                "model_capabilities_default",
+                {
+                    "model": model or "",
+                    "reason": "no_model_or_client",
+                },
+                stage=self._ui_state.mode if self._ui_state else "",
+            )
             return capabilities
         if hasattr(self._client, "get_model_capabilities"):
             try:
                 resolved = self._client.get_model_capabilities(model, probe=True)
             except Exception as exc:
                 self._log(f"Nelze načíst metadata modelu {model}: {exc}")
+                self._audit_exception(
+                    "model_capabilities_failed",
+                    exc,
+                    stage=self._ui_state.mode if self._ui_state else "",
+                )
                 return capabilities
             if isinstance(resolved, dict) and resolved:
                 capabilities.update(resolved)
+                self._audit_event(
+                    "model_capabilities_resolved",
+                    {"model": model, **capabilities},
+                    stage=self._ui_state.mode if self._ui_state else "",
+                )
                 return capabilities
         try:
             info = self._client.retrieve_model(model)
         except Exception as exc:
             self._log(f"Nelze načíst metadata modelu {model}: {exc}")
+            self._audit_exception(
+                "model_capabilities_failed",
+                exc,
+                stage=self._ui_state.mode if self._ui_state else "",
+            )
             return capabilities
         if not info:
+            self._audit_event(
+                "model_capabilities_empty",
+                {"model": model},
+                stage=self._ui_state.mode if self._ui_state else "",
+                level="warning",
+            )
             return capabilities
         caps = set()
         for key in ("capabilities", "tools", "supported_tools"):
@@ -3045,6 +4395,11 @@ class PipelineExecutor:
                 "resolved": resolved,
                 "source": info.get("id") or model,
             }
+        )
+        self._audit_event(
+            "model_capabilities_resolved",
+            {"model": model, **capabilities},
+            stage=self._ui_state.mode if self._ui_state else "",
         )
         return capabilities
 
@@ -3395,24 +4750,55 @@ class PipelineExecutor:
     ) -> List[str]:
         if not isinstance(file_map_entry, dict):
             return []
+        language = (file_map_entry.get("language") or "").lower()
         exports = file_map_entry.get("exports", [])
         if not isinstance(exports, list):
             return []
+        if language == "json":
+            try:
+                parsed_json = json.loads(content)
+            except Exception:
+                parsed_json = None
+            if isinstance(parsed_json, dict):
+                missing_json: List[str] = []
+                for export in exports:
+                    if not isinstance(export, dict):
+                        continue
+                    name = export.get("name")
+                    if isinstance(name, str) and name and name not in parsed_json:
+                        missing_json.append(name)
+                if missing_json:
+                    self._log(f"A3 validace {rel_path}: chybí JSON klíče {missing_json}.")
+                return missing_json
         missing: List[str] = []
         for export in exports:
             if not isinstance(export, dict):
                 continue
             signature = export.get("signature")
             name = export.get("name")
-            expected = None
-            if isinstance(signature, str) and signature.strip():
-                expected = signature.strip()
-            elif isinstance(name, str) and name.strip():
-                expected = name.strip()
-            if not expected:
+            kind = (export.get("kind") or "").lower()
+            sig = signature.strip() if isinstance(signature, str) else ""
+            nm = name.strip() if isinstance(name, str) else ""
+            if not (sig or nm):
                 continue
-            if expected not in content:
-                missing.append(expected)
+            found = False
+            if sig and sig in content:
+                found = True
+            if not found and nm:
+                patterns = []
+                if kind == "function":
+                    patterns.append(rf"export\\s+function\\s+{re.escape(nm)}\\b")
+                elif kind in {"const", "constant"}:
+                    patterns.append(rf"export\\s+const\\s+{re.escape(nm)}\\b")
+                else:
+                    patterns.append(rf"export\\s+\\w+\\s+{re.escape(nm)}\\b")
+                patterns.append(rf"export\\s+.*\\b{re.escape(nm)}\\b")
+                for pattern in patterns:
+                    if re.search(pattern, content):
+                        found = True
+                        break
+            if not found:
+                missing.append(sig or nm)
         if missing:
             self._log(f"A3 validace {rel_path}: chybí exporty {missing}.")
         return missing
@@ -3613,6 +4999,65 @@ class PipelineExecutor:
         suffix = uuid.uuid4().hex[:6]
         return f"{mode}_{suffix}"
 
+    def _audit_event(
+        self,
+        event: str,
+        details: Dict[str, Any] | None = None,
+        *,
+        stage: str = "",
+        level: str = "info",
+    ) -> None:
+        self._audit_sequence += 1
+        payload = {
+            "event": event,
+            "level": level,
+            "details": details or {},
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+        stage_value = stage or (self._ui_state.mode if self._ui_state else "")
+        project_name = self._ui_state.project_name if self._ui_state else ""
+        response_id = self._response_id
+        try:
+            log_path = log_audit_event(
+                self._run,
+                payload,
+                stage=stage_value,
+                project_name=project_name or "",
+                response_id=response_id,
+                event=event,
+                sequence=self._audit_sequence,
+            )
+            self._register_log_entry(
+                log_path,
+                "audit",
+                {
+                    "event": event,
+                    "sequence": self._audit_sequence,
+                    "level": level,
+                },
+            )
+        except Exception:
+            return
+
+    def _audit_exception(
+        self,
+        event: str,
+        exc: Exception,
+        *,
+        stage: str = "",
+    ) -> None:
+        self._audit_event(
+            event,
+            {
+                "error": str(exc),
+                "type": type(exc).__name__,
+                "traceback": traceback.format_exc(),
+            },
+            stage=stage,
+            level="error",
+        )
+
     def _log(self, message: str) -> None:
         self._logger(message)
+        self._audit_event("log_message", {"message": message})
 

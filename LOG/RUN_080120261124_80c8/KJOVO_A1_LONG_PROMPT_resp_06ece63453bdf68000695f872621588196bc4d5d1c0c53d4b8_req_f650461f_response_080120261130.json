@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261124_80c8",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_06ece63453bdf68000695f872621588196bc4d5d1c0c53d4b8",
+    "logged_at": "2026-01-08T10:30:52.309867",
+    "request_id": "f650461f"
+  },
+  "payload": {
+    "id": "resp_06ece63453bdf68000695f872621588196bc4d5d1c0c53d4b8",
+    "created_at": 1767868198.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_06ece63453bdf68000695f8726ff6081969d2009b1aeb7b0da",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Specifikace pokračuje po UI standardu definicí rozsáhlého diagnostického manuálu pro Ubuntu web server (FULL Ubuntu Web Server Diagnostics) a ukázkou automatizovaného sběru dat přes bash skript volaný z Windows PowerShellu.\\n\\n28) FULL Ubuntu (Web Server) Diagnostics\\n\\nCíl: vytvořit konzistentní adresář s diagnostickými soubory na Ubuntu serveru (typicky web stack: nginx, DB, Python app, webhooky, certifikáty). Výstup je adresářová struktura (ne ZIP), která umožní rychle hledat příčiny chyb (konfigurace, procesy, síť, certy, permissions, venv, limity). Nezálohuje se obsah databází ani privátní klíče; jen konfigurace, metadata a logy.\\n\\n28.1 Bezpečnostní zásady\\n- Neexportovat privátní klíče (TLS, SSH), tokeny, hesla.\\n- Konfigurační soubory s potenciálními tajemstvími exportovat buď:\\n  - s maskováním (např. password=***), nebo\\n  - jen jako metadata (cesta, vlastník, práva, hash) a redigovanou verzi dodat ručně.\\n- Logy mohou obsahovat osobní údaje → sdílet selektivně.\\n\\n28.2 Struktura kořenového adresáře\\nKořen: `Diag_YYYYMMDD-HHMMSS/` obsahuje:\\n- MANIFEST.md\\n- README_problem.md\\n- CHANGELOG_last_actions.txt\\n- podsložky: `system/`, `hardware/`, `storage/`, `network/`, `firewall/`, `users_permissions/`, `processes_services/`, `packages/`, `web/`, `nginx/`, `app/`, `python/`, `database/`, `certs/`, `cron_webhooks/`, `logs/`, `virtualization_containers/`.\\n\\n28.3 README_problem.md\\nRučně doplněný popis problému:\\n- Symptom\\n- Repro kroky\\n- Očekávání vs realita\\n- Kdy to začalo (datum/čas)\\n- Poslední změny (deploy, update, cert renewal, firewall)\\n- Výpis chyby (kopie výstupu)\\n\\n28.4 system/\\nSoubory:\\n- `os_release.txt` – obsah `/etc/os-release`, info o kernelu.\\n- `uname_a.txt` – `uname -a`.\\n- `uptime.txt` – `uptime`, `who -b`.\\n- `locale_timezone.txt` – `locale`, `timedatectl`.\\n- `hostname_hosts.txt` – `hostnamectl`, `/etc/hosts`, `/etc/hostname`.\\n- `sysctl_all.txt` – `sysctl -a`.\\n- `limits_summary.txt` – `ulimit -a`, listing `/etc/security/limits.conf` a `limits.d`.\\n- `systemd_failed_units.txt` – `systemctl --failed`.\\n- `systemd_running_units.txt` – `systemctl list-units --type=service --state=running`.\\n- `journal_boot_errors.txt` – `journalctl -b -p err..alert --no-pager`.\\n- `env_root_sanitized.txt` – environment relevantní pro služby, bez proměnných obsahujících tajemství (filtrování podle klíčových slov jako PASS/KEY/SECRET/TOKEN/PASSWORD).\\n\\n28.5 hardware/\\n- `cpuinfo.txt` – shrnutí `/proc/cpuinfo` (případně `lscpu`).\\n- `meminfo.txt` – `/proc/meminfo` + `free -h`.\\n- `load_ps_top.txt` – `ps aux --sort=-%cpu`, `ps aux --sort=-%mem`, `top -b -n 1`.\\n- `dmesg_tail.txt` – posledních ~400 řádků `dmesg -T`.\\n\\n28.6 storage/\\n- `df_h.txt` – `df -hT`.\\n- `lsblk.txt` – `lsblk -f`.\\n- `mounts.txt` – `mount`, `/etc/fstab`.\\n- `inode_usage.txt` – `df -ih`.\\n- `disk_health_hint.txt` – `smartctl -H` pro hlavní disk (jen status, pokud dostupné).\\n- `largest_dirs_root.csv` – top adresáře v `/` (1–2 úrovně) podle velikosti.\\n- `largest_dirs_var.csv` – top adresáře v `/var` podle velikosti.\\n\\n28.7 network/\\n- `ip_addr.txt` – `ip a`.\\n- `ip_route.txt` – `ip r`.\\n- `resolv_conf.txt` – `/etc/resolv.conf` + `systemd-resolve --status` (pokud existuje).\\n- `ss_listen.txt` – `ss -lntup`.\\n- `ss_all.txt` – `ss -antup`.\\n- `netstat_fallback.txt` – pokud je `net-tools`.\\n- `dns_check.txt` – `getent hosts` pro klíčové domény (pokud definováno).\\n- `proxy_env.txt` – HTTP(S)_PROXY proměnné, pokud existují.\\n\\n28.8 firewall/\\n- `ufw_status.txt` – `ufw status verbose` (pokud je ufw).\\n- `iptables_rules.txt` – `iptables -S` + `iptables -L -n -v`.\\n- `nft_ruleset.txt` – `nft list ruleset` (pokud je nftables).\\n\\n28.9 users_permissions/\\n- `users_groups.txt` – `getent passwd`, `getent group` (bez hashů hesel).\\n- `sudoers_listing.txt` – listing `/etc/sudoers*` (bez obsahu nebo redigovaně).\\n- `umask.txt` – `umask`.\\n- `important_paths_permissions.txt` – vlastníci/práva pro `/etc/nginx`, `/var/www`, `/srv`, `/opt` a adresáře aplikací.\\n\\n28.10 processes_services/\\n- `ps_full.txt` – `ps auxfww`.\\n- `systemctl_status_nginx.txt` – `systemctl status nginx --no-pager`.\\n- `systemctl_status_app.txt` – status aplikační služby (gunicorn/uvicorn/systemd unit), pokud existuje.\\n- `systemctl_status_db.txt` – status DB služby, pokud existuje.\\n- `open_files_limits.txt` – `cat /proc/sys/fs/file-max` + souhrn z `lsof` (pokud dostupné).\\n\\n28.11 packages/\\n- `dpkg_list.txt` – `dpkg -l`.\\n- `apt_policy_key_pkgs.txt` – verze klíčových balíků: nginx, openssl, python3, certbot, postgres/mysql, redis.\\n- `snap_list.txt` – `snap list` (pokud snap existuje).\\n- `pip_global_list.txt` – `python3 -m pip list` (pokud pip existuje).\\n\\n28.12 web/\\n- `web_root_overview.txt` – strom document rootů (např. `/var/www`, `/srv/www`) do hloubky 3.\\n- `static_assets_sizes.csv` – top složky podle velikosti v document rootech.\\n- `web_server_headers_hint.txt` – volitelně `curl -I` na `http://127.0.0.1` a vybrané vhosty.\\n\\n28.13 nginx/\\n- `nginx_version.txt` – `nginx -V` (včetně configure arguments).\\n- `nginx_test.txt` – výstup `nginx -t`.\\n- `nginx_conf_tree.txt` – strom `/etc/nginx` do hloubky 4.\\n- `nginx_conf_files_list.txt` – seznam `.conf` souborů.\\n- `nginx_sites_enabled.txt` – listing `sites-enabled`/`sites-available`.\\n- `nginx_effective_config.txt` – `nginx -T` (s ohledem na redakci tajemství).\\n- `nginx_logs_tail_access.txt` – tail relevantních access logů.\\n- `nginx_logs_tail_error.txt` – tail relevantních error logů.\\n\\n28.14 app/\\n- `app_dirs_overview.txt` – přehled typických umístění aplikací: `/srv`, `/opt`, `/var/www`, `~/apps`.\\n- `systemd_units_related.txt` – grep na služby typu gunicorn/uvicorn/celery/worker.\\n- `app_env_files_found.txt` – nalezené `.env`, `config*.yml`, `settings.py` (jen cesty, práva, hash; ne obsah).\\n- `app_permissions_summary.txt` – vlastníci/práva pro app dir a data dir.\\n- `webhook_configs_found.txt` – konfigurace webhooků (jen cesty + metadata, bez tajemství).\\n\\n28.15 python/\\nCíl: odhalit konflikty mezi více instalacemi Pythonu, venv, pyenv, poetry, pipx.\\nSoubory:\\n- `python_versions.txt` – `which -a python python3 pip pip3` + `python3 --version`.\\n- `python_alternatives.txt` – `update-alternatives --display python3` (pokud existuje).\\n- `python_sys_path.json` – JSON výpis `sys.path` z `python3`.\\n- `python_site.json` – JSON s `site.getsitepackages()` a `site.getusersitepackages()`.\\n- `pip_debug.txt` – `python3 -m pip debug -v` (s redakcí citlivých údajů, např. index/token).\\n- `pip_config_list.txt` – `pip config list -v` (cesty na configy).\\n\\nVenv/Poetry/Pipenv/Pyenv discovery:\\n- `venv_candidates_found.txt` – hledání `pyvenv.cfg` a `bin/python` v `/srv`, `/opt`, `/var/www`, `/home`, `/root`.\\n- `venv_tree_summaries/venv_<name>.txt` – strom venv (bin/, lib/, site-packages) + velikost.\\n- `venv_reports/venv_<name>__report.json` – pro každou venv: `sys.executable`, `sys.prefix`, `sys.base_prefix`, `sys.path`, `pip --version`, `pip list`, `pip freeze`.\\n\\n28.16 database/\\nBez exportu dat, jen konfigurace, verze, stav, připojení, logy.\\n\\nPostgreSQL (pokud existuje):\\n- `postgres_version.txt` – `psql --version`.\\n- `postgres_service_status.txt` – `systemctl status postgresql --no-pager`.\\n- `postgres_conf_locations.txt` – cesty na `postgresql.conf`, `pg_hba.conf` (metadata + hash, ne obsah).\\n- `postgres_listen_ports.txt` – `ss -lntup | grep postgres`.\\n- `postgres_logs_tail.txt` – tail relevantních logů.\\n\\nMySQL/MariaDB (pokud existuje):\\n- `mysql_version.txt`.\\n- `mysql_service_status.txt`.\\n- `mysql_conf_locations.txt` – metadata k my.cnf.\\n- `mysql_logs_tail.txt`.\\n\\nRedis (pokud existuje):\\n- `redis_version.txt`.\\n- `redis_service_status.txt`.\\n- `redis_conf_metadata.txt`.\\n- `redis_logs_tail.txt`.\\n\\n28.17 certs/\\n- `cert_locations.txt` – přehled `/etc/letsencrypt`, `/etc/ssl` a vlastních cert adresářů.\\n- `certbot_status.txt` – `certbot certificates` (pokud existuje).\\n- `cert_expiry_report.txt` – expirace certů (např. `openssl x509 -enddate` pro vybrané certy).\\n- `tls_private_keys_presence.txt` – pouze detekce přítomnosti privátních klíčů (bez obsahu).\\n\\n28.18 cron_webhooks/\\n- `crontab_root.txt` – `crontab -l` pro root.\\n- `crontab_users_listing.txt` – seznam uživatelů, kteří mají crontab.\\n- `system_cron_dirs_tree.txt` – listing `/etc/cron.*`.\\n- `webhook_endpoints_inventory.txt` – soupis webhook endpointů z nginx/app konfigurací (bez tajemství).\\n\\n28.19 logs/\\n- `journal_nginx_last500.txt` – `journalctl -u nginx -n 500 --no-pager`.\\n- `journal_app_last500.txt` – `journalctl -u <app> -n 500 --no-pager` (pokud existuje app unit).\\n- `journal_db_last500.txt` – obdobně pro DB službu.\\n- `syslog_tail.txt` – tail `/var/log/syslog` (Ubuntu) nebo `journalctl` fallback.\\n- `auth_log_tail.txt` – tail `/var/log/auth.log` (s opatrností kvůli citlivým údajům).\\n- `kernel_log_tail.txt` – `journalctl -k -n 400 --no-pager`.\\n\\n28.20 virtualization_containers/\\n- `docker_info.txt` – `docker info` (pokud docker existuje).\\n- `docker_ps.txt` – `docker ps -a`.\\n- `docker_compose_files_found.txt` – nalezené `docker-compose*.yml` (cesty + metadata).\\n- `k8s_hint.txt` – informace o microk8s/k3s, pokud jsou přítomny (stav).\\n\\n28.21 Automatizovaný sběr – doporučený běh\\n- Na Ubuntu spustit bash skript, který vytvoří adresář `Diag_YYYYMMDD-HHMMSS/` a naplní všechny podsložky a soubory dle výše uvedené struktury.\\n- Volitelně celý adresář stáhnout na Windows přes SCP.\\n\\n28.22 Jednořádkový příkaz z Windows PowerShellu (remote sběr + stažení)\\n\\nVarianta A (doporučená): použití SSH klíče, bez hesla v příkazu.\\n- V PowerShellu se nastaví proměnné `$ip` a `$user` a proměnná `$script` obsahující bash skript (here-string `@' ... '@`).\\n- Bash skript na vzdáleném Ubuntu:\\n  - Nastaví `set -o pipefail` a `set +e` (pipefail pro lepší detekci chyb, ale neukončovat při první chybě).\\n  - Vytvoří `timestamp` (`date +%Y%m%d-%H%M%S`) a `remote_root=\\\"/root/Diag_${timestamp}\\\"`.\\n  - Vytvoří adresář `remote_root` a podsložky (např. `system/`, `hardware/`, `storage/`, `network/`).\\n  - Do jednotlivých souborů zapisuje výstupy příkazů, např.:\\n    - `/etc/os-release` do `system/os_release.txt`.\\n    - `uname -a` do `system/uname.txt`.\\n    - `uptime` a `who -b` do `system/uptime.txt`.\\n    - `locale` a `timedatectl` do `system/locale_timezone.txt`.\\n    - `hostnamectl`, `/etc/hosts`, `/etc/hostname` do `system/hostname_hosts.txt`.\\n    - `sysctl -a` do `system/sysctl_all.txt`.\\n    - `ulimit -a` a listing limits souborů do `system/limits_summary.txt`.\\n    - `systemctl --failed` a `systemctl list-units --type=service --state=running` do příslušných souborů.\\n    - `journalctl -b -p err..alert --no-pager` do `system/journal_boot_errors.txt`.\\n    - `env` s grep filtrem na proměnné bez tajemství do `system/env_root_sanitized.txt`.\\n  - V `hardware/` ukládá např. `lscpu`, `dmidecode -t memory`, `free -h`.\\n  - Ve `storage/` ukládá `lsblk`, `mount`, `smartctl` (pokud existuje) atd.\\n  - V `network/` ukládá `ip addr`, `ip link` atd.\\n- Skript je ukázkový a neimplementuje celou specifikovanou strukturu, ale demonstruje princip: vytvořit časově označený adresář, podsložky a naplnit je výstupy příkazů.\\n- Po spuštění skriptu přes SSH lze adresář `Diag_...` stáhnout na Windows (např. pomocí `scp`), což je zmíněno jako doporučený postup, ale konkrétní PowerShell příkaz pro stažení v tomto výřezu ještě není uveden.\\n\\nTento chunk rozšiřuje celkovou specifikaci Káji o detailní standardizovaný diagnostický balík pro Ubuntu web servery, včetně bezpečnostních zásad, přesné adresářové struktury, seznamu sbíraných příkazů/souborů a ukázky automatizovaného sběru pomocí bash skriptu volaného z Windows PowerShellu. Je to součást širšího konceptu diagnostiky (IN snapshoty) a má být integrováno do Kájova ekosystému jako standardní způsob, jak od uživatele získat konzistentní diagnostická data.\",\"chunk_index\":6,\"chunk_count\":8,\"notes\":[\"Zachovat, že jde o FULL diagnostiku pro Ubuntu web server, bez exportu privátních klíčů a databázových dat.\",\"Důležité jsou bezpečnostní zásady (maskování tajemství, selektivní sdílení logů).\",\"Adresářová struktura Diag_YYYYMMDD-HHMMSS/ a všechny podsložky jsou závazné; obsah souborů je definován konkrétními příkazy nebo soubory systému.\",\"Python/venv část je zaměřená na detekci konfliktů mezi více instalacemi a nástroji (venv, pyenv, poetry, pipx).\",\"Database, certs, cron_webhooks, logs a virtualization_containers mají být sbírány jen jako konfigurace/metadata/logy, ne data.\",\"PowerShell + bash ukázka je referenční způsob, jak sběr automatizovat; Kája má tento přístup respektovat při návrhu vlastních diagnostických skriptů.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 8894,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 4280,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 13174
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767868251,
+    "store": true
+  }
+}

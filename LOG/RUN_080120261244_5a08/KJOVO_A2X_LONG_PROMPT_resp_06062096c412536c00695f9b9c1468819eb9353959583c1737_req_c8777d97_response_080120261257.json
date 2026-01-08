@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_06062096c412536c00695f9b9c1468819eb9353959583c1737",
+    "logged_at": "2026-01-08T11:57:58.562568",
+    "request_id": "c8777d97"
+  },
+  "payload": {
+    "id": "resp_06062096c412536c00695f9b9c1468819eb9353959583c1737",
+    "created_at": 1767873436.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_06062096c412536c00695f9b9cad14819e950ad7b1c843d4eb",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"A1_PLAN popisuje projekt \\\"DiagMaster\\\" – konzolový multiplatformní (Linux, Windows) diagnostický nástroj v Pythonu 3.12. Nástroj provádí FULL diagnostiku systémů a generuje deterministickou adresářovou strukturu s MANIFEST soubory, bez jakékoliv ZIP/archivace. Bude použitelný z CLI, s možností neinteraktivního běhu a integrace do skriptů/CI.\\n\\nProjekt:\\n- Název: DiagMaster.\\n- Účel: plná diagnostika Linux/Windows systémů.\\n- Jazyk: Python.\\n- Runtime: Python 3.12.\\n- Cíl: deterministická adresářová struktura, MANIFESTy, žádná interní archivace.\\n\\nPředpoklady:\\n- Detailní technické požadavky na konkrétní diagnostické příkazy, formáty MANIFESTů a přesnou adresářovou strukturu byly definovány v předchozích chuncích (zde chybí, ale musí být zachovány jako závazné).\\n- Nástroj běží s dostatečnými oprávněními pro čtení systémových informací (Linux: typicky sudo; Windows: Administrator).\\n- Výstupní diagnostické adresáře se ukládají na lokální disk, ne do síťových úložišť.\\n- Uživatel spouští nástroj z příkazové řádky a umí základní práci s CLI.\\n- Kájovo UI Design Standard se týká budoucí GUI nadstavby; aktuálně se řeší CLI, ale musí být zachován determinismus a rekonstruovatelnost dat a struktur.\\n- Nástroj sám neprovádí ZIP/archivaci; pouze vytvoří adresářovou strukturu a soubory vhodné pro externí archivaci.\\n- Pro Linux i Windows existují ekvivalentní diagnostické příkazy/API volatelné z Pythonu.\\n- Časová razítka a unikátní ID běhu jsou povolena, pokud jsou deterministicky zaznamenána v MANIFESTu.\\n\\nFunkční požadavky (výběr a strukturované shrnutí):\\n1) Podpora režimů:\\n- Musí existovat režim FULL diagnostiky pro Linux.\\n- Musí existovat režim FULL diagnostiky pro Windows.\\n\\n2) Adresářová struktura a MANIFESTy:\\n- Pro každý běh diagnostiky se vytvoří deterministická kořenová složka s jasně definovanými podsložkami pro oblasti diagnostiky (např. system_info, network, storage, processes, services, logs). Konkrétní struktura je definována v jiných chuncích a musí být respektována.\\n- V kořenovém adresáři běhu musí být kořenový MANIFEST (např. MANIFEST_ROOT.json) obsahující:\\n  - Strukturu výstupu.\\n  - Verzi nástroje.\\n  - Verzi runtime (Python).\\n  - Čas běhu.\\n  - Cílový OS.\\n  - Stav jednotlivých kroků.\\n- Každá hlavní podsložka (system_info, network, atd.) musí mít vlastní lokální MANIFEST (např. MANIFEST_system_info.json) s:\\n  - Seznamem obsažených souborů.\\n  - Použitými příkazy/API.\\n  - Návratovými kódy.\\n  - Informacemi o případném stderr a cestách k výstupům.\\n- Nástroj nesmí vytvářet ZIP ani jiné archivní formáty; výstupem je vždy čistá adresářová struktura.\\n\\n3) CLI režimy a parametry:\\n- Musí existovat neinteraktivní režimy vhodné pro skriptování, např.:\\n  - --full-linux\\n  - --full-windows\\n- Musí existovat parametr pro explicitní určení výstupního kořenového adresáře, např. --output-dir <cesta>.\\n- Musí existovat parametr --dry-run, který pouze vypíše plánované kroky (včetně struktury a příkazů) a nic neprovede.\\n- Musí existovat parametr --config <soubor> pro načtení konfigurace diagnostiky (povolené/zakázané kroky, časové limity, cesty atd.).\\n- Musí existovat parametry pro přeskočení vybraných oblastí, např. --skip-logs, --skip-network; tyto volby musí být reflektovány v MANIFESTech (kroky označené jako přeskočené).\\n- Musí existovat příkaz --version, který vypíše verzi nástroje a základní informace o build konfiguraci.\\n- Musí existovat příkaz --help s popisem všech parametrů a režimů.\\n- Musí existovat volby úrovně verbóznosti logování, např. --quiet, --verbose, --debug.\\n\\n4) Logování a návratové kódy:\\n- Nástroj musí logovat průběh běhu do textového log souboru v kořenovém adresáři diagnostiky (např. run.log) a zároveň na standardní výstup.\\n- Pro každý dílčí diagnostický krok musí být zaznamenáno:\\n  - Použitý příkaz nebo API.\\n  - Návratový kód.\\n  - Případný stderr.\\n  - Cesta k výstupnímu souboru.\\n- Nástroj musí vracet nenulový návratový kód procesu, pokud některý kritický diagnostický krok selže. Definice „kritičnosti“ musí být konfigurovatelná (např. v konfiguračním souboru nebo jiném definovaném mechanismu).\\n- V MANIFESTech musí být jednoznačně označeno, které kroky byly:\\n  - Úspěšné.\\n  - Selhané.\\n  - Přeskočené.\\n\\n5) Běhy diagnostiky a identifikace:\\n- Nástroj musí být schopen běžet opakovaně a vytvářet unikátní adresáře pro jednotlivé běhy (např. pomocí časového razítka nebo inkrementálního indexu).\\n- Způsob generování identifikátoru běhu (timestamp, index, kombinace) musí být zaznamenán v MANIFESTu.\\n\\n6) OS-specifické požadavky:\\n- Pro Linux musí nástroj používat standardní systémové příkazy a soubory (např. /proc, /sys, systemd, ip, ss, df, journalctl) v rozsahu definovaném v jiných chuncích.\\n- Pro Windows musí nástroj používat dostupná API a nástroje (např. PowerShell cmdlety, WMI, systeminfo, ipconfig, Get-EventLog/Get-WinEvent) v rozsahu definovaném v jiných chuncích.\\n- Nástroj musí být schopen běžet i bez přístupu k internetu a nesmí vyžadovat online závislosti během běhu diagnostiky.\\n\\n7) Formát výstupů:\\n- Výstupy musí být v textových formátech (např. .txt, .json, .log), snadno čitelné a parsovatelné dalšími nástroji.\\n- MANIFESTy budou v JSON (implicitně vyplývá z příkladů názvů), s jasnou strukturou pro strojové zpracování.\\n- Timeouty jednotlivých kroků musí být nastavitelné a zaznamenané v MANIFESTu (včetně informace, zda krok skončil timeoutem).\\n\\n8) Budoucí rozšiřitelnost a GUI:\\n- Nástroj musí být navržen tak, aby bylo možné později doplnit GUI nadstavbu respektující Kájovo UI Design Standard bez změny základní doménové logiky a datových modelů.\\n\\nNefunkční požadavky (výběr a shrnutí):\\n1) Determinismus:\\n- Při stejném vstupním prostředí a stejné konfiguraci musí nástroj generovat stejnou adresářovou strukturu a stejné názvy souborů.\\n- Výjimkou jsou časová razítka, která jsou povolena, ale musí být explicitně zaznamenána v MANIFESTech.\\n\\n2) Multiplatformnost a architektura:\\n- Nástroj musí být multiplatformní (Linux, Windows) s minimálními rozdíly v kódu.\\n- OS-specifické kroky musí být abstrahovány přes jasně definovanou vrstvu (např. rozhraní/adapter pro Linux a Windows), aby se minimalizoval duplikovaný kód.\\n- Musí existovat jasně definované datové modely pro:\\n  - Běh diagnostiky.\\n  - Jednotlivé kroky.\\n  - Výsledky.\\n  - MANIFESTy.\\n- Architektura musí být modulární, s jasnými API mezi moduly, aby bylo snadné přidávat nové diagnostické kroky bez zásahu do existujících modulů mimo definovaná rozhraní.\\n\\n3) Integrace a provoz:\\n- Nástroj musí být navržen tak, aby jej bylo možné spouštět v automatizovaných CI/CD pipelinech (neinteraktivní režimy, deterministické výstupy, návratové kódy vhodné pro skripty).\\n- Musí mít minimální externí závislosti a nesmí vyžadovat instalaci neobvyklých knihoven mimo standardní Python ekosystém.\\n- Musí poskytovat konzistentní strukturu logování napříč OS a běhy (formát logů, úrovně, umístění run.log atd.).\\n\\n4) Kvalita kódu a výkon:\\n- Kód musí být čitelný a udržovatelný (modulární architektura, jasná API, oddělení doménové logiky od OS-specifických implementací a od CLI vrstvy).\\n- Nástroj musí být schopen zpracovat i velké objemy dat (např. rozsáhlé logy) bez nadměrné spotřeby paměti – preferováno streamované čtení/zápis, pokud je to možné.\\n\\nTento chunk končí u posledního nefunkčního požadavku o práci s velkými objemy dat; další nefunkční požadavky mohou pokračovat v následujícím chunku a musí být později doplněny do celkového obrazu.\",\"chunk_index\":1,\"chunk_count\":7,\"notes\":[\"Zachovat, že detailní specifikace příkazů, formátů MANIFESTů a přesné adresářové struktury jsou definovány jinde a jsou závazné, i když zde nejsou vidět.\",\"Důraz na determinismus, multiplatformnost, modulární architekturu a možnost budoucí GUI nadstavby podle Kájovo UI Design Standard je klíčový pro další návrh.\",\"Je nutné pamatovat na konfigurovatelnost (config soubor, skip parametry, timeouty, definice kritických kroků) a na to, že vše musí být reflektováno v MANIFESTech a logování.\",\"Nástroj nesmí nikdy interně archivovat (ZIP apod.); výstup je vždy adresářová struktura se soubory, připravená pro externí archivaci.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 2114,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2628,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 4742
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767873478,
+    "store": true
+  }
+}

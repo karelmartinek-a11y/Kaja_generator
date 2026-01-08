@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "project": "Kájovo",
+    "mode": "GENERATE",
+    "model": "gpt-5.1-codex-max",
+    "response_id": "GENERATE_4be085",
+    "user_spec": "Posílám ti soubory se zadáním pro generování programu, který prosím vygeneruj plně funkční při dodržení zázného dokumentu Design Standard, který ti rovněž posílám.",
+    "attachments": [
+      {
+        "file_id": "ATT_da35d1",
+        "filename": "C:/Users/provo/Downloads/ZADANI_KAJA_FINAL.md",
+        "purpose": "user data",
+        "size_bytes": 200221
+      },
+      {
+        "file_id": "ATT_f3bde3",
+        "filename": "C:/Users/provo/Downloads/Kajovo_UI_Design_Standard_MASTER_v1.0_AI (1).md",
+        "purpose": "user data",
+        "size_bytes": 16210
+      }
+    ],
+    "vector_store_ids": [],
+    "diagnostics": [],
+    "captured_at": "2026-01-07T17:37:08.267691",
+    "pricing_catalog": {
+      "source": "https://openai.com/pricing",
+      "last_refreshed": null,
+      "verified": false,
+      "status": "Ceník offline / odhad",
+      "error": "Client error '403 Forbidden' for url 'https://openai.com/pricing'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403"
+    }
+  },
+  "captured_at": "2026-01-07T17:37:08.267707",
+  "run_id": "RUN_070120261837_cc7c"
+}

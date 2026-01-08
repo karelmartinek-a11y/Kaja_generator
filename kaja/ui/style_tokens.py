@@ -1,0 +1,9 @@
+from __future__ import annotations
+
+PALETTE_BLACK = "#000000"
+PALETTE_WHITE = "#FFFFFF"
+PALETTE_RED = "#FF0000"
+PALETTE_GRAY = "#808080"
+
+KJA_RADIUS = 8
+KJA_BORDER_PX = 1

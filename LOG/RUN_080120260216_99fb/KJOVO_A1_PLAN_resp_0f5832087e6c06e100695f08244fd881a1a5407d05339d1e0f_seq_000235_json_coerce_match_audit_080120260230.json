@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260216_99fb",
+    "project": "KJOVO",
+    "stage": "A1_PLAN",
+    "response_id": "resp_0f5832087e6c06e100695f08244fd881a1a5407d05339d1e0f",
+    "event": "json_coerce_match",
+    "sequence": 235,
+    "logged_at": "2026-01-08T01:30:11.369792"
+  },
+  "details": {
+    "event": "json_coerce_match",
+    "level": "info",
+    "details": {
+      "expected_contract": "A1_PLAN",
+      "candidate_count": 1,
+      "parsed_count": 1,
+      "unescape_count": 0,
+      "response_chars": 30747
+    },
+    "timestamp": "2026-01-08T01:30:11.369782"
+  }
+}

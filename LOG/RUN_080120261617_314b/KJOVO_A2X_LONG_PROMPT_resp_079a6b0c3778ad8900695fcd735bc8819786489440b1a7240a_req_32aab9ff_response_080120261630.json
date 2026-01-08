@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261617_314b",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_079a6b0c3778ad8900695fcd735bc8819786489440b1a7240a",
+    "logged_at": "2026-01-08T15:30:16.688421",
+    "request_id": "32aab9ff"
+  },
+  "payload": {
+    "id": "resp_079a6b0c3778ad8900695fcd735bc8819786489440b1a7240a",
+    "created_at": 1767886195.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_079a6b0c3778ad8900695fcd73bb40819783042e98ea6834fb",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Vstup popisuje plán A1_PLAN pro projekt \\\"CrossPlatformDiagnosticsSuite\\\" – konzolovou sadu Python skriptů (Python 3.10+) pro sběr diagnostik na Ubuntu Linux web serverech a Windows systémech. Cílem je jednotný nástroj s přísnou ochranou tajemství, deterministickým výstupem a lidsky čitelným manifestem.\\n\\nProjekt:\\n- Název: CrossPlatformDiagnosticsSuite\\n- Popis: Konzolová sada skriptů pro sběr diagnostik na Ubuntu web serverech a Windows systémech.\\n- Cílové OS: Ubuntu Linux, Windows\\n- Jazyk: Python\\n- Runtime: Python 3.10+\\n\\nPředpoklady:\\n1) Na cílových systémech je dostupný Python 3.10+ (systémový nebo přibalený runtime).\\n2) Na Ubuntu je k dispozici /bin/bash a standardní nástroje (ps, netstat/ss, systemctl, journalctl, lsb_release nebo ekvivalent).\\n3) Na Windows je možné spouštět PowerShell (5.1+ nebo 7+) a WMI/CIM dotazy, pokud nejsou omezeny politikou.\\n4) Skripty mají dostatečná oprávnění pro čtení systémových informací, ale nemusí mít admin/root; chybějící data se označí jako ACCESS DENIED.\\n5) Diagnostika se spouští lokálně na cílovém stroji, ne přes síťové API.\\n6) Výstupní adresář je zapisovatelný a má dostatek místa.\\n7) Existující návrhy adresářové struktury a MANIFEST.md pro Ubuntu a Windows diagnostiky jsou závazné a nemění se.\\n8) UI design standard (Kájovo UI Design Standard MASTER v1.0) je relevantní jen pro případné budoucí GUI; aktuální sada je čistě CLI, bez vynucení konkrétního frameworku.\\n9) Neexistují další skryté požadavky mimo dříve definované návrhy diagnostik a zásady neexportování tajemství.\\n\\nFunkční požadavky (výběr a struktura):\\n- Hlavní entrypoint: diagnostics_main.py\\n  - Musí umožnit spustit Ubuntu nebo Windows diagnostiku podle detekovaného OS nebo explicitního parametru.\\n\\n- Modul ubuntu_diagnostics_runner\\n  - Funkce: run_ubuntu_diagnostics(output_dir: str)\\n  - Musí respektovat již navrženou strukturu souborů a MANIFEST.md pro Ubuntu web server.\\n\\n- Modul windows_diagnostics_runner\\n  - Funkce: run_windows_diagnostics(output_dir: str)\\n  - Musí odpovídat návrhu FULL Windows Diagnostics (kap. 29) včetně všech podsložek:\\n    - system\\n    - registry\\n    - filesystem\\n    - python\\n    - processes_services\\n    - network\\n    - security\\n    - hardware\\n    - storage\\n    - drivers\\n    - devtools\\n    - virtualization\\n    - wsl\\n    - logs\\n\\n- Modul manifest_writer\\n  - Generuje lidsky čitelný MANIFEST.md pro každou platformu podle již navrženého obsahu.\\n  - Udržuje index všech generovaných souborů.\\n\\n- Modul data_models\\n  - Definuje sdílené datové struktury pro diagnostické záznamy, např.:\\n    - SystemInfo\\n    - NetworkEndpoint\\n    - ServiceStatus\\n    - DiagnosticSectionSummary\\n  - Definuje také datové modely pro položky manifestu.\\n\\n- Modul os_detection\\n  - Funkce: detect_platform() -> Literal['ubuntu','windows','unknown']\\n  - Musí deterministicky rozhodnout, kterou diagnostiku spustit.\\n\\n- Modul redaction\\n  - Funkce:\\n    - redact_secrets(text: str) -> str\\n    - redact_path(path: str) -> str\\n  - Odstraňuje nebo maskuje potenciální tajemství (hesla, privátní klíče, tokeny) dle definovaných heuristik.\\n\\n- Modul io_safety\\n  - Funkce:\\n    - safe_write_text(path: str, content: str)\\n    - safe_mkdirs(path: str)\\n  - Zajišťuje bezpečné vytváření adresářů a souborů bez přepsání existujících dat, pokud to není explicitně povoleno.\\n\\n- Modul logging_setup\\n  - Funkce: get_logger(name: str)\\n  - Poskytuje konzistentní logování průběhu diagnostiky do konzole a volitelného log souboru v rámci diagnostického výstupu.\\n\\n- Modul error_reporting\\n  - Funkce: record_error(section: str, error: Exception | str)\\n  - Generuje souhrn chyb v samostatném souboru errors.log v kořeni diagnostického balíčku.\\n\\n- Modul ubuntu_collectors\\n  - Obsahuje konkrétní sběrné funkce pro jednotlivé oblasti, např.:\\n    - collect_ubuntu_system_info\\n    - collect_ubuntu_web_server_config\\n    - collect_ubuntu_network\\n    - collect_ubuntu_logs\\n  - Funkce vracejí datové modely nebo textové výstupy.\\n\\n- Modul windows_collectors\\n  - Obsahuje konkrétní sběrné funkce pro oblasti:\\n    - system\\n    - registry\\n    - filesystem\\n    - python\\n    - processes_services\\n    - network\\n    - security\\n    - hardware\\n    - storage\\n    - drivers\\n    - devtools\\n    - virtualization\\n    - wsl\\n    - logs\\n  - Musí označovat NOT PRESENT/ACCESS DENIED dle dostupnosti subsystémů.\\n\\n- Modul path_layout\\n  - Funkce:\\n    - get_ubuntu_output_layout(base_dir: str)\\n    - get_windows_output_layout(base_dir: str)\\n  - Deterministicky vrací strukturu adresářů a souborů podle již navržených manifestů.\\n\\n- Modul cli_interface\\n  - Funkce: parse_args(argv: list[str]) -> Namespace\\n  - Umožní:\\n    - volbu platformy\\n    - volbu výstupního adresáře\\n    - volbu úrovně detailu\\n    - volitelné vypnutí některých sekcí.\\n\\n- Modul summary_report\\n  - Funkce: generate_summary(output_dir: str, platform: str)\\n  - Vytvoří lidsky čitelný souhrn hlavních zjištění a odkazů na detailní soubory.\\n\\n- Chování při chybějících subsystémech\\n  - Všechny chybějící subsystémy (např. WSL na Windows, pokud není nainstalováno) musí být v příslušných výstupech explicitně označeny jako:\\n    - NOT PRESENT (není nainstalováno / neexistuje)\\n    - ACCESS DENIED (nedostatečná oprávnění nebo blokace politikou)\\n\\n- Ochrana tajemství\\n  - Žádný sběrný modul nesmí exportovat obsah souborů, které zjevně obsahují tajemství (privátní klíče, hesla v konfiguracích apod.).\\n  - Místo obsahu se uvedou pouze metadata (cesta, velikost, oprávnění) a poznámka REDACTED.\\n\\n- MANIFEST.md\\n  - V kořeni každého diagnostického balíčku musí obsahovat:\\n    - index všech souborů\\n    - stručný popis\\n    - velikost\\n    - případné poznámky o redakci nebo nedostupnosti.\\n\\n- Návratové kódy CLI\\n  - 0: úspěšné dokončení diagnostiky (i s dílčími ACCESS DENIED).\\n  - Nenulový kód: fatální chyba (např. nelze vytvořit výstupní adresář).\\n\\nNefunkční požadavky (začátek výčtu):\\n- Diagnostika musí být read-only vůči systému; nesmí měnit konfiguraci, registry, systémové služby ani soubory mimo vlastní výstupní adresář.\\n- Výstup musí být deterministický při stejném stavu systému (stejné pořadí sekcí, souborů a položek v manifestu).\\n- Výstup musí být lidsky čitelný, s konzistentním formátováním a jasným oddělením sekcí.\\n- Skript musí běžet na standardním Pythonu 3.10+ bez potřeby nestandardních nativních rozšíření.\\n- Výkon: diagnostika by měla dokončit běh na běžném serveru do několika minut; dlouhé operace (např. velké logy) musí být omezeny rozumnými limity velikosti nebo času.\\n\\nTento chunk obsahuje definici projektu, předpoklady, většinu funkčních požadavků a začátek nefunkčních požadavků. Struktura modulů, jejich funkce a zásady ochrany tajemství a determinismu jsou klíčové pro další části plánu.\",\"chunk_index\":1,\"chunk_count\":6,\"notes\":[\"Toto je první ze šesti chunků; žádné předchozí shrnutí neexistovalo.\",\"Zachována jsou jména modulů, funkcí, klíčové konstanty (NOT PRESENT, ACCESS DENIED, REDACTED) a hlavní vztahy mezi nimi.\",\"Nefunkční požadavky jsou v tomto chunku jen částečně; zbytek může následovat v dalších chuncích.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 1986,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2203,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 4189
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767886216,
+    "store": true
+  }
+}

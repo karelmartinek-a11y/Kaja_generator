@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "resp_041fcb5c2873525500695f9d568cc8819381e003d96135930f",
+    "logged_at": "2026-01-08T12:05:18.372241",
+    "request_id": "01db0d30"
+  },
+  "payload": {
+    "id": "resp_041fcb5c2873525500695f9d568cc8819381e003d96135930f",
+    "created_at": 1767873878.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_041fcb5c2873525500695f9d5727f08193bae7365210d7135e",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Jsi generátor obsahu jednoho konkrétního souboru podle A2_STRUCTURE a musíš vracet pouze validní JSON dle kontraktu A3_FILE. Zachováváš deterministická pravidla pro soubory, symboly a UI standard „Kájovo UI Design Standard MASTER v1.0“ (cs-CZ). Tento chunk doplňuje pravidla o layoutu aplikace, stavech prvků a specifikaci komponent.\\n\\n4. Layout aplikace\\n\\n4.1 Záhlaví programu\\n- Záhlaví MUSÍ obsahovat: název programu a verzi, ovládací prvky a ukončovací prvek (EXIT/QUIT/CLOSE) vpravo.\\n- Ukončovací prvek je vždy „kritický“ (červený kontrakt) – tedy používá červené stavové barvy dle sekce 5.2.\\n\\n4.2 Sekce\\n- Sekce je rámovaná oblast (LEM/OKRAJ/POZADÍ) pro logickou skupinu prvků.\\n- Název sekce:\\n  - je součást horního lemu (přeruší horní lem),\\n  - typografie: Montserrat Bold, VŠE VELKÝMI PÍSMENY.\\n- Sekce sama není interaktivní; barvy se řídí globálními kontrakty stavů, ale sekce nemá vlastní interakční stavy.\\n\\n4.3 Stavový řádek (STATUS)\\n- Výška stavového řádku: STATUS_H = round(1.6 × LH) (definováno už dříve).\\n- Status vždy zobrazuje:\\n  - vlevo: text aktuálního kroku (Regular) + volitelně progress „teploměr“.\\n  - vpravo: čas (PRAGOTRON / flap) a datum (kalendářová kresba).\\n\\nČas (PRAGOTRON / flap)\\n- Formát času: \\\"HH:MM:SS\\\" (8 znaků včetně dvojteček).\\n- Každý znak je samostatný modul (obdélník se zaoblením R).\\n- Modul:\\n  - lem: bílý 2 px,\\n  - okraj: černý 1 px,\\n  - pozadí: černé,\\n  - znak: bílý, Montserrat Bold.\\n- Uprostřed modulu je vodorovná bílá linka 1 px („spára“).\\n- Výška modulu: TIME_H = round(1.2 × LH).\\n\\nDatum (kalendářová kresba)\\n- Datum je modul ve stylu ikony kalendáře (zaoblení R, lem/okraj jako ostatní moduly).\\n- Uvnitř je horní lišta kalendáře oddělená bílou linkou 1 px.\\n- Uvnitř modulu je text \\\"DD.MM.YYYY\\\" (Bold, bílý) vycentrovaný.\\n- Referenční tvar a proporce jsou v Příloze A (musí se respektovat, pokud je dostupná).\\n\\nProgress „teploměr“\\n- Horizontální indikátor průběhu:\\n  - rám: lem bílý 2 px, okraj černý 1 px,\\n  - pozadí: černé,\\n  - výplň: bílá.\\n- Odhadnutelný proces: výplň odpovídá 0–100 %.\\n- Neodhadnutelný proces: bílý segment se pohybuje tam a zpět v rámci teploměru.\\n\\n5. Kontrakty barevných stavů (globální)\\n\\n5.1 Nečervené interaktivní prvky (3 stavy)\\nVšechny nečervené interaktivní prvky (např. běžná tlačítka, přepínače, textová pole, dropdown pole atd.) MUSÍ používat tyto stavy:\\n\\n- NORMAL\\n  - lem: bílý,\\n  - okraj: černý,\\n  - pozadí: černé,\\n  - obsah (text/ikona): bílý.\\n\\n- ACTIVE\\n  - lem: bílý,\\n  - okraj: černý,\\n  - pozadí: bílý,\\n  - obsah: černý.\\n\\n- DISABLED\\n  - lem: šedivý,\\n  - okraj: černý,\\n  - pozadí: černé,\\n  - obsah: šedivý.\\n\\nTyto kontrakty se aplikují konzistentně na všechny nečervené interaktivní komponenty. Focus overlay (sekce 3.2 z předchozího chunku) mění pouze lem na bílý, ostatní vrstvy zůstávají dle stavu.\\n\\n5.2 Červené (kritické) prvky (2 stavy)\\nČervené prvky (kritické akce, např. EXIT/QUIT/CLOSE) MUSÍ mít pouze tyto stavy:\\n\\n- NORMAL\\n  - lem: červený,\\n  - okraj: černý,\\n  - pozadí: červené,\\n  - obsah: černý.\\n\\n- ACTIVE\\n  - lem: červený,\\n  - okraj: černý,\\n  - pozadí: černé,\\n  - obsah: červený.\\n\\nPoznámka: Focus overlay (sekce 3.2) mění jen lem na bílý i u červeného prvku; ostatní vrstvy zůstávají podle stavu NORMAL/ACTIVE.\\n\\n6. Komponenty (specifikace)\\n\\n6.1 Tlačítko (button)\\nVzhled:\\n- Tlačítko používá kontrakt stavů dle sekce 5 (buď nečervený, nebo červený, podle významu akce).\\n- Padding: PAD_X horizontálně, PAD_Y vertikálně (definováno v předchozím chunku, škáluje se s UI_scale).\\n- Radius: R (globální radius, žádné ostré rohy).\\n- Text:\\n  - Bold, pokud je to primární volba.\\n  - Regular, pokud je to sekundární volba.\\n  - Pokud není jasné, použij Bold.\\n\\nChování:\\n- Kliknutí myší = aktivace tlačítka.\\n- Klávesnice: focus + ENTER nebo MEZERNÍK = aktivace (odpovídá kliknutí).\\n\\nŠířka vs délka textu (determinismus):\\n- Preferovaná šířka tlačítka:\\n  - W_pref = textWidth(FS) + 2×PAD_X + 2×(LEM + OKRAJ).\\n- Skupina tlačítek MŮŽE být roztažená proporcionálně podle W_pref (delší text → širší tlačítko).\\n- Pokud dostupný prostor nestačí, použije se globální algoritmus text fit/scale (sekce 6.6).\\n\\n6.2 Přepínač / Toggle, Radio, Checkbox, Klikatelná ikona\\n- Všechny tyto prvky používají stejné vrstvy (LEM/OKRAJ/POZADÍ/OBSAH) a stejný stavový kontrakt jako nečervené/červené prvky dle sekce 5.\\n- Nesmí měnit layout mezi stavy (pouze barvy a případně vnitřní ikona, ale rozměry a pozice zůstávají).\\n- Musí být fokusovatelné a ovladatelné klávesnicí (TAB/SHIFT+TAB, ENTER/MEZERNÍK).\\n- Ikony:\\n  - styl dle tokenů: outline, tloušťka čáry STROKE,\\n  - barva ikony dle aktuálního stavu (bílá/černá/šedivá/červená podle kontraktu).\\n\\n6.3 Tabulka / seznam\\nObecně:\\n- Sloupce mají měnitelnou šířku (uživatel může měnit šířku sloupců, pokud to technologie umožňuje).\\n- Řádky mají neměnitelnou výšku: ROW_H = round(1.4 × LH).\\n- Výběr řádku: vždy invertuje barvy podle ACTIVE kontraktu na celý řádek (tj. pozadí bílé, text černý atd.).\\n- Kopírování: CTRL+C kopíruje vybraný text/buňku/řádek (podle kontextu implementace).\\n\\nTooltip v tabulce:\\n- Zobrazí se po 2 s nečinnosti kurzoru nad buňkou pouze při overflow (když obsah buňky nepokryje celý text).\\n- Vzhled tooltipu:\\n  - lem: černý 2 px,\\n  - okraj: bílý 1 px,\\n  - pozadí: bílá,\\n  - text: černý, Regular.\\n- Tooltip je overlay a může překrývat ostatní UI prvky (výjimka z pravidla o nepřekrývání).\\n\\n6.4 Dialog\\nGeometrie:\\n- Dialog je obdélník se zaoblením R.\\n- Lem: bílý 2 px.\\n- Okraj: černý 1 px.\\n- Pozadí: černé.\\n\\nNázev dialogu:\\n- Vlevo nahoře, přeruší horní lem stejně jako název sekce.\\n- Typografie: Montserrat Bold, VŠE VELKÝMI PÍSMENY.\\n\\nObsah:\\n- Standardně 5 řádků textu: výška obsahu = 5 × LH.\\n- Pokud je obsahu více, použije se vertikální overlay scrollbar (viz sekce 6.7) – scrollbar je overlay, neovlivňuje layout.\\n\\nAkce (vždy přítomné):\\n- Tlačítka: OK / CANCEL / CLOSE – vždy musí být v dialogu přítomná všechna tři.\\n- V dialogu je vždy vycentrovaný text (Regular) bez dalšího rámu.\\n\\nVýznam akcí:\\n- OK: potvrdit / provést.\\n- CANCEL: zahodit změny.\\n- CLOSE: zavřít bez akce.\\n- Pokud dialog nemá „změny“, CANCEL a CLOSE se chovají stejně, ale obě akce zůstávají kvůli jednotnosti UI.\\n\\nKlávesy:\\n- ENTER = OK (pokud focus není v zadávacím textovém poli).\\n- ESC = CLOSE (v souladu s globálním ESC kontraktem z předchozího chunku).\\n- TAB/SHIFT+TAB cyklují mezi fokusovatelnými prvky dialogu (fokus zůstává uvnitř dialogu, dokud je otevřený).\\n\\n6.5 Textové pole (v dialogu)\\nTypy:\\n- Zadávací (editable).\\n- Zobrazovací (read-only) – vždy umožňuje selection a kopírování.\\n\\nVzhled:\\n- Lem: bílý 2 px.\\n- Okraj: černý 1 px.\\n- Pozadí: černé.\\n- Text: bílý, Regular.\\n- Placeholder: šedivý, Regular.\\n\\nPlaceholder řetězce (pevné, lokalizované):\\n- Zadávací pole: \\\"Zde pište...\\\".\\n- Zobrazovací pole: \\\"Zde se zobrazí text...\\\".\\n\\nCaret:\\n- Pouze u zadávacího pole s focusem.\\n- Blikající svislá čára střídající bílou a černou.\\n\\nSelection:\\n- Vždy inverzní:\\n  - vybraný text: černý,\\n  - pozadí selection: bílá.\\n\\nChování:\\n- Zadávací pole: chová se jako běžný textový editor (psaní, mazání, výběr, přepsání výběru atd.).\\n- Zobrazovací pole: nelze editovat, ale lze označit text a kopírovat (CTRL+C).\\n\\n6.6 Text fit / scale-to-fit / fallback scroll (globální algoritmus)\\nCíl: text se MUSÍ vejít do obsahové plochy; scroll je pouze fallback pro technické selhání měření/rendrování.\\n\\nDefinice:\\n- Overflow = obsah přesahuje obsahovou plochu o více než 1 px.\\n\\nAlgoritmus:\\n1) Aplikuj globální škálování UI (UI_scale z předchozího chunku).\\n2) Pokud prvek obsahuje jednoprvkový text (label/hodnota), prvek MŮŽE zvětšit šířku v hlavní ose podle W_pref (viz sekce 6.1), pokud to layout dovolí.\\n3) Pokud stále dochází k overflow, zmenši obsah (text/ikony) scale-to-fit tak, aby se vešel (bez explicitních limitů na minimální velikost).\\n4) Znovu přeměř. Pokud stále overflow (např. kvůli limitům frameworku nebo zaokrouhlování), povol overlay scrollbar pouze na ose, kde dochází k overflow.\\n5) Scroll se NESMÍ aktivovat preventivně – pouze jako poslední možnost.\\n\\n6.7 Scrollbar (posuvný válec)\\n- Scrollbar je overlay (neubírá místo v layoutu, překrývá obsah).\\n\\nVzhled:\\n- Track: černý.\\n- Track okraj: bílý.\\n- Thumb: bílý.\\n- Šířka: max(6, round(0.8 × FS)).\\n\\nPokud technologie overlay scrollbar nepodporuje, je povolena výjimka – lze použít standardní scrollbar, ale barvy musí odpovídat paletě (černá/bílá/šedivá/červená dle významu).\\n\\n6.8 Dropdown (needitovatelný)\\nVzhled pole:\\n- Pole je needitovatelný box dle nečerveného kontraktu (sekce 5.1: NORMAL/ACTIVE/DISABLED).\\n- Vpravo je šipka dolů (referenční ikona), barva dle stavu (bílá/černá/šedivá podle kontraktu).\\n\\nRoletka:\\n- Otevře se dolů jako overlay (může překrývat ostatní UI prvky).\\n- Zobrazuje 5 položek; pokud je položek více, použije se overlay scrollbar (sekce 6.7).\\n\\nTento chunk doplňuje předchozí části standardu (0–3.3) o konkrétní layout (záhlaví, sekce, status bar), globální barevné kontrakty stavů a detailní specifikace klíčových komponent (tlačítka, přepínače, tabulky, dialogy, textová pole, algoritmus pro přizpůsobení textu, scrollbary a dropdown). Při implementaci UI musíš tyto specifikace respektovat s prioritou podle definované precedence: (1) TOKENS a kontrakty stavů, (2) specifikace komponent, (3) layout aplikace, (4) obecná pravidla.\",\"chunk_index\":2,\"chunk_count\":3,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4728,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3570,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 8298
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767873917,
+    "store": true
+  }
+}

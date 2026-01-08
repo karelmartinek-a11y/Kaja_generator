@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261617_314b",
+    "project": "KJOVO",
+    "stage": "A2X_FILE_MAP_REPAIR",
+    "response_id": "resp_0f55f6c8ddb8979700695fce3df77c8195ae4e3b0a8187287e",
+    "event": "response_received",
+    "sequence": 385,
+    "logged_at": "2026-01-08T15:34:38.490344"
+  },
+  "details": {
+    "event": "response_received",
+    "level": "info",
+    "details": {
+      "stage": "A2X_FILE_MAP_REPAIR",
+      "request_id": "a068ed8e",
+      "response_id": "resp_055c48ab8220dcc200695fce6ca190819f8140852e71eb6fab"
+    },
+    "timestamp": "2026-01-08T15:34:38.490338"
+  }
+}

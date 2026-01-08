@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261657_c5d0",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_0cf6aad5f58c43d600695fd6cbc1288190b0913566e2ce3c47",
+    "event": "log_message",
+    "sequence": 299,
+    "logged_at": "2026-01-08T16:09:50.088345"
+  },
+  "details": {
+    "event": "log_message",
+    "level": "info",
+    "details": {
+      "message": "chunk 1/1 pro src/spec_end_marker.ts"
+    },
+    "timestamp": "2026-01-08T16:09:50.088340"
+  }
+}

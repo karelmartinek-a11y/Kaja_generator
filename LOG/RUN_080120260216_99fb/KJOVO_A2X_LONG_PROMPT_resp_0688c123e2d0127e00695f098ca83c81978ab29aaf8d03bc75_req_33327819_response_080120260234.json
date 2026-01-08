@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260216_99fb",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_0688c123e2d0127e00695f098ca83c81978ab29aaf8d03bc75",
+    "logged_at": "2026-01-08T01:34:53.836346",
+    "request_id": "33327819"
+  },
+  "payload": {
+    "id": "resp_0688c123e2d0127e00695f098ca83c81978ab29aaf8d03bc75",
+    "created_at": 1767836044.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0688c123e2d0127e00695f098d2fa881979d4ff15e99e2be15",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk doplňuje architekturní plán projektu „CrossPlatformDiagSuite“ o detaily návratových kódů CLI, specifické výjimky, bezpečnostní zásady, build/run postup a ověřovací kroky. Navazuje na předchozí popis core/CLI/GUI modulů, manifestu, runneru, assetů a testů.\\n\\nDoplňky k error handlingu a návratovým kódům:\\n- CLI vrstva rozlišuje návratové kódy:\\n  - kód pro plný úspěch (všechny moduly proběhly bez chyb),\\n  - kód pro částečný úspěch (některé moduly selhaly, ale běh jako celek doběhl a výstupy jsou k dispozici),\\n  - kód pro kritické selhání (např. chyba inicializace, konfigurace, nemožnost vytvořit výstupní adresář, fatální chyba manifestu apod.).\\n- Při selhání načtení fontů `assets.fonts.load_fonts` vyvolá specifickou výjimku `FontLoadError`. Tuto výjimku zachytí `gui.app` v rámci startovací logiky GUI:\\n  - zobrazí standardizovaný chybový dialog (přes `KErrorDialog`),\\n  - zaloguje chybu přes `serializers.logger`,\\n  - bezpečně ukončí aplikaci s nenulovým návratovým kódem.\\n- Při chybách v parsování nebo validaci manifestu `core.manifest.validate_manifest` vyvolá `ManifestValidationError`. CLI i GUI tuto chybu interpretují jako problém s manifestem (poškozený, nekompatibilní nebo neodpovídající očekávané verzi schématu):\\n  - uživatel je informován, že manifest je neplatný,\\n  - běh diagnostiky se buď neprovede vůbec (kritická chyba), nebo se provede v omezeném režimu, pokud je takový fallback definován (není zde detailně rozvedeno),\\n  - chyba je zalogována a promítnuta do výstupů (např. do `manifest_run` nebo logu CLI/GUI).\\n\\nSecurity notes (bezpečnostní zásady):\\n- Diagnostika pracuje pouze s lokálními systémovými informacemi a logy. Žádná data se neodesílají mimo stroj bez explicitního souhlasu uživatele (pokud původní zadání nevyžaduje jinak). To je důležité pro ochranu soukromí a souladu s interními bezpečnostními politikami.\\n- Výstupní soubory mohou obsahovat citlivé informace (např. hostname, IP adresy, části logů, informace o procesech). Uživatel musí být na tuto skutečnost upozorněn:\\n  - v dokumentaci (README, případně doprovodná dokumentace),\\n  - volitelně i v UI (např. upozornění před vytvořením archivu nebo při exportu dat).\\n- Přístup k některým systémovým informacím může vyžadovat zvýšená oprávnění (root/Administrator). Aplikace by měla:\\n  - detekovat nedostatečná oprávnění (např. selhání přístupu k logům, WMI, journalctl),\\n  - srozumitelně informovat uživatele, že některé testy nemusely proběhnout kvůli právům,\\n  - tuto skutečnost zaznamenat do `DiagnosticRunSummary` a logů.\\n- Log soubory diagnostiky by neměly obsahovat tajné údaje (hesla, tokeny, klíče). Moduly, které parsují logy nebo konfigurace, musí provádět základní filtraci/maskování citlivých údajů, pokud je to relevantní (např. nahrazení částí řetězců hvězdičkami).\\n- Distribuovaný balík diagnostiky by měl být podepsán nebo jinak chráněn proti manipulaci (např. digitální podpis instalátoru nebo archivu). Implementace podpisu je mimo rozsah tohoto plánu, ale je doporučena v dokumentaci jako best practice.\\n- Kontrola hashů fontů (a případně dalších assetů) slouží k detekci neautorizovaných změn v distribuovaném balíku. `assets.fonts.verify_font_hashes` pomáhá ověřit integritu souborů před jejich použitím v GUI.\\n- Aplikace by neměla spouštět externí příkazy s neověřenými vstupy od uživatele, aby se předešlo injekčním útokům. Pokud jsou externí příkazy potřeba (např. `uname`, `journalctl`), musí být parametry:\\n  - pevně definované nebo whitelistované,\\n  - escapované nebo předávané přes bezpečná API (např. `subprocess.run` s `args` seznamem, bez shell=True).\\n- Případný přístup k síti (např. testy konektivity) musí být omezen na explicitně definované cíle a porty dle zadání. Nesmí docházet k libovolnému síťovému skenování nebo komunikaci mimo schválený rozsah.\\n\\nBuild & run (build, spuštění, ověření):\\n\\nPrerequisites (předpoklady):\\n- Python 3.12+ nainstalovaný na cílovém systému, nebo použití embedded Python runtime jako součást distribučního balíku.\\n- Na Windows: dostupnost potřebných knihoven pro přístup k systémovým informacím (např. `pywin32`, `wmi`), pokud jsou v implementaci použity.\\n- Na Linuxu: přístup k běžným systémovým nástrojům dle zadání (např. `uname`, `lsb_release`, `journalctl`), které mohou být volány diagnostickými moduly.\\n- Nástroj pro tvorbu archivů (ZIP). Lze použít standardní knihovnu Pythonu `zipfile`, případně externí nástroj, pokud je preferován.\\n- Pro build/test: nástroj pro správu závislostí (např. `pip` + `venv`, `poetry` nebo `pipenv`) a testovací framework (primárně `pytest`).\\n\\nCommands (typické příkazy):\\n- Vytvoření virtuálního prostředí a aktivace:\\n  - Linux/macOS: `python -m venv .venv && source .venv/bin/activate`.\\n  - Windows: `python -m venv .venv` a následně `.venv\\\\\\\\Scripts\\\\\\\\activate`.\\n- Instalace závislostí: `pip install -r requirements.txt` (pokud je použit `requirements.txt`).\\n- Spuštění automatizovaných testů: `python -m pytest tests`.\\n- Spuštění plné diagnostiky z CLI: `python -m cli.main run-full`.\\n- Spuštění konkrétního scénáře: `python -m cli.main run-scenario <name>`.\\n- Výpis dostupných scénářů: `python -m cli.main list-scenarios` (využívá `modules.registry` a manifest).\\n- Zobrazení informací z MANIFESTu: `python -m cli.main show-manifest` (čte a validuje MANIFEST, používá `core.manifest`).\\n- Zobrazení verze diagnostického balíku: `python -m cli.main version`.\\n- Spuštění GUI aplikace (primárně na Windows): `python -m gui.app` (volá `run_gui`).\\n- Volitelně: vytvoření distribučního archivu (např. `python -m build` nebo vlastní skript `build_release.py`) dle zvoleného build systému a konfigurace v `pyproject.toml`.\\n\\nVerification (ověření funkčnosti a UI):\\n- Ověřit, že po spuštění `python -m cli.main run-full` se vytvoří výstupní adresář s obsahem odpovídajícím definovanému MANIFESTu:\\n  - přítomnost `manifest_run` souboru,\\n  - log soubory,\\n  - JSON/text výstupy modulů,\\n  - případný archiv výstupů, pokud je zapnut.\\n- Ověřit, že `python -m cli.main list-scenarios` vypíše scénáře definované v `modules.registry` a manifestu (konzistence mezi registrací a dokumentací).\\n- Ověřit, že `python -m cli.main show-manifest` korektně načte a zobrazí informace z MANIFESTu, včetně detekce chyb (např. vyvolání `ManifestValidationError` při poškození).\\n- Ověřit, že `python -m gui.app` spustí GUI aplikaci, která:\\n  - načte fonty Montserrat z lokálních assetů přes `assets.fonts.load_fonts`,\\n  - při úmyslném poškození font souborů nebo neplatných hashe zobrazí chybový dialog (přes `KErrorDialog`) a ukončí se s odpovídajícím návratovým kódem.\\n- Ověřit, že UI respektuje Kájovo UI Design Standard:\\n  - barvy, tloušťky lemu/okraje, radius rohů,\\n  - typografii (Montserrat-Regular/Bold, velikosti dle `UiScale`),\\n  - chování focusu (tab order, focus ring),\\n  - chování kláves ESC/ENTER/SPACE (např. zavření dialogu, potvrzení, aktivace tlačítek),\\n  - overlay scrollbary dle standardu.\\n- Ověřit, že stavový řádek (`gui.statusbar.StatusBar`) zobrazuje:\\n  - aktuální čas ve formátu `HH:MM:SS`,\\n  - datum ve formátu `DD.MM.YYYY`,\\n  - správnou geometrii a typografii dle tokenů z `gui.ui_tokens`.\\n- Ověřit, že tabulky a seznamy (`gui.widgets.tables.KTable`, `KList`):\\n  - umožňují výběr řádku,\\n  - podporují kopírování přes `CTRL+C` (např. zkopírování obsahu vybraného řádku),\\n  - zobrazují tooltipy pouze při overflow textu a až po 2 sekundách hoveru.\\n- Ověřit, že dropdown a combobox komponenty (`gui.widgets.inputs.KDropdown`, `KComboBox`) fungují dle specifikace:\\n  - otevírání roletky,\\n  - výběr položek myší i klávesnicí,\\n  - klávesové zkratky (např. šipky, ENTER, ESC),\\n  - tooltipy při overflow textu.\\n- Ověřit, že při selhání jednotlivých diagnostických modulů běh pokračuje:\\n  - chyby jsou zachyceny v `DiagnosticModuleResult.error` a zalogovány,\\n  - promítnuty do souhrnu (`DiagnosticRunSummary.errors`),\\n  - aplikace (CLI/GUI) nespadne a vrátí odpovídající návratový kód (částečný úspěch).\\n- Ověřit golden screenshoty hlavního okna, dialogu, tabulky, dropdownu a comboboxu ve třech velikostech okna (např. 800×600, 1280×720, 1920×1080) proti referenčním obrázkům, aby se zajistila vizuální konzistence napříč verzemi.\\n\\nDeliverable policy (shrnutí z konce chunku):\\n- `file_generation_strategy`: \\\"PLAN->STRUCTURE->FILE_CONTENT\\\" – generování probíhá ve třech krocích: nejprve plán, pak struktura souborů, nakonec obsah souborů.\\n- `max_lines_per_chunk`: 500 – omezení počtu řádků generovaných v jednom chunku při tvorbě obsahu souborů.\\n\\nChunk tak uzavírá A2 plán tím, že doplňuje bezpečnostní a provozní aspekty (security notes), konkrétní build/run postupy, ověřovací scénáře pro CLI i GUI a upřesňuje chování při specifických chybách (FontLoadError, ManifestValidationError, návratové kódy). Vše je konzistentní s předchozími částmi architektury a respektuje požadavky na determinismus, robustnost, bezpečnost a uživatelskou srozumitelnost.\",\"chunk_index\":5,\"chunk_count\":10,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 5632,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2918,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 8550
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767836092,
+    "store": true
+  }
+}

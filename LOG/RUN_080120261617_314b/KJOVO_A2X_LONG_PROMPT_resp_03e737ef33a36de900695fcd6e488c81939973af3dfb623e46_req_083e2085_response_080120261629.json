@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261617_314b",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_03e737ef33a36de900695fcd6e488c81939973af3dfb623e46",
+    "logged_at": "2026-01-08T15:29:55.237133",
+    "request_id": "083e2085"
+  },
+  "payload": {
+    "id": "resp_03e737ef33a36de900695fcd6e488c81939973af3dfb623e46",
+    "created_at": 1767886190.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_03e737ef33a36de900695fcd6ea52c8193b063c66cad75b06d",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento závěrečný chunk pouze formálně ukončuje master zadání větou „Konec MASTER zadání.“ a nepřidává žádné nové technické požadavky, struktury ani pravidla. Slouží jen jako explicitní uzavření celého promptu.\\n\\nRekapitulace celkového stavu po všech chuncích (který tento chunk nijak nemění):\\n- Existuje kompletní návrh diagnostik pro Ubuntu (zejména pro web server), včetně souboru MANIFEST.md a detailní struktury adresářů a souborů.\\n- Existuje kompletní návrh FULL Windows Diagnostics (kapitola 29) s podrobnou adresářovou strukturou, obsahem MANIFEST.md a detailními výpisy/sekcemi pro tyto oblasti: system, registry, filesystem, python, processes_services, network, security, hardware, storage, drivers, devtools, virtualization, wsl a logs.\\n- Všude platí globální zásady:\\n  - Neexportovat tajemství (hesla, privátní klíče, tokeny a podobné citlivé údaje).\\n  - Chybějící subsystémy nebo nedostupné části označovat jako NOT PRESENT nebo ACCESS DENIED (podle situace), místo aby se skripty chovaly chybově nebo mlčky selhávaly.\\n  - Poskytovat lidsky čitelný manifest/index (např. MANIFEST.md) pro snadnou orientaci v diagnostických výstupech a struktuře souborů.\\n\\nTento chunk pouze potvrzuje, že výše uvedené návrhy a pravidla zůstávají v platnosti beze změny a že žádné nové požadavky, soubory, struktury ani kontrakty nepřibývají. Slouží jako formální konec MASTER zadání, bez doplnění či úpravy existujících instrukcí, návrhů nebo invarantů.\",\"chunk_index\":1,\"chunk_count\":1,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 737,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 471,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1208
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767886195,
+    "store": true
+  }
+}

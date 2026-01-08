@@ -1,0 +1,18 @@
+{
+  "run_id": "RUN_070120260113_b3ae",
+  "timeline": [
+    {
+      "step": "A1",
+      "start": "2026-01-07T00:13:04.649449",
+      "end": "2026-01-07T00:16:09.790301",
+      "duration_s": 185.141,
+      "result": "completed",
+      "details": {
+        "contract": "A1_PLAN"
+      },
+      "ids": {
+        "response_id": "resp_0f678ed20939b9e100695da51118d48192b3d56e24d575808f"
+      }
+    }
+  ]
+}

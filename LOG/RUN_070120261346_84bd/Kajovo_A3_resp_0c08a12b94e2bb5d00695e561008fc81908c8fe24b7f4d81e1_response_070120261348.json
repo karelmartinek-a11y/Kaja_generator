@@ -1,0 +1,81 @@
+{
+  "metadata": {
+    "run_id": "RUN_070120261346_84bd",
+    "project": "Kajovo",
+    "stage": "A3",
+    "response_id": "resp_0c08a12b94e2bb5d00695e561008fc81908c8fe24b7f4d81e1",
+    "logged_at": "2026-01-07T12:48:20.291576"
+  },
+  "payload": {
+    "id": "resp_0c08a12b94e2bb5d00695e561008fc81908c8fe24b7f4d81e1",
+    "created_at": 1767790096.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi generátor obsahu jednoho konkrétního souboru podle A2_STRUCTURE. OUTPUT: VRAŤ POUZE validní JSON. ŽÁDNÝ markdown ani další text. KRITICKÉ: content je vždy čistý obsah souboru (ne DIFF, ne patch). U chunkingu posílej po částech, které se spojí do kompletního souboru. CHUNK: max 500 řádků v jednom chunku, dlouhé soubory vrať po částech. KONTRAKT A3_FILE: {\"contract\":\"A3_FILE\",\"path\":string,\"chunking\":{\"max_lines\":500,\"chunk_index\":integer,\"chunk_count\":integer,\"has_more\":boolean,\"next_chunk_index\":integer|null},\"content\":string}",
+    "metadata": {},
+    "model": "gpt-4o-2024-08-06",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0c08a12b94e2bb5d00695e561165348190a311a3c73088b579",
+        "content": [
+          {
+            "annotations": [],
+            "text": "```json\n{\n  \"contract\": \"A3_FILE\",\n  \"path\": \"docs/README.md\",\n  \"chunking\": {\n    \"max_lines\": 500,\n    \"chunk_index\": 0,\n    \"chunk_count\": 1,\n    \"has_more\": false,\n    \"next_chunk_index\": null\n  },\n  \"content\": \"# Kája Project\\n\\n## Overview\\nKája is a desktop application designed to automate requests to OpenAI's API and process the responses efficiently. It provides a detailed control panel for users to set expectations, inputs, modes, models, and response processing.\\n\\n## Features\\n- Automated requests to OpenAI\\n- Detailed logging\\n- Responsive UI\\n- Secure data handling\\n\\n## Installation\\n1. Ensure Python 3.9 is installed.\\n2. Install required packages:\\n   ```\\n   pip install -r requirements.txt\\n   ```\\n3. Run the application:\\n   ```\\n   python ui_main.py\\n   ```\\n\\n## Configuration\\n- API keys are stored in system environment variables.\\n- Configuration settings can be adjusted in `config/settings.json`.\\n\\n## Usage\\n- Launch the application and enter your OpenAI API key.\\n- Configure your request settings and execute requests.\\n- View and process responses directly in the application.\\n\\n## License\\nThis project is licensed under the MIT License.\"\n}\n```",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": "resp_0c08a12b94e2bb5d00695e55eaa4408190af6c0201856b7c59",
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": null,
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 62447,
+      "input_tokens_details": {
+        "cached_tokens": 61312
+      },
+      "output_tokens": 294,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 62741
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767790100,
+    "store": true
+  }
+}

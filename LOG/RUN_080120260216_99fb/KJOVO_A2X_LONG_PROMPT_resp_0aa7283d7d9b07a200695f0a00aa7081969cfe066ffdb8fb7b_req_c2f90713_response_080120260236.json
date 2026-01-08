@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260216_99fb",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_0aa7283d7d9b07a200695f0a00aa7081969cfe066ffdb8fb7b",
+    "logged_at": "2026-01-08T01:36:45.193762",
+    "request_id": "c2f90713"
+  },
+  "payload": {
+    "id": "resp_0aa7283d7d9b07a200695f0a00aa7081969cfe066ffdb8fb7b",
+    "created_at": 1767836160.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0aa7283d7d9b07a200695f0a0194a8819684f4507bf5d30e89",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk pokračuje v návrhu struktury projektu „CrossPlatformDiagSuite“ a navazuje na předchozí definice modulů pro Windows a jádro. Zaměřuje se na zbytek Windows-specific modulů, archivaci výstupů, CLI a GUI vrstvu včetně vlastních widgetů a UI tokenů.\\n\\n1) modules/windows/processes_services.py (dokončení kontextu z předchozího chunku)\\n- Purpose: Sběr informací o procesech a službách na Windows.\\n- EXPORTS:\\n  - `collect_windows_process_list() -> DiagnosticModuleResult[list[ProcessInfo]]` – vrací seznam běžících procesů.\\n  - `collect_windows_services() -> DiagnosticModuleResult[list[ServiceInfo]]` – vrací seznam služeb.\\n- IMPORTS:\\n  - `ProcessInfo`, `ServiceInfo`, `DiagnosticModuleResult`, `DiagnosticErrorInfo` z `core/shared_models.py`.\\n  - `psutil` pro enumeraci procesů.\\n  - Z `typing`: `List`.\\n  - Windows-specific modul `win32service` nebo `wmi` pro získání informací o službách.\\n  - `get_logger` ze `serializers/logger.py`.\\n\\n2) modules/windows/event_logs.py\\n- Purpose: Sběr záznamů z Windows Event Log dle specifikace.\\n- EXPORTS:\\n  - `collect_windows_event_logs() -> DiagnosticModuleResult[list[EventLogEntry]]` – vrací seznam (nebo strukturovaný výpis) událostí z Windows Event Log.\\n- IMPORTS:\\n  - `EventLogEntry`, `DiagnosticModuleResult`, `DiagnosticErrorInfo` z `core/shared_models.py`.\\n  - Z `typing`: `List`.\\n  - Windows-specific modul `win32evtlog` nebo ekvivalent pro čtení event logů.\\n  - `get_logger` ze `serializers/logger.py`.\\n\\n3) modules/archive.py\\n- Purpose: Balení výstupů diagnostiky do archivu.\\n- EXPORTS:\\n  - `create_output_archive(output_dir: str, summary: DiagnosticRunSummary) -> str` – vytvoří archiv (např. ZIP) z adresáře s výstupy a může do názvu nebo metadat zahrnout informace ze `summary`. Vrací cestu k vytvořenému archivu.\\n- IMPORTS:\\n  - `DiagnosticRunSummary` z `core/shared_models.py`.\\n  - Standardní modul `zipfile` pro tvorbu ZIP archivu.\\n  - `pathlib.Path` pro práci s cestami.\\n  - `datetime.datetime` pro generování časově založených názvů archivů.\\n  - `get_logger` ze `serializers/logger.py`.\\n\\n4) cli/__init__.py\\n- Purpose: Inicializace balíčku CLI a zpřístupnění vstupního bodu.\\n- EXPORTS:\\n  - Re-export funkce `main` z `cli/main.py`.\\n- IMPORTS:\\n  - `main` z `cli/main.py`.\\n\\n5) cli/main.py\\n- Purpose: Vstupní bod CLI aplikace, parsování argumentů a spuštění diagnostiky přes `DiagnosticRunner`.\\n- EXPORTS:\\n  - `main(argv: list[str] | None = None) -> int` – hlavní funkce CLI, vrací návratový kód procesu.\\n- IMPORTS:\\n  - `DiagnosticRunner` z `core/runner.py`.\\n  - `AppConfig`, `load_config`, `resolve_output_dir` z `core/config.py`.\\n  - `ManifestLoader` z `core/manifest.py`.\\n  - `init_logging`, `get_logger` ze `serializers/logger.py`.\\n  - `generate_summary_report` ze `serializers/text_report.py`.\\n  - `create_output_archive` z `modules/archive.py`.\\n  - Standardní moduly: `argparse` (parsování argumentů), `sys`, `pathlib.Path`.\\n  - Z `typing`: `List`, `Optional`.\\n- Funkce `main` typicky:\\n  - Načte konfiguraci (soubor/implicitní hodnoty).\\n  - Zpracuje CLI argumenty (výběr scénáře, výstupní adresář, volba archivu, verbose logování apod.).\\n  - Inicializuje logování.\\n  - Pomocí `ManifestLoader` načte manifest scénářů.\\n  - Vytvoří `DiagnosticRunner`, spustí diagnostiku, vygeneruje textový report a volitelně archivuje výstupy přes `create_output_archive`.\\n\\n6) gui/__init__.py\\n- Purpose: Inicializace balíčku GUI a re-export hlavní funkce pro spuštění GUI.\\n- EXPORTS:\\n  - `run_gui` z `gui/app.py`.\\n- IMPORTS:\\n  - `run_gui` z `gui/app.py`.\\n\\n7) gui/app.py\\n- Purpose: Vstupní bod GUI aplikace (primárně pro Windows), inicializace GUI frameworku, fontů a hlavního okna.\\n- EXPORTS:\\n  - Funkce `run_gui() -> None` – spustí GUI aplikaci (vytvoří instanci `DiagnosticApplication`, nastaví event loop atd.).\\n  - Třída `DiagnosticApplication` se základním životním cyklem aplikace:\\n    - `start() -> None` – inicializace GUI, načtení konfigurace, vytvoření hlavního okna.\\n    - `shutdown() -> None` – korektní ukončení aplikace, uvolnění zdrojů.\\n- IMPORTS:\\n  - `MainWindow` z `gui/layout.py` (hlavní okno aplikace – definice není v tomto chunku, ale je součástí GUI vrstvy).\\n  - `load_fonts`, `verify_font_hashes` z `assets/fonts.py` – načtení a ověření fontů.\\n  - `UiScale`, `compute_ui_scale` z `gui/ui_tokens.py` – výpočet měřítka UI podle rozlišení/velikosti okna.\\n  - `AppConfig`, `load_config` z `core/config.py`.\\n  - `DiagnosticRunner` z `core/runner.py` – spouštění diagnostických scénářů z GUI.\\n  - `init_logging`, `get_logger` ze `serializers/logger.py`.\\n  - Standardní modul `sys`.\\n  - Z `typing`: `Optional`.\\n\\n8) gui/ui_tokens.py\\n- Purpose: Implementace „Kájovo UI tokenů“ a výpočtu měřítka UI.\\n- EXPORTS:\\n  - Dataclass `UiScale` s poli: `ui_scale: float`, `fs: int` (font size), `lh: int` (line height), `radius: int` (zaoblení rohů), `pad_x: int`, `pad_y: int` (odsazení), `icon: int` (velikost ikon), `stroke: int` (tloušťka čar), `row_h: int` (výška řádku v tabulkách), `status_h: int` (výška status baru).\\n  - Funkce `compute_ui_scale(window_width: int, window_height: int) -> UiScale` – spočítá vhodné měřítko UI a odvozené hodnoty podle rozlišení okna/obrazovky.\\n  - Konstanty barev: `COLOR_WHITE`, `COLOR_BLACK`, `COLOR_GRAY`, `COLOR_RED` (pravděpodobně jako RGB/hex hodnoty).\\n- IMPORTS:\\n  - `dataclass` z modulu `dataclasses`.\\n  - `floor`, `ceil` z modulu `math`.\\n  - `Final` z `typing` pro definici neměnných konstant.\\n\\n9) gui/widgets/__init__.py\\n- Purpose: Inicializace balíčku `gui.widgets` a re-export základních widgetů používaných v GUI.\\n- EXPORTS:\\n  - `KButton`, `KToggleButton`, `KIconButton` z `gui/widgets/buttons.py`.\\n  - `KTextField`, `KDropdown`, `KComboBox` z `gui/widgets/inputs.py`.\\n  - `KTable`, `KList` z `gui/widgets/tables.py`.\\n  - `KDialog`, `KErrorDialog`, `KConfirmExitDialog` z `gui/widgets/dialogs.py`.\\n- IMPORTS:\\n  - Tyto symboly importuje z jednotlivých souborů v `gui/widgets` a znovu je exportuje pro pohodlný import na vyšší úrovni.\\n\\n10) gui/widgets/buttons.py\\n- Purpose: Implementace tlačítek dle Kájovo UI standardu.\\n- EXPORTS:\\n  - Třída `KButton` s vlastnostmi:\\n    - `text: str` – popisek tlačítka.\\n    - `is_critical: bool` – zda jde o „nebezpečnou“ akci (např. červené tlačítko).\\n    - `state: str` – stav tlačítka (např. \\\"default\\\", \\\"disabled\\\", \\\"loading\\\").\\n    - `on_click: callable` – callback volaný při kliknutí.\\n    - Metody: `set_state(state: str) -> None`, `set_text(text: str) -> None`.\\n  - Třída `KToggleButton` – tlačítko s přepínacím stavem (on/off), navazuje na `KButton`.\\n  - Třída `KIconButton` – tlačítko s ikonou, může kombinovat text a ikonu.\\n- IMPORTS:\\n  - `UiScale`, `COLOR_WHITE`, `COLOR_BLACK`, `COLOR_GRAY`, `COLOR_RED` z `gui/ui_tokens.py`.\\n  - Z `typing`: `Callable`, `Optional`.\\n  - Modul použitého GUI frameworku (např. `PySide6.QtWidgets` nebo `tkinter`) pod aliasem `ui_framework` – abstrakce nad konkrétním toolkitem.\\n\\n11) gui/widgets/inputs.py\\n- Purpose: Textová pole, dropdowny a comboboxy dle UI standardu.\\n- EXPORTS:\\n  - Třída `KTextField` s parametry:\\n    - `editable: bool` – zda je pole editovatelné.\\n    - `placeholder: str` – text zobrazený, když je pole prázdné.\\n    - Metody: `get_value() -> str`, `set_value(value: str) -> None`.\\n  - Třída `KDropdown` s vlastností `items: list[str]` a metodami: `set_items(items: list[str]) -> None`, `get_value() -> str`.\\n  - Třída `KComboBox` s vlastností `items: list[str]` a metodami: `set_items(items: list[str]) -> None`, `get_value() -> str`, `set_value(value: str) -> None`.\\n- IMPORTS:\\n  - `UiScale`, `COLOR_WHITE`, `COLOR_BLACK`, `COLOR_GRAY`, `COLOR_RED` z `gui/ui_tokens.py`.\\n  - Z `typing`: `List`, `Optional`.\\n  - `ui_framework` (konkrétní GUI toolkit, např. PySide6/tkinter).\\n  - `get_logger` ze `serializers/logger.py`.\\n\\n12) gui/widgets/tables.py\\n- Purpose: Tabulky a seznamy pro zobrazení diagnostických dat.\\n- EXPORTS:\\n  - Třída `KTable` s metodami:\\n    - `set_columns(columns: list[str]) -> None` – nastavení hlaviček sloupců.\\n    - `set_rows(rows: list[list[str]]) -> None` – nastavení dat v tabulce.\\n    - `get_selected_row() -> int | None` – index aktuálně vybraného řádku.\\n  - Třída `KList` s metodami:\\n    - `set_items(items: list[str]) -> None` – nastavení položek seznamu.\\n    - `get_selected_index() -> int | None` – index vybrané položky.\\n- IMPORTS:\\n  - `UiScale`, `COLOR_WHITE`, `COLOR_BLACK`, `COLOR_GRAY` z `gui/ui_tokens.py`.\\n  - Z `typing`: `List`, `Optional`.\\n  - `ui_framework` (GUI toolkit).\\n  - `get_logger` ze `serializers/logger.py`.\\n\\n13) gui/widgets/dialogs.py (začátek, detail není v tomto chunku)\\n- Purpose: Dialogová okna (obecný dialog, chybový dialog, potvrzení ukončení aplikace) dle UI standardu.\\n- EXPORTS (dle předchozího souboru `__init__`):\\n  - `KDialog`, `KErrorDialog`, `KConfirmExitDialog` – třídy pro různé typy dialogů.\\n- IMPORTS (implicitně):\\n  - `UiScale`, barvy z `gui/ui_tokens.py`, `ui_framework`, `get_logger` atd.\\n\\nCelkový význam chunku:\\n- Dokončuje Windows-specific diagnostické moduly (procesy, služby, event logy) a přidává modul pro archivaci výstupů.\\n- Definuje CLI vstupní bod, který propojuje konfiguraci, manifest scénářů, běh diagnostiky, generování reportu a tvorbu archivu.\\n- Zavádí GUI vrstvu: hlavní aplikaci, výpočet UI měřítka (UiScale), barevné a rozměrové tokeny a sadu vlastních widgetů (tlačítka, vstupy, tabulky, dialogy) postavených nad abstraktním GUI frameworkem.\\n- Všechny části respektují sdílené modely z `core/shared_models.py` a centralizované logování přes `serializers.logger.get_logger`, čímž se zachovává konzistentní architektura napříč CLI i GUI rozhraním a mezi platformami (Windows/Linux).\",\"chunk_index\":8,\"chunk_count\":10,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 3993,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3217,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 7210
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767836204,
+    "store": true
+  }
+}

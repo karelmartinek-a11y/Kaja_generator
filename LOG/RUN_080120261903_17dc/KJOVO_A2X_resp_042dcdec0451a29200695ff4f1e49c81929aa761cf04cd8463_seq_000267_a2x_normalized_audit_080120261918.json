@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261903_17dc",
+    "project": "KJOVO",
+    "stage": "A2X",
+    "response_id": "resp_042dcdec0451a29200695ff4f1e49c81929aa761cf04cd8463",
+    "event": "a2x_normalized",
+    "sequence": 267,
+    "logged_at": "2026-01-08T18:18:34.930395"
+  },
+  "details": {
+    "event": "a2x_normalized",
+    "level": "info",
+    "details": {
+      "root_set": false,
+      "files_total": 2,
+      "files_kept": 2,
+      "files_skipped": 0,
+      "imports_converted": 0,
+      "exports_fixed": 0,
+      "purpose_filled": 0,
+      "language_filled": 0,
+      "invariants_set": false
+    },
+    "timestamp": "2026-01-08T18:18:34.930386"
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261657_c5d0",
+    "project": "KJOVO",
+    "stage": "A3",
+    "response_id": "resp_0cf6aad5f58c43d600695fd6cbc1288190b0913566e2ce3c47",
+    "logged_at": "2026-01-08T16:09:50.080766",
+    "request_id": "bccf81af"
+  },
+  "payload": {
+    "id": "resp_0cf6aad5f58c43d600695fd6cbc1288190b0913566e2ce3c47",
+    "created_at": 1767888587.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Výstup musí být JEDINÝ validní JSON bez markdownu. Kontrakt: KAJA_PROMPT_SPLIT. Zkrať vstupní texty a rozděl je na instructions a input_text. Obě pole musí obsahovat kontrakt, pravidla i obsah dialogového okna (zhuštěně, bez ztráty významu). Zachovej explicitní JSON kontrakty beze změny. Neopakuje se stejný text v obou polích, ale obě musí být plnohodnotné. Celková délka instructions+input_text <= 6554 tokenů. \n\nJsi generátor obsahu jednoho konkrétního souboru podle A2_STRUCTURE. OUTPUT: vrať POUZE validní JSON dle kontraktu A3_FILE, bez markdownu a bez dalšího textu. Kritické: pole content obsahuje vždy kompletní čistý obsah souboru (ne DIFF, ne patch). Pokud je soubor dlouhý, použij chunking: max 500 řádků v jednom chunku, soubor vrať po částech, které se spojí do kompletního souboru. Kontrakt A3_FILE: {\"contract\":\"A3_FILE\",\"path\":string,\"chunking\":{\"max_lines\":500,\"chunk_index\":integer,\"chunk_count\":integer,\"has_more\":boolean,\"next_chunk_index\":integer|null},\"content\":string}.\n\nImplementuj pouze to, co je definováno v A1_PLAN, A2_STRUCTURE, A2X_INVARIANTS a A2X_FILE_MAP_FOR_PATH. A2X_FILE_MAP je jediný zdroj pravdy pro exporty/importy. Exporty v generovaném souboru musí přesně odpovídat A2X_FILE_MAP (name/kind/signature) a být v contentu doslovně přítomné. Nezaváděj nové symboly ani nové soubory; zachovej shodný datový model napříč soubory. Výsledek musí být spustitelný bez ručních úprav.\n\nProjekt MASTER_Zadani_Terminator je čistě specifikační terminátor: tento chunk slouží jako end-of-spec marker, nepřidává žádné nové funkční ani nefunkční požadavky, nedefinuje nové doménové entity ani API. Moduly SpecEndMarker a SpecInterpreter existují jen pro nástroje, které parsují sekvenci chunků a určují, kde končí normativní část. End-of-spec marker nesmí měnit žádné předchozí požadavky ani UI standard (Kájovo UI Design Standard MASTER v1.0). Žádné nové build kroky ani soubory se z tohoto chunku neodvozují.\n\nPro soubor src/spec_end_marker.ts platí: language=TypeScript, žádné importy. Musí exportovat přesně: (1) constant END_OF_SPEC_MARKER_ID se signaturou \"export const END_OF_SPEC_MARKER_ID: string;\" a (2) funkci isEndOfSpecChunk se signaturou \"export function isEndOfSpecChunk(chunkId: string): boolean;\". Implementace má deterministicky rozpoznat end-of-spec chunk podle ID, ale nesmí zavádět další veřejné symboly ani měnit kontrakt. Soubor pouze definuje logický end-of-spec marker a API pro jeho rozpoznání v sekvenci chunků zadání. Nepoužívej žádné externí knihovny ani runtime závislosti mimo standardní TypeScript/JavaScript jazykové konstrukce. Dodržuj, že tento soubor neukládá žádné nové normativní požadavky – je čistě technickým artefaktem pro nástroje.\n\nDesign standard Kájovo UI Design Standard (MASTER v1.0) je závazný pro UI, ale tento konkrétní soubor je čistě logický/technický (TypeScript) a UI přímo neimplementuje. Přesto nesmí být v rozporu s tím, že end-of-spec marker nesmí měnit UI požadavky. Žádné další komponenty, layout ani vizuální prvky zde nedefinuj. Zaměř se pouze na implementaci exportovaných symbolů dle A2X_FILE_MAP_FOR_PATH a respektuj, že tento soubor je součástí většího projektu, kde další soubory (spec_interpreter.ts, types/chunk_model.ts) budou generovány zvlášť podle svých map.",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0cf6aad5f58c43d600695fd6cc5e388190ad340257d0d0ea3a",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\n  \"contract\": \"A3_FILE\",\n  \"path\": \"src/spec_end_marker.ts\",\n  \"chunking\": {\n    \"max_lines\": 500,\n    \"chunk_index\": 0,\n    \"chunk_count\": 1,\n    \"has_more\": false,\n    \"next_chunk_index\": null\n  },\n  \"content\": \"export const END_OF_SPEC_MARKER_ID: string = \\\"MASTER_END_OF_SPEC\\\";\\n\\nexport function isEndOfSpecChunk(chunkId: string): boolean {\\n  return chunkId === END_OF_SPEC_MARKER_ID;\\n}\\n\"\n}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": "resp_0cf6aad5f58c43d600695fd68e093881908bc7e4d3269d0b5a",
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 5823,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 135,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 5958
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767888589,
+    "store": true
+  }
+}

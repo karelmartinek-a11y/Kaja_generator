@@ -1,0 +1,43 @@
+{
+  "metadata": {
+    "project": "KJOVO",
+    "mode": "GENERATE",
+    "model": "gpt-5.1",
+    "response_id": "GENERATE_b86da8",
+    "user_spec": "Ve Vectore Store je soubor 2ezvhKrAWPcWYHm11aQJKq, kde najdeš zadání porgramu, který porsím vygeneruj. Dodrž při tom standardy designu, které jsou také ve Vectore Store pod YDeLL1L564LE5WPLFKpSK2",
+    "attachments": [
+      {
+        "file_id": "file-YDeLL1L564LE5WPLFKpSK2",
+        "filename": "Kajovo_UI_Design_Standard_MASTER_v1.0_AI.md",
+        "purpose": "user_data",
+        "size_bytes": 16210
+      },
+      {
+        "file_id": "file-2ezvhKrAWPcWYHm11aQJKq",
+        "filename": "ZADANI_KAJA_FINAL.md",
+        "purpose": "user_data",
+        "size_bytes": 200221
+      },
+      {
+        "file_id": "file-XmRFcHGh2VcT2aAWNN9qPb",
+        "filename": "Kajovo_UI_Design_Standard_MASTER_v1.0_AI.md",
+        "purpose": "user_data",
+        "size_bytes": 16210
+      }
+    ],
+    "vector_store_ids": [
+      "vs_695fe816fd988191ae3b2df190aa6aa0"
+    ],
+    "diagnostics": [],
+    "captured_at": "2026-01-08T17:23:38.944221",
+    "pricing_catalog": {
+      "source": "https://openai.com/pricing",
+      "last_refreshed": "2026-01-08T17:23:34.274736",
+      "verified": false,
+      "status": "Ceník offline / odhad",
+      "error": "Client error '403 Forbidden' for url 'https://openai.com/pricing'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403"
+    }
+  },
+  "captured_at": "2026-01-08T17:23:38.944254",
+  "run_id": "RUN_080120261823_0885"
+}

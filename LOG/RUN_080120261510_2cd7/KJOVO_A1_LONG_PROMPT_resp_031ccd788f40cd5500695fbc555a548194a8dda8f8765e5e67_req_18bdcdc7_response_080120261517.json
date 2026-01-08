@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261510_2cd7",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_031ccd788f40cd5500695fbc555a548194a8dda8f8765e5e67",
+    "logged_at": "2026-01-08T14:17:34.103201",
+    "request_id": "18bdcdc7"
+  },
+  "payload": {
+    "id": "resp_031ccd788f40cd5500695fbc555a548194a8dda8f8765e5e67",
+    "created_at": 1767881813.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_031ccd788f40cd5500695fbc55ddd88194abf946fba96d24f3",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Sekce 28.2–28.17 detailně rozpracovává strukturu FULL Ubuntu (Web Server) Diagnostics adresáře a obsah jednotlivých podadresářů. Cílem je vytvořit standardizovaný, bezpečný diagnostický výstup pro analýzu problémů webového stacku (nginx, databáze, Python aplikace, webhooky, certifikáty, kontejnery atd.), bez exportu tajemství a databázových dat.\\n\\nDoplnění struktury kořenového adresáře (28.2 – pokračování):\\nV kořenovém adresáři `Diag_YYYYMMDD-HHMMSS/` jsou kromě již uvedených složek také:\\n- `app/`\\n- `python/`\\n- `database/`\\n- `certs/`\\n- `cron_webhooks/`\\n- `logs/`\\n- `virtualization_containers/`\\n\\nTyto složky budou naplněny specifickými diagnostickými soubory dle dalších podsekcí.\\n\\n28.3 README_problem.md\\n- Soubor `README_problem.md` má být ručně doplněn administrátorem / uživatelem a slouží jako kontext k diagnostice.\\n- Minimální šablona obsahu:\\n  - Symptom (co nefunguje)\\n  - Repro kroky\\n  - Očekávání vs. realita\\n  - Kdy to začalo (konkrétní datum/čas)\\n  - Poslední změny (deploy, update, cert renewal, firewall)\\n  - Výpis chyby (kopie výstupu)\\n- Tento soubor není generován automaticky, ale je součástí standardu – diagnostický balík bez něj je považován za neúplný.\\n\\n28.4 system/\\nAdresář `system/` obsahuje základní systémové informace:\\n- `os_release.txt` – obsah `/etc/os-release` a informace o kernelu.\\n- `uname_a.txt` – výstup `uname -a`.\\n- `uptime.txt` – výstup `uptime` a `who -b` (čas posledního bootu).\\n- `locale_timezone.txt` – výstup `locale` a `timedatectl` (časová zóna, NTP stav).\\n- `hostname_hosts.txt` – výstup `hostnamectl` + obsah `/etc/hosts` a `/etc/hostname`.\\n- `sysctl_all.txt` – výstup `sysctl -a` (sysctl nastavení).\\n- `limits_summary.txt` – výstup `ulimit -a` + listing `/etc/security/limits.conf` a `limits.d` (jen listing, ne nutně obsah; respektovat bezpečnostní zásady).\\n- `systemd_failed_units.txt` – výstup `systemctl --failed`.\\n- `systemd_running_units.txt` – výstup `systemctl list-units --type=service --state=running`.\\n- `journal_boot_errors.txt` – výstup `journalctl -b -p err..alert --no-pager` (kritické chyby od posledního bootu).\\n- `env_root_sanitized.txt` – relevantní environment proměnné pro služby (bez tajemství; musí být redigovány nebo vynechány citlivé hodnoty).\\n\\n28.5 hardware/\\nAdresář `hardware/` obsahuje informace o HW a zátěži:\\n- `cpuinfo.txt` – shrnutí `/proc/cpuinfo` (např. počet jader, model; může být zpracované nebo přímo obsah souboru).\\n- `meminfo.txt` – obsah `/proc/meminfo` + výstup `free -h`.\\n- `load_ps_top.txt` – výstupy:\\n  - `ps aux --sort=-%cpu`\\n  - `ps aux --sort=-%mem`\\n  - `top -b -n 1`\\n- `dmesg_tail.txt` – posledních cca 400 řádků z `dmesg -T | tail -n 400` (časově označené kernel logy).\\n\\n28.6 storage/\\nAdresář `storage/` mapuje diskový stav a využití:\\n- `df_h.txt` – výstup `df -hT` (typ FS, velikost, využití).\\n- `lsblk.txt` – výstup `lsblk -f` (bloková zařízení, FS, mountpointy).\\n- `mounts.txt` – výstup `mount` + obsah `/etc/fstab`.\\n- `inode_usage.txt` – výstup `df -ih` (využití inode).\\n- `disk_health_hint.txt` – pokud je dostupný `smartctl`, výstup `smartctl -H` pro hlavní disk (pouze health status, ne kompletní SMART dump, aby se minimalizovala citlivost dat).\\n- `largest_dirs_root.csv` – CSV se seznamem největších složek v `/` (1–2 úrovně hloubky) podle velikosti.\\n- `largest_dirs_var.csv` – CSV se seznamem největších složek v `/var` podle velikosti.\\n\\n28.7 network/\\nAdresář `network/` obsahuje síťovou konfiguraci a stav:\\n- `ip_addr.txt` – výstup `ip a` (adresy rozhraní).\\n- `ip_route.txt` – výstup `ip r` (routing tabulka).\\n- `resolv_conf.txt` – obsah `/etc/resolv.conf` + výstup `systemd-resolve --status`, pokud je k dispozici.\\n- `ss_listen.txt` – výstup `ss -lntup` (naslouchající sockety, TCP/UDP, porty, procesy).\\n- `ss_all.txt` – výstup `ss -antup` (všechny TCP/UDP spojení).\\n- `netstat_fallback.txt` – pokud je nainstalován balík `net-tools`, výstup relevantních `netstat` příkazů (např. `netstat -plnt`), jako fallback.\\n- `dns_check.txt` – výstup `getent hosts` pro klíčové domény (pokud jsou definovány v nástroji nebo konfiguraci diagnostiky).\\n- `proxy_env.txt` – výpis HTTP(S)_PROXY proměnných prostředí, pokud existují (bez dalších tajemství).\\n\\n28.8 firewall/\\nAdresář `firewall/` obsahuje stav firewallu:\\n- `ufw_status.txt` – výstup `ufw status verbose`, pokud je `ufw` nainstalován.\\n- `iptables_rules.txt` – výstupy `iptables -S` a `iptables -L -n -v` (pravidla a počítadla).\\n- `nft_ruleset.txt` – výstup `nft list ruleset`, pokud je `nft` k dispozici.\\n\\n28.9 users_permissions/\\nAdresář `users_permissions/` mapuje uživatele, skupiny a práva:\\n- `users_groups.txt` – výstupy `getent passwd` a `getent group` (bez hashů hesel; standardní systémové záznamy).\\n- `sudoers_listing.txt` – listing souborů `/etc/sudoers*` (např. `ls -l /etc/sudoers*` a obsah může být redigován; cílem je znát existenci a práva, ne nutně plný obsah).\\n- `umask.txt` – výstup `umask` (výchozí maska práv).\\n- `important_paths_permissions.txt` – vlastníci a práva pro důležité cesty: `/etc/nginx`, `/var/www`, `/srv`, `/opt` a adresáře aplikací (app dirs). Výstup může být např. `ls -ld` a `ls -l` pro klíčové cesty.\\n\\n28.10 processes_services/\\nAdresář `processes_services/` popisuje běžící procesy a služby:\\n- `ps_full.txt` – výstup `ps auxfww` (strom procesů s parametry).\\n- `systemctl_status_nginx.txt` – výstup `systemctl status nginx --no-pager`.\\n- `systemctl_status_app.txt` – status aplikační služby (např. gunicorn/uvicorn/systemd unit), pokud existuje; konkrétní jednotka je určena konfigurací diagnostického nástroje.\\n- `systemctl_status_db.txt` – status databázové služby (PostgreSQL, MySQL/MariaDB apod.), pokud existuje.\\n- `open_files_limits.txt` – výstup `cat /proc/sys/fs/file-max` + souhrnný výstup `lsof` (pokud je dostupný), zaměřený na počty otevřených souborů a případné limity.\\n\\n28.11 packages/\\nAdresář `packages/` obsahuje informace o nainstalovaných balících a verzích:\\n- `dpkg_list.txt` – výstup `dpkg -l` (seznam balíků a verzí).\\n- `apt_policy_key_pkgs.txt` – výstup `apt-cache policy` (nebo ekvivalent) pro klíčové balíky: nginx, openssl, python3, certbot, postgres/mysql, redis – cílem je znát verze a repozitáře.\\n- `snap_list.txt` – výstup `snap list`, pokud je `snap` k dispozici.\\n- `pip_global_list.txt` – výstup `python3 -m pip list`, pokud je pip dostupný (globální Python balíky).\\n\\n28.12 web/\\nAdresář `web/` se zaměřuje na webové kořeny a statická data:\\n- `web_root_overview.txt` – přehled document rootů (např. `/var/www`, `/srv/www`) formou stromu do hloubky cca 3 úrovní.\\n- `static_assets_sizes.csv` – CSV s top složkami podle velikosti v document rootech (statická aktiva, např. obrázky, JS/CSS).\\n- `web_server_headers_hint.txt` – volitelný výstup lokálních HTTP dotazů, např. `curl -I http://127.0.0.1` a na vybrané virtual hosty, pro kontrolu hlaviček a odpovědí.\\n\\n28.13 nginx/\\nAdresář `nginx/` obsahuje detailní diagnostiku nginxu:\\n- `nginx_version.txt` – výstup `nginx -V` (včetně configure arguments, modulů, verzí OpenSSL apod.).\\n- `nginx_test.txt` – výstup `nginx -t` (validace konfigurace).\\n- `nginx_conf_tree.txt` – strom adresáře `/etc/nginx` do hloubky cca 4 úrovní.\\n- `nginx_conf_files_list.txt` – seznam `.conf` souborů (cesty, práva, vlastníci).\\n- `nginx_sites_enabled.txt` – listing `sites-enabled` a `sites-available` (obsah a/nebo metadata; pozor na tajemství).\\n- `nginx_effective_config.txt` – výstup `nginx -T` (efektivní konfigurace). Musí být případně redigován kvůli tajemstvím (hesla, klíče, tokeny).\\n- `nginx_logs_tail_access.txt` – tail relevantních access logů (např. posledních N řádků z hlavních access logů).\\n- `nginx_logs_tail_error.txt` – tail relevantních error logů.\\n\\n28.14 app/\\nAdresář `app/` se zaměřuje na aplikační kód a služby:\\n- `app_dirs_overview.txt` – přehled typických umístění aplikace: `/srv`, `/opt`, `/var/www`, `~/apps` atd. (stromy, seznamy).\\n- `systemd_units_related.txt` – výstup grepů na služby typu gunicorn/uvicorn/celery/worker v systemd jednotkách (např. `systemctl list-units | grep -Ei 'gunicorn|uvicorn|celery'`).\\n- `app_env_files_found.txt` – nalezené `.env`, `config*.yml`, `settings.py` atd. – pouze cesty, práva a hash (žádný obsah, aby se neexportovala tajemství).\\n- `app_permissions_summary.txt` – vlastníci a práva pro aplikační adresáře (app dir) a datové adresáře (data dir).\\n- `webhook_configs_found.txt` – nalezené konfigurace webhooků (jen cesty + metadata, bez obsahu).\\n\\n28.15 python/\\nAdresář `python/` má za cíl odhalit konflikty mezi více Python instalacemi, virtuálními prostředími a nástroji (venv, pyenv, poetry, pipx, pipenv):\\n- `python_versions.txt` – výstup `which -a python python3 pip pip3` + `python3 --version` (cesty a verze).\\n- `python_alternatives.txt` – výstup `update-alternatives --display python3`, pokud systém používá alternatives.\\n- `python_sys_path.json` – JSON výstup z `python3 -c \\\"import sys, json; print(json.dumps(sys.path, indent=2))\\\"` (sys.path).\\n- `python_site.json` – JSON výstup z `python3 -c \\\"import site, json; print(json.dumps({'sitepackages': site.getsitepackages(), 'usersite': site.getusersitepackages()}, indent=2))\\\"` (umístění site-packages).\\n- `pip_debug.txt` – výstup `python3 -m pip debug -v` (musí být redigován kvůli případným URL s tokeny nebo přístupovým údajům).\\n- `pip_config_list.txt` – výstup `pip config list -v` (cesty na konfigurační soubory pipu, repozitáře atd.).\\n\\nDiscovery virtuálních prostředí a nástrojů:\\n- `venv_candidates_found.txt` – výsledky hledání `pyvenv.cfg` a `bin/python` v typických cestách: `/srv`, `/opt`, `/var/www`, `/home`, `/root`.\\n- `venv_tree_summaries/venv_<name>.txt` – pro každé nalezené venv shrnutí stromu (bin/, lib/, site-packages) + velikost.\\n- `venv_reports/venv_<name>__report.json` – pro každé venv detailní report obsahující:\\n  - `sys.executable`, `sys.prefix`, `sys.base_prefix`, `sys.path`,\\n  - výstup `pip --version`, `pip list`, `pip freeze` v rámci daného venv.\\n\\n28.16 database/\\nAdresář `database/` se zaměřuje na databázové služby, bez exportu dat. Exportují se pouze konfigurace (často jen metadata), verze, stav, připojení a logy.\\n\\nPostgreSQL (pokud existuje):\\n- `postgres_version.txt` – výstup `psql --version`.\\n- `postgres_service_status.txt` – výstup `systemctl status postgresql --no-pager`.\\n- `postgres_conf_locations.txt` – cesty k `postgresql.conf`, `pg_hba.conf` atd. (jen metadata + hash, ne nutně plný obsah).\\n- `postgres_listen_ports.txt` – výstup `ss -lntup | grep postgres` (porty a sockety, na kterých PostgreSQL naslouchá).\\n- `postgres_logs_tail.txt` – tail relevantních PostgreSQL logů.\\n\\nMySQL/MariaDB (pokud existuje):\\n- `mysql_version.txt` – výstup `mysql --version` nebo ekvivalent.\\n- `mysql_service_status.txt` – výstup `systemctl status mysql`/`mariadb` (bez pageru).\\n- `mysql_conf_locations.txt` – metadata o `my.cnf` a dalších konfiguračních souborech (cesty, práva, hash).\\n- `mysql_logs_tail.txt` – tail relevantních MySQL/MariaDB logů.\\n\\nRedis (pokud existuje):\\n- `redis_version.txt` – výstup `redis-server --version` nebo ekvivalent.\\n- `redis_service_status.txt` – výstup `systemctl status redis*` (bez pageru).\\n- `redis_conf_metadata.txt` – metadata o konfiguračních souborech Redis (cesty, práva, hash).\\n- `redis_logs_tail.txt` – tail relevantních Redis logů.\\n\\n28.17 certs/\\nAdresář `certs/` se zaměřuje na TLS certifikáty a jejich expiraci, bez exportu privátních klíčů:\\n- `cert_locations.txt` – přehled umístění certifikátů: `/etc/letsencrypt`, `/etc/ssl`, vlastní/custom cert adresáře atd. (strom, metadata).\\n- `certbot_status.txt` – výstup `certbot certificates`, pokud je certbot nainstalován (přehled certifikátů, domén, expirací; pozor na citlivé údaje, ale privátní klíče se neexportují).\\n- `cert_expiry_report.txt` – report expirace certifikátů, např. pomocí `openssl x509 -enddate` pro vybrané certifikáty (soubor obsahuje pouze informace o expiraci a identifikaci certifikátu, ne privátní klíče).\\n\\nCelkově tato část standardu přesně definuje, jaké soubory a příkazy mají být použity pro FULL Ubuntu diagnostiku, jak mají být strukturovány adresáře a jaké bezpečnostní zásady (maskování tajemství, export pouze metadat u citlivých konfigurací) musí být dodrženy. Výstup je adresářová struktura bez ZIPu, určená k rychlé analýze problémů v produkčním prostředí. Vše je závazné pro implementaci programu „Kája“ a musí být integrováno s dříve definovanými pravidly (UI standard, observabilita, pricing, run bundle atd.).\",\"chunk_index\":10,\"chunk_count\":15,\"notes\":[\"Zachovat bezpečnostní zásady: neexportovat privátní klíče, hesla, tokeny; u citlivých konfigurací používat redakci nebo pouze metadata + hash.\",\"Adresářová struktura a názvy souborů jsou normativní; implementace musí generovat přesně tyto cesty a názvy, pokud daná komponenta v systému existuje.\",\"Příkazy označené jako „pokud existuje/pokud dostupné“ mají být spouštěny podmíněně podle přítomnosti nástroje/služby (ufw, nft, snap, certbot, konkrétní DB atd.).\",\"JSON výstupy (např. python_sys_path.json, python_site.json, venv_reports) musí být validní JSON, aby byly dále strojově zpracovatelné.\",\"README_problem.md je ručně vyplňovaný kontextový soubor a je považován za povinnou součást kompletní diagnostiky.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 5924,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 4416,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 10340
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767881853,
+    "store": true
+  }
+}

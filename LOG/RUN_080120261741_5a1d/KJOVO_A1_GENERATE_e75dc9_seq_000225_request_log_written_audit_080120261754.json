@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261741_5a1d",
+    "project": "KJOVO",
+    "stage": "A1",
+    "response_id": "GENERATE_e75dc9",
+    "event": "request_log_written",
+    "sequence": 225,
+    "logged_at": "2026-01-08T16:54:00.147279"
+  },
+  "details": {
+    "event": "request_log_written",
+    "level": "info",
+    "details": {
+      "stage": "A1",
+      "request_id": "e32e3b36",
+      "request_log": "KJOVO_A1_GENERATE_e75dc9_req_e32e3b36_request_080120261754.json",
+      "request_chars": 19833,
+      "estimated_tokens": 4958
+    },
+    "timestamp": "2026-01-08T16:54:00.147273"
+  }
+}

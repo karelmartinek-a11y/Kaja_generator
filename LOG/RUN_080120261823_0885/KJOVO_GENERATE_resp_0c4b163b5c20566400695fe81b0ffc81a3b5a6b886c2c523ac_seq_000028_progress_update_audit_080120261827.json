@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261823_0885",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_0c4b163b5c20566400695fe81b0ffc81a3b5a6b886c2c523ac",
+    "event": "progress_update",
+    "sequence": 28,
+    "logged_at": "2026-01-08T17:27:11.316824"
+  },
+  "details": {
+    "event": "progress_update",
+    "level": "info",
+    "details": {
+      "message": "A1: odpověď přijata",
+      "ratio": 0.1
+    },
+    "timestamp": "2026-01-08T17:27:11.316818"
+  }
+}

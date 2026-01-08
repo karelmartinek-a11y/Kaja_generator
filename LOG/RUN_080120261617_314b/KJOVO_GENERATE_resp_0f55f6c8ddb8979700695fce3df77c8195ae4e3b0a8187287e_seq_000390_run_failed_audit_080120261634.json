@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261617_314b",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_0f55f6c8ddb8979700695fce3df77c8195ae4e3b0a8187287e",
+    "event": "run_failed",
+    "sequence": 390,
+    "logged_at": "2026-01-08T15:34:38.501214"
+  },
+  "details": {
+    "event": "run_failed",
+    "level": "error",
+    "details": {
+      "error": "A2X_FILE_MAP.root musí být string.",
+      "type": "ValueError",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3262, in execute\n    files = self._run_generate(user_spec, assets, ui_state, progress_callback, stop_check)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3620, in _run_generate\n    a2x_data = self._parse_json_response(a2x_response, FILE_MAP_CONTRACT, assets=assets)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2698, in _parse_json_response\n    self._validate_contract(payload, expected_contract, assets)\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2743, in _validate_contract\n    self._validate_a2x_file_map(payload)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2857, in _validate_a2x_file_map\n    raise ValueError(\"A2X_FILE_MAP.root musí být string.\")\nValueError: A2X_FILE_MAP.root musí být string.\n"
+    },
+    "timestamp": "2026-01-08T15:34:38.501208"
+  }
+}

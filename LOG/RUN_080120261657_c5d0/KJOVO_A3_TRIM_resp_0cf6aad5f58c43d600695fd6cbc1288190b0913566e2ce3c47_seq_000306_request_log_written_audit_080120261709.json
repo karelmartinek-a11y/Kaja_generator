@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261657_c5d0",
+    "project": "KJOVO",
+    "stage": "A3_TRIM",
+    "response_id": "resp_0cf6aad5f58c43d600695fd6cbc1288190b0913566e2ce3c47",
+    "event": "request_log_written",
+    "sequence": 306,
+    "logged_at": "2026-01-08T16:09:50.116965"
+  },
+  "details": {
+    "event": "request_log_written",
+    "level": "info",
+    "details": {
+      "stage": "A3_TRIM",
+      "request_id": "7d0f0513",
+      "request_log": "KJOVO_A3_TRIM_resp_0cf6aad5f58c43d600695fd6cbc1288190b0913566e2ce3c47_req_7d0f0513_request_080120261709.json",
+      "request_chars": 28353,
+      "estimated_tokens": 7088
+    },
+    "timestamp": "2026-01-08T16:09:50.116957"
+  }
+}

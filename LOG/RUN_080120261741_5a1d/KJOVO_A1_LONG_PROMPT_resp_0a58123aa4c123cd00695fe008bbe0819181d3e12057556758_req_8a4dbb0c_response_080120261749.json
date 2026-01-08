@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261741_5a1d",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_0a58123aa4c123cd00695fe008bbe0819181d3e12057556758",
+    "logged_at": "2026-01-08T16:49:50.263644",
+    "request_id": "8a4dbb0c"
+  },
+  "payload": {
+    "id": "resp_0a58123aa4c123cd00695fe008bbe0819181d3e12057556758",
+    "created_at": 1767890952.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0a58123aa4c123cd00695fe009497c8191be08572484c62dd7",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Specifikace pokračuje detaily UI komponent, stavových barevných kontraktů a začátkem manuálu pro FULL Ubuntu (Web Server) diagnostiku.\\n\\nStatus bar – čas, datum, progress:\\n- Čas (PRAGOTRON / flap styl): každý znak je samostatný modul (obdélník se zaoblením R). Modul má: lem bílý 2 px, okraj černý 1 px, pozadí černé, znak bílý Bold. Uprostřed modulu je vodorovná bílá linka 1 px („spára“). Výška modulu: TIME_H = round(1.2 × LH).\\n- Datum (kalendářová kresba): modul se zaoblením R, lem/okraj jako ostatní moduly. Uvnitř horní lišta oddělená bílou linkou 1 px. Uvnitř text „DD.MM.YYYY“ (Bold, bílý) vycentrovaný.\\n- Progress „teploměr“: rám (lem bílý 2 px, okraj černý 1 px), pozadí černé, výplň bílá. Pro odhadnutelný proces výplň odpovídá 0–100 %. Pro neodhadnutelný proces se bílý segment pohybuje tam a zpět.\\n\\n26) Kontrakty barevných stavů (globální):\\n26.1 Nečervené interaktivní prvky (3 stavy):\\n- NORMAL: lem bílý, okraj černý, pozadí černé, obsah bílý.\\n- ACTIVE: lem bílý, okraj černý, pozadí bílé, obsah černý.\\n- DISABLED: lem šedivý, okraj černý, pozadí černé, obsah šedivý.\\n\\n26.2 Červené (kritické) prvky (2 stavy):\\n- NORMAL: lem červený, okraj černý, pozadí červené, obsah černý.\\n- ACTIVE: lem červený, okraj černý, pozadí černé, obsah červený.\\nPoznámka: Focus overlay (viz 24.2) mění pouze lem na bílý i u červeného prvku, ostatní vrstvy zůstávají dle stavu.\\n\\n27) Komponenty (specifikace):\\n\\n27.1 Tlačítko (button):\\n- Vzhled: používá stavové kontrakty dle sekce 26 (nečervené nebo červené podle významu). Padding: PAD_X, PAD_Y. Radius: R. Text: Montserrat Bold pro primární volbu, Regular pro sekundární (pokud není jasné, použít Bold).\\n- Chování: kliknutí = aktivace. Klávesnice: focus + ENTER/MEZERNÍK = aktivace.\\n- Šířka vs délka textu: preferovaná šířka W_pref = textWidth(FS) + 2×PAD_X + 2×(LEM+OKRAJ). Skupina tlačítek může být roztažená proporcionálně podle W_pref. Pokud prostor nestačí, použije se globální algoritmus text fit/scale.\\n\\n27.2 Přepínač / Toggle, Radio, Checkbox, Klikatelná ikona:\\n- Používají stejné vrstvy a stavový kontrakt jako tlačítka.\\n- Nesmí měnit layout mezi stavy (jen barvy dle kontraktů a případně ikona/obsah v rámci boxu).\\n- Musí být fokusovatelné a ovladatelné klávesnicí.\\n- Ikony jsou outline dle tokenů (viz 22.7), tloušťka STROKE, barva dle stavu (bílá/černá/šedá/červená podle kontraktu).\\n\\n27.3 Tabulka / seznam:\\n- Sloupce mají měnitelnou šířku, řádky mají pevnou výšku ROW_H.\\n- Výběr řádku: invert barvy podle ACTIVE kontraktu na celý řádek (tj. pozadí bílé, text černý u nečervených prvků).\\n- Kopírování: CTRL+C kopíruje vybraný text/buňku/řádek (implementace musí respektovat výběr).\\n- Tooltip v tabulce: zobrazí se po 2 s pouze při overflow textu v buňce.\\n\\n27.4 Dialog:\\n- Geometrie: obdélník se zaoblením R, lem bílý 2 px, okraj černý 1 px, pozadí černé (dodržuje vrstvy LEM/OKRAJ/POZADÍ/OBSAH).\\n- Název dialogu: vlevo nahoře, text přeruší horní lem (stejný pattern jako názvy sekcí). Typografie: Montserrat Bold, VŠE VELKÝMI PÍSMENY.\\n- Obsah: standardně 5 řádků výšky 5×LH. Pokud je obsahu více, použije se vertikální overlay scrollbar (viz 27.7).\\n- Akce: vždy přítomná tlačítka OK / CANCEL / CLOSE (minimálně tato tři; mohou být další, ale tyto jsou povinné).\\n- Klávesy: ENTER = OK (pokud focus není v zadávacím textovém poli), ESC = CLOSE (odpovídá tlačítku CLOSE), TAB/SHIFT+TAB cyklují mezi fokusovatelnými prvky v dialogu.\\n\\n27.5 Textové pole:\\n- Typy: Zadávací (editable) a Zobrazovací (read-only). Zobrazovací pole vždy umožňuje selection a kopírování.\\n- Vzhled: lem bílý 2 px, okraj černý 1 px, pozadí černé, text bílý (Regular). Placeholder text je šedivý (Regular).\\n- Standardní placeholder řetězce: pro zadávací pole „Zde pište...“, pro zobrazovací pole „Zde se zobrazí text...“.\\n- Caret: pouze u zadávacího pole s focusem; blikající svislá čára střídající bílou a černou.\\n- Selection: vybraný text je černý, pozadí selection bílé (invert oproti normálu).\\n\\n27.6 Text fit / scale-to-fit / fallback scroll (globální algoritmus):\\n1) Aplikuj UI_scale (viz 22.3) na typografii a rozměry.\\n2) Prvek může zvětšit šířku podle W_pref, pokud to layout dovolí.\\n3) Pokud stále dochází k overflow, zmenši obsah (scale-to-fit) tak, aby se vešel do dostupného boxu.\\n4) Pokud i po scale-to-fit dochází k overflow, povol overlay scrollbar pouze na ose, kde overflow nastává (horizontální nebo vertikální).\\n5) Scroll se nesmí aktivovat preventivně – pouze při skutečném overflow po předchozích krocích.\\n\\n27.7 Scrollbar (posuvný válec):\\n- Je overlay (neubírá místo layoutu). Track: černý, track okraj: bílý, thumb: bílý.\\n- Šířka: max(6, round(0.8 × FS)).\\n- Pokud overlay scrollbar nelze implementovat (technologické omezení), je povolena výjimka – použití standardního scrollbar komponentu, ale barvy musí odpovídat definované paletě (černá/bílá/šedá/červená dle pravidel, bez stínů/gradientů).\\n\\n27.8 Dropdown (needitovatelný):\\n- Základ: needitovatelný box dle nečerveného stavového kontraktu (NORMAL/ACTIVE/DISABLED).\\n- Vpravo uvnitř boxu je ikona šipky dolů.\\n- Roletka je overlay: zobrazuje 5 položek; pokud je položek více, použije se overlay scrollbar.\\n- Vzhled roletky: pozadí černé, okraj bílý, oddělovače mezi položkami 1 px bílé linky. Text bílý (Regular).\\n- Hover uvnitř roletky: invert barvy řádku (ACTIVE kontrakt na danou položku).\\n- Klávesnice: šipka dolů otevře roletku a posouvá výběr; mezerník potvrdí výběr; ESC zavře roletku. Tooltip po 2 s pouze při overflow textu položky.\\n\\n27.9 Combobox (editovatelný):\\n- Kombinuje textové pole a roletku (dropdown). Umožňuje psaní i výběr.\\n- Filtrování během psaní: case-insensitive prefix match (porovnává se začátek řetězce), diakritika se porovnává přesně (tj. „á“ není totéž co „a“).\\n- Klávesnice: šipka dolů otevře roletku; ENTER vloží vybranou položku a zavře roletku; mezerník vkládá znak mezery, pokud není aktivní režim výběru; ESC zavře roletku.\\n- Tooltip po 2 s pouze při overflow textu.\\n\\n27.10 Referenční tvary ikon (SVG, viewBox 0 0 24 24):\\n- Šipka dolů (dropdown): definována jako jednoduchý path „M6 9 L12 15 L18 9“.\\n- CLOSE (X): dvě křížící se úhlopříčky „M7 7 L17 17“ a „M17 7 L7 17“.\\n- Kalendář (datum ve status): obdélník s rx/ry=2, horizontální linka pro oddělení horní lišty a dvě svislé linky pro „kroužky“ data.\\n- INFO (volitelně): svislá čára pro „i“ a krátká horizontální čára pro tečku.\\nTyto SVG tvary jsou referenční; skutečné ikony musí respektovat tokeny (ICON, STROKE, barvy) a outline styl.\\n\\n28) FULL Ubuntu (Web Server) Diagnostics – úvod:\\n- Manuál definuje FULL diagnostický balík pro Ubuntu server, typicky hostující webový stack (nginx, databáze, Python aplikace, webhooky, certifikáty). Cílem je vytvořit konzistentní adresář se soubory (bez ZIP), který umožní rychle určit příčinu chyb (konfigurace, procesy, síť, certifikáty, permissions, venv, systémové limity).\\n- Výstupem je adresář se soubory na Ubuntu (a volitelně stažený na Windows). Neprovádí se kopie databází ani tajných klíčů – pouze konfigurace, metadatové přehledy a logy.\\n\\n28.1 Zásady bezpečnosti:\\n- Neexportovat privátní klíče (TLS, SSH), tokeny a hesla.\\n- Konfigurační soubory, které mohou obsahovat tajemství, exportovat buď se základním maskováním (např. „password=***“), nebo jen jako metadata (cesta, vlastník, práva, hash) a redigovanou verzi poskytnout ručně.\\n- Logy mohou obsahovat osobní údaje; mají být sdíleny selektivně.\\n\\n28.2 Struktura kořenového adresáře diagnostiky:\\n- Kořenový adresář: Diag_YYYYMMDD-HHMMSS/.\\n- V kořeni jsou soubory: MANIFEST.md, README_problem.md, CHANGELOG_last_actions.txt.\\n- Podadresáře: system/, hardware/, storage/, network/, firewall/, users_permissions/, processes_services/, packages/, web/, nginx/ (další struktura bude rozvedena v následujících částech specifikace).\\n\\nTento chunk doplňuje UI standard o konkrétní komponenty (tlačítka, přepínače, tabulky, dialogy, textová pole, dropdown/combobox, scrollbar, ikonografii) a globální stavové barevné kontrakty. Zároveň zavádí úvod a základní bezpečnostní zásady pro FULL Ubuntu (Web Server) diagnostický balík a jeho adresářovou strukturu.\",\"chunk_index\":9,\"chunk_count\":15,\"notes\":[\"Zachovat přesné kontrakty stavů (NORMAL/ACTIVE/DISABLED) pro nečervené a červené prvky, včetně chování focus overlay (lem na bílý).\",\"UI komponenty musí respektovat globální tokeny (FS, LH, R, PAD_X, PAD_Y, ROW_H, ICON, STROKE) a vrstvy LEM/OKRAJ/POZADÍ/OBSAH, bez změny layoutu mezi stavy.\",\"Text fit/scale algoritmus je globální a musí být použit konzistentně pro všechny prvky, které mohou trpět overflow, s fallbackem na overlay scrollbar pouze při skutečném overflow.\",\"Status bar musí implementovat specifický vzhled času (flap moduly), data (kalendářová kresba) a progress „teploměru“ s rozdílným chováním pro odhadnutelné a neodhadnutelné procesy.\",\"Diagnostický balík pro Ubuntu nesmí exportovat tajné klíče ani hesla; u citlivých konfigurací se používá maskování nebo pouze metadata. Struktura Diag_YYYYMMDD-HHMMSS/ a základní soubory v kořeni jsou závazné.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 6620,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3179,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 9799
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767890990,
+    "store": true
+  }
+}

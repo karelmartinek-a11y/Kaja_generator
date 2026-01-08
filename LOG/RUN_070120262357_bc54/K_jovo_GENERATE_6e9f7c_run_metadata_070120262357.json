@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "project": "Kájovo",
+    "mode": "GENERATE",
+    "model": "gpt-5.1",
+    "response_id": "GENERATE_6e9f7c",
+    "user_spec": "Vygeneruj program dle zadání, které je v přiloženém souboru.",
+    "attachments": [
+      {
+        "file_id": "ATT_83027a",
+        "filename": "C:/KAJOVO/doc/Zadani_Kajovo_Master.md",
+        "purpose": "user_data",
+        "size_bytes": 98425
+      }
+    ],
+    "vector_store_ids": [],
+    "diagnostics": [],
+    "captured_at": "2026-01-07T22:57:23.097308",
+    "pricing_catalog": {
+      "source": "https://openai.com/pricing",
+      "last_refreshed": null,
+      "verified": false,
+      "status": "Ceník offline / odhad",
+      "error": "Client error '403 Forbidden' for url 'https://openai.com/pricing'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403"
+    }
+  },
+  "captured_at": "2026-01-07T22:57:23.097348",
+  "run_id": "RUN_070120262357_bc54"
+}

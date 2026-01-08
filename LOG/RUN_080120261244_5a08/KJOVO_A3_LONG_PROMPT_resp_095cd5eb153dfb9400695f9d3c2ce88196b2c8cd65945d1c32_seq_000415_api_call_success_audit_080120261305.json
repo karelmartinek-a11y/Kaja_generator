@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "resp_095cd5eb153dfb9400695f9d3c2ce88196b2c8cd65945d1c32",
+    "event": "api_call_success",
+    "sequence": 415,
+    "logged_at": "2026-01-08T12:05:18.366748"
+  },
+  "details": {
+    "event": "api_call_success",
+    "level": "info",
+    "details": {
+      "stage": "A3_LONG_PROMPT",
+      "request_id": "01db0d30"
+    },
+    "timestamp": "2026-01-08T12:05:18.366736"
+  }
+}

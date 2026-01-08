@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_0b18814335af847700695f98db8ac481a2b691d1b70fe83c71",
+    "logged_at": "2026-01-08T11:46:08.929707",
+    "request_id": "86a5757a"
+  },
+  "payload": {
+    "id": "resp_0b18814335af847700695f98db8ac481a2b691d1b70fe83c71",
+    "created_at": 1767872731.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0b18814335af847700695f98dc123881a2a9d745a9ef9e78ee",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tato část rozšiřuje specifikaci aplikace „Kája“ o detailní chování sekcí na hlavní pracovní ploše, zejména LOAD REQUEST, IN/OUT, VERSING, diagnostiku a práci s model capabilities.\\n\\nLOAD REQUEST vs LOAD:\\n- Funkčně jsou LOAD a LOAD REQUEST stejné v tom, že obnovují kompletní UI state.\\n- Rozdíl je ve zdroji dat:\\n  - LOAD čte JSON soubor uložený funkcí SAVE.\\n  - LOAD REQUEST čte request log z adresáře LOG, který obsahuje embednutý UI state a technické vazby.\\n- LOAD REQUEST musí obnovit i technické vazby: model, režim, IN/OUT nastavení, seznam attached file-id, vector_store_id, batch_id, response_id chain.\\n- Pro nový běh musí aplikace správně oddělit historická ID od nových volání (tj. nepoužít staré ID tam, kde by to vedlo k nekorektnímu znovuspouštění; detaily jsou jinde v zadání, ale zde je explicitní požadavek na oddělení historie od nového běhu).\\n\\n12) Sekce na hlavní ploše (karty/sekce):\\n- Všechny popsané sekce musí existovat na jedné scrollovatelné pracovní ploše, jejich rozmístění je responsivní (1–3 sloupce dle šířky okna, bez horizontálního scrollu na úrovni celé plochy).\\n\\n12.1 Sekce „Zadání“:\\n- Obsahuje:\\n  - Jednořádkové textové pole „Název projektu:“ (nepovinné). Pokud je vyplněno, používá se jako identifikátor ve všech requestech (např. v názvech vector store, logů, účtenek apod.).\\n  - Multiline textové pole pro zadání (prompt):\\n    - Viditelná výška cca 6 řádků.\\n    - Při více řádcích musí mít vertikální i horizontální scrollbary (horizontální scroll je zde výslovně povolen).\\n\\n12.2 Sekce „Připojené soubory“:\\n- Tabulka zobrazující připojené soubory / file-id (souborů na Files API nebo jinak připojených).\\n- Výška tabulky má být nastavena tak, aby standardně byly vidět cca 2 soubory; při větším počtu se používá vertikální scroll.\\n- Do tabulky lze přesunout soubory ze sekce FILE API (drag & drop nebo jiný jasný mechanismus; detaily jsou jinde, ale zde je požadavek na možnost přesunu).\\n- Soubory v této tabulce:\\n  - Lze odkazovat v promptu přes file-id.\\n  - Objeví se v instructions jako jednotlivé soubory (každý zvlášť, ne jen agregovaně).\\n  - Zároveň se automaticky objeví v promptu jako input (tj. jsou součástí vstupu pro model).\\n  - Budou označeny jako „pro informaci“ (např. vizuální štítek v UI nebo text v instructions; přesná forma je na implementaci, význam je povinný).\\n- U každého souboru je ikonka koše, která umožní soubor z této tabulky odstranit (tj. odpojit ho z aktuálního requestu, nikoli nutně smazat z Files API).\\n\\n12.3 Sekce „IN“:\\n- UI prvky:\\n  - Tlačítko „VSTUP“.\\n  - Vedle něj textové pole zobrazující kompletní PATH zvoleného adresáře.\\n- Chování:\\n  - Po stisku „VSTUP“ uživatel vybere libovolný adresář (Windows folder picker).\\n  - Zvolená cesta se uloží a zobrazí v textovém poli jako plná PATH.\\n\\nFunkce při spuštění requestu (KÁJO GO) – IN mirror:\\n- Pokud je vybrán IN adresář:\\n  - Rekurzivně načti všechny soubory včetně podadresářů.\\n  - Z mirroru vyjmi adresáře:\\n    - `venv`, `.venv`, `LOG`.\\n    - Versing snapshot adresáře: adresáře, jejichž název odpovídá patternu „končí 12 číslicemi a začíná shodně názvem root adresáře“ (tj. `<ROOT_NAME><DDMMRRRRHHMM>`; přesný formát času je DDMMRRRRHHMM).\\n  - Všechny kompatibilní soubory pro Files API nahraj na Files API (kompatibilita je definována jinde, ale zde je povinnost uploadu všech vhodných souborů).\\n  - Vytvoř mirror manifest (soubor), který obsahuje:\\n    - Seznam všech souborů v mirroru (včetně jejich původních PATH).\\n    - Informaci (memo) o souborech, které nebyly uploadovány (např. kvůli nekompatibilní příponě nebo velikosti).\\n\\n12.3.1 Model capability check + fallback:\\n- Před použitím file_search a vector store musí program ověřit, zda zvolený model podporuje:\\n  - file_search tool.\\n  - Práci s vector_store_ids.\\n- Kontrola musí být robustní a může využívat:\\n  - Metadata z Models endpointu (pokud obsahují informace o podporovaných toolech a vector store).\\n  - Bezpečný „probe“ request a detekci chyb typu „tool not supported / invalid tool“.\\n\\nChování, pokud model podporuje file_search + vector store:\\n- Vytvoř vector store.\\n- Připoj do něj všechny uploadované soubory, a to s atributem jejich plné původní PATH (metadata ve store musí obsahovat originální cestu).\\n- Připoj do vector store i mirror manifest (aby store obsahoval informaci i o neuploadovaných souborech – manifest je součástí znalostní báze).\\n\\nChování, pokud model nepodporuje file_search + vector store (fallback režim):\\n- Nepoužívej vector store ani file_search tool.\\n- Použij pouze Files API:\\n  - Uploadni všechny kompatibilní soubory na Files API.\\n  - Uploadni manifest na Files API.\\n- V requestech se mirror řeší takto:\\n  - V instructions uveď:\\n    - Seznam všech input souborů včetně jejich původních PATH.\\n    - file_id pro každý uploadovaný soubor.\\n    - Explicitně uveď manifest jako soubor (s jeho file_id).\\n  - V input přilož všechny tyto soubory jako input_file (včetně manifestu).\\n  - Nepoužívej tools ani vector_store_ids.\\n\\nDůležitá redundance (platí vždy, i když je vector store k dispozici):\\n- I při zapnutém file_search + vector store musí program redundantně:\\n  - Uploadnout manifest na Files API (aby měl vlastní file_id).\\n  - V instructions vypsat file_id manifestu a všech input souborů.\\n  - Přiložit tyto soubory jako input_file v input (tj. model má k souborům přístup jak přes vector store/file_search, tak přímo přes input_file a file_id v instructions).\\n\\nOznačení (název) vector store:\\n- Název vector store musí být: název projektu + čas ve formátu DDMMRRRRHHMM.\\n  - Pokud není název projektu zadán, zadání jinde v dokumentu může definovat fallback; zde je explicitní formát pro případ, kdy název existuje.\\n\\n12.4 Sekce „OUT“:\\n- UI prvky:\\n  - Tlačítko „IN=OUT“.\\n  - Tlačítko „Výstup“.\\n  - Tlačítko „VERSING“.\\n  - Textové pole pro výstupní PATH.\\n\\nChování:\\n- „Výstup“:\\n  - Uživatel vybere adresář pro ukládání souborů přijatých v Response.\\n  - Zvolená cesta se uloží a zobrazí v textovém poli.\\n- „IN=OUT“:\\n  - Nastaví výstupní adresář na stejný jako vstupní (IN PATH).\\n  - Aktivuje možnost stisknutí tlačítka VERSING (VERSING je dostupný pouze pokud je IN=OUT aktivní a existuje validní pracovní adresář).\\n\\nUkládání souborů:\\n- Do zvoleného OUT adresáře se ukládají soubory přijaté v Response (např. z tool_outputs nebo jiných mechanismů definovaných jinde).\\n- Pokud ve stejném PATH existuje soubor stejného jména, je bez upozornění přepsán (overwrite bez dialogu; toto chování je explicitní součást kontraktu).\\n\\nVERSING – funkce verzování pracovního adresáře:\\n- Pokud je VERSING aktivní a přijde response alespoň s jedním souborem, který se má uložit do OUT:\\n  - Před prvním zápisem (tj. před prvním přepsáním/uložením souboru) program vytvoří snapshot kopii aktuálního stavu pracovního adresáře.\\n  - Snapshot adresář se vytvoří uvnitř pracovního adresáře (tj. uvnitř root IN/OUT adresáře, který je považován za pracovní).\\n  - Název snapshot adresáře je: `<ROOT_NAME><DDMMRRRRHHMM>`:\\n    - `<ROOT_NAME>` je název root adresáře (např. „ABC“ pro `D:\\\\PROJEKTY\\\\ABC\\\\`).\\n    - Za ním následuje 12 číslic času ve formátu DDMMRRRRHHMM.\\n\\nPříklad:\\n- Projekt ABC je v adresáři `D:\\\\PROJEKTY\\\\ABC\\\\`.\\n- V adresáři jsou např. `.venv`, `LOG`, `app`, `data`, ...\\n- Při vytvoření nové verze se snapshot uloží do `D:\\\\PROJEKTY\\\\ABC\\\\ABC171220251634\\\\`.\\n\\nPravidla kopírování při VERSING:\\n- Kopíruje se kompletní struktura pracovního adresáře, kromě:\\n  - `venv`, `.venv`, `LOG`.\\n  - Všech adresářů, které odpovídají versing konvenci (tj. názvy končící 12 číslicemi a začínající názvem root adresáře – existující snapshoty).\\n  - Právě vytvářeného snapshot adresáře (aby nedošlo k rekurzivnímu kopírování).\\n- Snapshot adresáře se považují za versing a proto:\\n  - Se nikdy nezahrnují do IN mirroru.\\n  - Nejsou zahrnuty do manifestu.\\n\\n12.5 Sekce „DIAGNOSTICS (WINDOWS / SSH)“:\\n- UI prvky (checkboxy):\\n  - WINDOWS IN.\\n  - WINDOWS OUT.\\n  - SSH IN.\\n  - SSH OUT.\\n\\nZakázané kombinace:\\n- Jakákoli kombinace, kde je současně zvolen alespoň jeden WINDOWS checkbox a alespoň jeden SSH checkbox, je zakázána.\\n  - Tj. nelze mít současně aktivní žádnou WINDOWS volbu a žádnou SSH volbu.\\n  - Uživatel musí mít buď čistě WINDOWS diagnostiku, nebo čistě SSH diagnostiku, nebo žádnou.\\n\\nPovolené kombinace v rámci jedné skupiny:\\n- WINDOWS IN může být společně zvolena s WINDOWS OUT.\\n- SSH IN může být společně zvolena s SSH OUT.\\n\\nVynucení závislostí (tiše, bez chybového dialogu):\\n- Pokud je zvolen WINDOWS OUT, program automaticky zaškrtne WINDOWS IN (OUT implikuje IN).\\n- Pokud je zvolen SSH OUT, program automaticky zaškrtne SSH IN.\\n\\nZávislosti na výběru adresářů:\\n- WINDOWS IN nebo SSH IN lze použít pouze, pokud je zvolen IN adresář.\\n- WINDOWS OUT nebo SSH OUT lze použít pouze, pokud je zvolen OUT adresář.\\n- Pokud uživatel zaškrtne volbu, která je v rozporu s výběrem adresářů (např. WINDOWS IN bez IN PATH):\\n  - Program jasně zobrazí, co chybí (např. hláška „Pro WINDOWS IN vyber IN adresář“).\\n  - Program zablokuje tlačítko GO (KÁJO GO) do té doby, než bude stav validní (tj. dokud uživatel nedoplní potřebné adresáře nebo neodškrtne konfliktní volby).\\n\\nFunkce (začátek definice, další detaily jsou v jiné části zadání):\\n- WINDOWS IN / SSH IN:\\n  - Při spuštění „KÁJO GO“:\\n    - WINDOWS IN: provede snímek kompletního nastavení Windows (diagnostický balík dle sekce 28: Full Windows Diagnostics – tato sekce je referencí na jinou část zadání, kde je přesně definováno, co diagnostika obsahuje a jak se ukládá).\\n    - (Pokračování pro SSH IN, WINDOWS OUT, SSH OUT je v následujících částech zadání, ale zde je explicitně uveden začátek chování pro WINDOWS IN.)\\n\\nTato část zadání tedy doplňuje:\\n- Přesné chování LOAD REQUEST včetně obnovy technických vazeb a oddělení historických ID.\\n- Detailní specifikaci sekcí Zadání, Připojené soubory, IN, OUT a DIAGNOSTICS.\\n- Povinný mechanismus IN mirroru, manifestu, kontroly capabilities modelu a fallback režimu bez vector store.\\n- Povinnou redundanci při práci se soubory (Files API + vector store + input_file).\\n- Pravidla pro VERSING (snapshotování pracovního adresáře) a pro diagnostické volby WINDOWS/SSH včetně validace a blokace GO při nevalidním stavu.\",\"chunk_index\":3,\"chunk_count\":15,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 5473,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3310,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 8783
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767872768,
+    "store": true
+  }
+}

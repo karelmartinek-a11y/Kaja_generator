@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
 from typing import Callable, Iterable, List
 
 from kaja.core.settings import Settings
+from ..style_tokens import PALETTE_GRAY, PALETTE_WHITE
 
 
 class SettingsDialog(QDialog):
@@ -134,7 +135,7 @@ class SettingsDialog(QDialog):
             " Pokud je online ceník nedostupný, program pokračuje s odhadem a účtenka, UI i manifesty jsou označeny jako neověřeno."
         )
         pricing_help.setWordWrap(True)
-        pricing_help.setStyleSheet("color: #fff; font-style: italic;")
+        pricing_help.setStyleSheet(f"color: {PALETTE_WHITE};")
         form.addRow("", pricing_help)
         form.addRow("Mask secrets", self._mask_secrets)
         form.addRow("Encrypt logs", self._encrypt_logs)
@@ -177,7 +178,7 @@ class SettingsDialog(QDialog):
             edit.setMinimumSize(0, 0)
             edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        security_group = QGroupBox("Security policy (B1/B2/B3)")
+        security_group = QGroupBox("Security policy (B1/B2/B3)".upper())
         security_layout = QGridLayout()
         security_group.setLayout(security_layout)
         security_layout.addWidget(QLabel("Allow extensions (IN mirror)"), 0, 0)
@@ -224,7 +225,7 @@ class SettingsDialog(QDialog):
             edit.setPlaceholderText("Příkaz na řádek; prázdný řádek odděluje další hook")
             edit.setMinimumSize(0, 0)
             edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        dev_group = QGroupBox("Vývojářský workflow (C1–C3)")
+        dev_group = QGroupBox("Vývojářský workflow (C1–C3)".upper())
         dev_layout = QGridLayout()
         dev_group.setLayout(dev_layout)
         dev_layout.addWidget(self._dry_run_checkbox, 0, 0, 1, 2)
@@ -292,10 +293,14 @@ class SettingsDialog(QDialog):
     def _update_diag_ack_label(self) -> None:
         if self._diagnostics_acknowledged:
             self._diag_warning_status.setText("Varování potvrzeno")
-            self._diag_warning_status.setStyleSheet("color: #fff; font-weight: bold;")
+            self._diag_warning_status.setStyleSheet(
+                f"color: {PALETTE_WHITE}; font-weight: bold;"
+            )
         else:
             self._diag_warning_status.setText("Varování nepotvrzeno")
-            self._diag_warning_status.setStyleSheet("color: #808080; font-weight: bold;")
+            self._diag_warning_status.setStyleSheet(
+                f"color: {PALETTE_GRAY}; font-weight: bold;"
+            )
 
     def _show_diag_warning(self) -> None:
         text = (

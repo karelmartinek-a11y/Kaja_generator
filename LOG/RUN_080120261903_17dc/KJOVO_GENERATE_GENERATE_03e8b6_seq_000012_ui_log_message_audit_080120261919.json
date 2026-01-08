@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261903_17dc",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_03e8b6",
+    "event": "ui_log_message",
+    "sequence": 12,
+    "logged_at": "2026-01-08T18:19:25.101548"
+  },
+  "details": {
+    "message": "Chyba běhu: A3: spec/master_spec_closure_marker.json nesplňuje exporty z A2X_FILE_MAP: ['const MASTER_SPEC_COMPLETE_FLAG: boolean = true;', 'const MASTER_SPEC_VERSION_META: string = \"v1.0\";', 'const MASTER_SPEC_STATUS_META: string = \"complete\";']",
+    "timestamp_local": "19:19:25",
+    "source": "ui_log"
+  }
+}

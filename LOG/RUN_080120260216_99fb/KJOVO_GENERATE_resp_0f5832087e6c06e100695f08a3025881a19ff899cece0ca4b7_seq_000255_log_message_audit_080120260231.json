@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260216_99fb",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_0f5832087e6c06e100695f08a3025881a19ff899cece0ca4b7",
+    "event": "log_message",
+    "sequence": 255,
+    "logged_at": "2026-01-08T01:31:36.706020"
+  },
+  "details": {
+    "event": "log_message",
+    "level": "info",
+    "details": {
+      "message": "A2X: zadání je příliš dlouhé (14988 tokenů > 8192); komprimuji instructions/input_text po chunkech."
+    },
+    "timestamp": "2026-01-08T01:31:36.706011"
+  }
+}

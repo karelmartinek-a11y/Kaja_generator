@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261617_314b",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_0f55f6c8ddb8979700695fcd562d3c8195b6139ba983c2eca6",
+    "event": "pricing_step_recorded",
+    "sequence": 272,
+    "logged_at": "2026-01-08T15:29:55.238464"
+  },
+  "details": {
+    "event": "pricing_step_recorded",
+    "level": "info",
+    "details": {
+      "stage": "A2X_LONG_PROMPT",
+      "model": "gpt-5.1",
+      "response_id": "resp_03e737ef33a36de900695fcd6e488c81939973af3dfb623e46",
+      "estimated_tokens": {
+        "input": 603,
+        "output": 386
+      },
+      "actual_tokens": {
+        "input": 737,
+        "output": 471
+      },
+      "estimated_total": 0.002171,
+      "actual_total": 0.002652
+    },
+    "timestamp": "2026-01-08T15:29:55.238459"
+  }
+}

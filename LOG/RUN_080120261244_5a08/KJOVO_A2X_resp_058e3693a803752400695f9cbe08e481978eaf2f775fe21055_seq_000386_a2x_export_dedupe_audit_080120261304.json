@@ -1,0 +1,126 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A2X",
+    "response_id": "resp_058e3693a803752400695f9cbe08e481978eaf2f775fe21055",
+    "event": "a2x_export_dedupe",
+    "sequence": 386,
+    "logged_at": "2026-01-08T12:04:12.101146"
+  },
+  "details": {
+    "event": "a2x_export_dedupe",
+    "level": "info",
+    "details": {
+      "removed": [
+        {
+          "name": "run_from_cli",
+          "removed_from": "diagmaster/__init__.py",
+          "kept": [
+            "diagmaster/core/cli.py"
+          ]
+        },
+        {
+          "name": "CLIArguments",
+          "removed_from": "diagmaster/__init__.py",
+          "kept": [
+            "diagmaster/core/cli.py"
+          ]
+        },
+        {
+          "name": "CLIArguments",
+          "removed_from": "diagmaster/core/__init__.py",
+          "kept": [
+            "diagmaster/core/cli.py"
+          ]
+        },
+        {
+          "name": "DiagnosticConfig",
+          "removed_from": "diagmaster/__init__.py",
+          "kept": [
+            "diagmaster/core/config.py"
+          ]
+        },
+        {
+          "name": "DiagnosticConfig",
+          "removed_from": "diagmaster/core/__init__.py",
+          "kept": [
+            "diagmaster/core/config.py"
+          ]
+        },
+        {
+          "name": "run_diagnostics",
+          "removed_from": "diagmaster/__init__.py",
+          "kept": [
+            "diagmaster/core/runner.py"
+          ]
+        },
+        {
+          "name": "run_diagnostics",
+          "removed_from": "diagmaster/core/__init__.py",
+          "kept": [
+            "diagmaster/core/runner.py"
+          ]
+        },
+        {
+          "name": "DiagnosticRun",
+          "removed_from": "diagmaster/core/__init__.py",
+          "kept": [
+            "diagmaster/core/models.py"
+          ]
+        },
+        {
+          "name": "DiagnosticStepDefinition",
+          "removed_from": "diagmaster/core/__init__.py",
+          "kept": [
+            "diagmaster/core/models.py"
+          ]
+        },
+        {
+          "name": "DiagnosticStepResult",
+          "removed_from": "diagmaster/core/__init__.py",
+          "kept": [
+            "diagmaster/core/models.py"
+          ]
+        },
+        {
+          "name": "RunId",
+          "removed_from": "diagmaster/core/__init__.py",
+          "kept": [
+            "diagmaster/core/models.py"
+          ]
+        },
+        {
+          "name": "get_linux_step_definitions",
+          "removed_from": "diagmaster/os_linux/__init__.py",
+          "kept": [
+            "diagmaster/os_linux/steps.py"
+          ]
+        },
+        {
+          "name": "run_linux_steps",
+          "removed_from": "diagmaster/os_linux/__init__.py",
+          "kept": [
+            "diagmaster/os_linux/steps.py"
+          ]
+        },
+        {
+          "name": "get_windows_step_definitions",
+          "removed_from": "diagmaster/os_windows/__init__.py",
+          "kept": [
+            "diagmaster/os_windows/steps.py"
+          ]
+        },
+        {
+          "name": "run_windows_steps",
+          "removed_from": "diagmaster/os_windows/__init__.py",
+          "kept": [
+            "diagmaster/os_windows/steps.py"
+          ]
+        }
+      ],
+      "unresolved": []
+    },
+    "timestamp": "2026-01-08T12:04:12.101141"
+  }
+}

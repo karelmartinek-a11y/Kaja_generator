@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261823_0885",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_b86da8",
+    "event": "attachment_prepared",
+    "sequence": 6,
+    "logged_at": "2026-01-08T17:23:34.610334"
+  },
+  "details": {
+    "event": "attachment_prepared",
+    "level": "info",
+    "details": {
+      "filename": "ZADANI_KAJA_FINAL.md",
+      "file_id": "file-2ezvhKrAWPcWYHm11aQJKq",
+      "uploaded_id": "",
+      "purpose": "user_data",
+      "size_bytes": 200221,
+      "needs_upload": false,
+      "local_exists": false
+    },
+    "timestamp": "2026-01-08T17:23:34.610328"
+  }
+}

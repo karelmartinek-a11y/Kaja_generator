@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260216_99fb",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_02fb6cedb959e07000695f0a2cd88c819585be0ca0698cdb96",
+    "logged_at": "2026-01-08T01:37:35.483732",
+    "request_id": "c8c27119"
+  },
+  "payload": {
+    "id": "resp_02fb6cedb959e07000695f0a2cd88c819585be0ca0698cdb96",
+    "created_at": 1767836204.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_02fb6cedb959e07000695f0a2d7ff08195ac05ea44dc6f1777",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk doplňuje návrh struktury projektu „CrossPlatformDiagSuite“ o zbytek GUI vrstvy (dialogy, hlavní layout, status bar, viewmodely), assety (fonty) a základní testy. Navazuje na předchozí definice GUI (app, ui_tokens, widgets) a core/serializers/runner/manifest.\\n\\n1) gui/widgets/dialogs.py\\n- Purpose: Implementace dialogů dle „Kájovo standardu“ (OK/CANCEL/CLOSE, chybové a potvrzovací dialogy).\\n- EXPORTS:\\n  - Enum‑like třída `DialogResult` s hodnotami: `OK`, `CANCEL`, `CLOSE` – reprezentuje výsledek interakce uživatele s dialogem.\\n  - Třída `KDialog` – obecný dialog; metoda `show(message: str) -> DialogResult` zobrazí dialog s danou zprávou a vrátí výsledek.\\n  - Třída `KErrorDialog` – specializovaný chybový dialog; metoda `show_error(title: str, message: str) -> None` zobrazí chybové okno.\\n  - Třída `KConfirmExitDialog` – dialog pro potvrzení ukončení aplikace; metoda `confirm() -> DialogResult` vrací, zda uživatel ukončení potvrdil nebo zrušil.\\n- IMPORTS:\\n  - `UiScale`, `COLOR_WHITE`, `COLOR_BLACK`, `COLOR_GRAY`, `COLOR_RED` z `gui/ui_tokens.py` – pro styling, barvy a rozměry.\\n  - `ui_framework` – abstrakce nad konkrétním GUI toolkitem (např. PySide6/tkinter), slouží k vytvoření oken, tlačítek a signálů.\\n  - `Optional` z `typing` – pro volitelné parametry (např. volitelný parent, volitelný detail chybové zprávy).\\n  - `get_logger` ze `serializers/logger.py` – logování zobrazení dialogů, chyb a uživatelských akcí.\\n\\n2) gui/layout.py\\n- Purpose: Sestavení hlavního okna GUI aplikace – hlavička, sekce, obsah, stavový řádek, napojení na runner a viewmodely.\\n- EXPORTS:\\n  - Třída `MainWindow` – hlavní okno aplikace.\\n    - Konstruktor: `MainWindow(app: DiagnosticApplication, runner: DiagnosticRunner, config: AppConfig, ui_scale: UiScale)` – přijímá instanci aplikace, diagnostický runner, konfiguraci a vypočtené UI měřítko.\\n    - Metoda `init_layout() -> None` – vytvoří a rozmístí widgety (tlačítka, dropdowny, tabulky, status bar), nastaví základní texty a výchozí stavy.\\n    - Metoda `bind_events() -> None` – naváže signály/sloty nebo callbacky (např. kliknutí na „Spustit diagnostiku“, změna scénáře, zavření okna, potvrzovací dialogy).\\n    - Metoda `update_status(text: str) -> None` – aktualizuje text ve stavovém řádku.\\n    - Metoda `show_run_progress(summary: DiagnosticRunSummary) -> None` – zobrazí průběh/summary běhu diagnostiky (např. v tabulce, progress baru nebo status textu) pomocí viewmodelů.\\n- IMPORTS:\\n  - `DiagnosticApplication` z `gui/app.py` – pouze pro typový forward import (aby se předešlo cyklickým importům; typy lze řešit přes TYPE_CHECKING nebo string anotace).\\n  - `DiagnosticRunner` z `core/runner.py` – spouštění scénářů z GUI.\\n  - `AppConfig` z `core/config.py` – konfigurace aplikace (výchozí scénáře, cesty, volby).\\n  - `UiScale` z `gui/ui_tokens.py` – rozměry a škálování UI.\\n  - `StatusBar` z `gui/statusbar.py` – komponenta stavového řádku.\\n  - `ScenarioVm`, `RunProgressVm`, `map_summary_to_vm` z `gui/viewmodels.py` – mapování dat z core na struktury vhodné pro GUI.\\n  - `KButton`, `KDropdown`, `KTable`, `KDialog` z `gui/widgets/__init__.py` – základní widgety pro ovládání a zobrazení dat.\\n  - `Optional`, `List` z `typing` – typové anotace.\\n  - `ui_framework` – konkrétní GUI toolkit (okno, layouty, signály).\\n  - `get_logger` ze `serializers/logger.py` – logování akcí v hlavním okně (spuštění běhu, chyby, změny scénářů).\\n\\n3) gui/statusbar.py\\n- Purpose: Stavový řádek aplikace s textem a „PRAGOTRON“ časem a datem (stylizované zobrazení času).\\n- EXPORTS:\\n  - Třída `StatusBar`:\\n    - Konstruktor `StatusBar(ui_scale: UiScale)` – vytvoří widget stavového řádku s daným měřítkem UI.\\n    - Metoda `set_status_text(text: str) -> None` – nastaví/aktualizuje text stavového řádku.\\n    - Metoda `start_clock() -> None` – spustí aktualizaci času a data (např. periodicky v samostatném vlákně nebo timeru GUI frameworku).\\n    - Metoda `stop_clock() -> None` – zastaví aktualizaci času (při ukončování aplikace).\\n- IMPORTS:\\n  - `UiScale`, `COLOR_WHITE`, `COLOR_BLACK` z `gui/ui_tokens.py` – pro vzhled a rozměry.\\n  - `datetime.datetime` – získání aktuálního času a data.\\n  - `threading` – případně pro samostatné vlákno aktualizace času, pokud není použit timer GUI frameworku.\\n  - `ui_framework` – widgety a časovače.\\n  - `get_logger` ze `serializers/logger.py` – logování start/stop hodin a případných chyb.\\n\\n4) gui/viewmodels.py\\n- Purpose: ViewModel vrstva mezi `core.runner` a GUI – transformuje doménové modely na struktury vhodné pro zobrazení.\\n- EXPORTS:\\n  - Dataclass `ScenarioVm` – reprezentace scénáře v GUI: `name: str`, `description: str`, `enabled: bool` (zda je scénář aktivní/vybraný).\\n  - Dataclass `RunProgressVm` – reprezentace průběhu běhu: `modules_total: int`, `modules_completed: int`, `errors: int`.\\n  - Funkce `map_summary_to_vm(summary: DiagnosticRunSummary) -> RunProgressVm` – převede `DiagnosticRunSummary` (z core) na `RunProgressVm` pro zobrazení v GUI (např. v progress sekci hlavního okna).\\n- IMPORTS:\\n  - `dataclass` z `dataclasses` – definice datových tříd.\\n  - `DiagnosticRunSummary` z `core/shared_models.py` – vstupní typ pro mapování.\\n  - `List` z `typing` – pro případné seznamy scénářů nebo modulů (i když v popisu je explicitně použit jen u typů, může být využit v implementaci).\\n  - `get_logger` ze `serializers/logger.py` – logování mapování a případných nekonzistencí dat.\\n\\n5) assets/__init__.py\\n- Purpose: Inicializace balíčku `assets` a zpřístupnění funkcí pro práci s assety (fonty).\\n- EXPORTS:\\n  - `load_fonts`, `verify_font_hashes` z `assets/fonts.py` – re‑export pro pohodlný import na vyšší úrovni.\\n- IMPORTS:\\n  - `load_fonts`, `verify_font_hashes` z `assets/fonts.py` – jednoduchý re‑export bez další logiky.\\n\\n6) assets/fonts.py\\n- Purpose: Načtení a ověření fontů Montserrat-Regular a Montserrat-Bold z lokálních souborů, registrace do GUI frameworku a kontrola integrity.\\n- EXPORTS:\\n  - Funkce `load_fonts() -> None` – najde soubory `Montserrat-Regular.ttf` a `Montserrat-Bold.ttf` v `assets/fonts`, zaregistruje je v GUI frameworku (např. přes API pro custom fonty) a připraví je pro použití v UI.\\n  - Funkce `verify_font_hashes() -> None` – ověří integritu fontových souborů pomocí předdefinovaných hashů (např. SHA256); v případě nesouladu zaloguje chybu nebo vyvolá výjimku.\\n  - Výjimka `FontLoadError` – vyhazovaná při selhání načtení nebo ověření fontů.\\n- IMPORTS:\\n  - `pathlib.Path` – práce s cestami k fontovým souborům.\\n  - `hashlib` – výpočet hashů souborů pro ověření integrity.\\n  - `Dict` z `typing` – mapování názvů souborů na očekávané hashe.\\n  - `ui_framework` nebo konkrétní GUI framework API – registrace fontů do systému GUI.\\n  - `get_logger` ze `serializers/logger.py` – logování načítání, registrace a chyb.\\n\\n7) assets/fonts/Montserrat-Regular.ttf\\n- Purpose: Binární asset – soubor fontu Montserrat Regular používaný v UI (např. pro základní texty).\\n- EXPORTS: Žádné kódové symboly; soubor je pouze načítán funkcí `load_fonts`.\\n- IMPORTS: Nepřímo přes `assets/fonts.py`.\\n\\n8) assets/fonts/Montserrat-Bold.ttf\\n- Purpose: Binární asset – soubor fontu Montserrat Bold používaný v UI (např. pro nadpisy, zvýraznění).\\n- EXPORTS: Žádné kódové symboly.\\n- IMPORTS: Načítán funkcí `load_fonts` z `assets/fonts.py`.\\n\\n9) tests/__init__.py\\n- Purpose: Inicializace balíčku `tests` (umožní relativní importy v testech).\\n- EXPORTS: Žádné specifické testovací symboly; soubor slouží jen k označení adresáře jako balíčku.\\n- IMPORTS: Žádné explicitní importy.\\n\\n10) tests/test_manifest.py\\n- Purpose: Unit testy pro `core.manifest` a práci s manifestem běhu.\\n- EXPORTS:\\n  - `test_load_manifest_valid()` – ověřuje, že validní manifest se správně načte pomocí `ManifestLoader` a projde validací.\\n  - `test_load_manifest_invalid()` – ověřuje, že nevalidní manifest je detekován (např. vyvolá výjimku nebo vrátí chybu) pomocí `validate_manifest`.\\n  - `test_write_run_manifest()` – testuje, že `ManifestWriter` správně zapíše manifest běhu (např. do dočasného adresáře) a že výstup odpovídá očekávané struktuře.\\n- IMPORTS:\\n  - `ManifestLoader`, `ManifestWriter`, `Manifest`, `validate_manifest` z `core/manifest.py` – testované objekty.\\n  - `DiagnosticRunSummary` z `core/shared_models.py` – použit pro simulaci dat běhu při zápisu manifestu.\\n  - `pytest` – testovací framework.\\n  - `tempfile` – vytváření dočasných souborů/adresářů pro testy.\\n  - `pathlib.Path` – práce s cestami v testech.\\n\\n11) tests/test_runner.py\\n- Purpose: Unit a integrační testy pro `DiagnosticRunner` a registr modulů/scénářů.\\n- EXPORTS:\\n  - `test_run_full_success()` – simuluje běh, kdy všechny moduly proběhnou úspěšně; ověřuje, že `DiagnosticRunner` vrátí summary bez chyb a že registry jsou správně použity.\\n  - `test_run_scenario_partial_failure()` – simuluje scénář, kde některé moduly selžou; ověřuje, že chyby jsou zaznamenány v `DiagnosticRunSummary` a že běh pokračuje dle návrhu.\\n  - `test_list_scenarios()` – ověřuje, že `DiagnosticRunner` (ve spolupráci se `ScenarioRegistry`) správně vrací seznam dostupných scénářů.\\n- IMPORTS:\\n  - `DiagnosticRunner` z `core/runner.py` – hlavní objekt testů.\\n  - `ModuleRegistry`, `ScenarioRegistry` z `modules/registry.py` – registr modulů a scénářů používaný runnerem.\\n  - `DiagnosticRunSummary`, `DiagnosticScenarioDefinition`, `DiagnosticModuleResult` z `core/shared_models.py` – datové typy pro scénáře, výsledky modulů a summary.\\n  - `pytest` – testovací framework.\\n  - `Callable` z `typing` – pro definici callbacků nebo stubů modulů v testech.\\n\\n12) tests/test_ui_tokens.py\\n- Purpose: Unit testy pro výpočet `UiScale` a související UI tokeny.\\n- EXPORTS:\\n  - `test_compute_ui_scale_reference_window()` – ověřuje, že pro referenční rozlišení okna funkce `compute_ui_scale` vrací očekávané hodnoty (např. `ui_scale`, `fs`, `lh`, `radius`, paddingy).\\n  - `test_radius_and_padding_rounding()` – testuje správné zaokrouhlování hodnot (radius, padding) při různých rozlišeních.\\n- IMPORTS:\\n  - `UiScale`, `compute_ui_scale` z `gui/ui_tokens.py` – testované funkce/typy.\\n  - `pytest` – testovací framework.\\n  - `math` – pomocné matematické operace v asercích (např. porovnání s tolerancí).\\n\\n13) tests/test_serializers.py\\n- Purpose: Unit testy pro serializační vrstvu: `serializers.json_serializer`, `serializers.text_report` a `serializers.logger` (nepřímo).\\n- EXPORTS:\\n  - `test_to_json_dataclass()` – ověřuje, že `to_json` správně serializuje dataclass (např. `DiagnosticRunSummary`) do JSON‑kompatibilní struktury.\\n  - `test_write_json_creates_file()` – testuje, že `write_json` vytvoří soubor s očekávaným obsahem v dočasném adresáři.\\n  - `test_generate_summary_report_contains_key_fields()` – ověřuje, že textový report generovaný `generate_summary_report` obsahuje klíčová pole (např. počty modulů, chyb, čas běhu).\\n- IMPORTS:\\n  - `to_json`, `write_json` ze `serializers/json_serializer.py` – testované funkce pro JSON serializaci.\\n  - `generate_summary_report` ze `serializers/text_report.py` – generátor textového summary.\\n  - `DiagnosticRunSummary` z `core/shared_models.py` – datový model používaný v testech.\\n  - `pytest` – testovací framework.\\n  - `tempfile` – dočasné soubory/adresáře.\\n  - `pathlib.Path` – práce s cestami.\\n\\nCelkový význam chunku:\\n- Uzavírá návrh GUI vrstvy: přidává dialogy, hlavní layout okna, status bar a viewmodely, které propojují core logiku (`DiagnosticRunner`, `DiagnosticRunSummary`) s prezentací.\\n- Zavádí balíček `assets` s fonty Montserrat (Regular/Bold) a funkcemi pro jejich načtení a ověření integrity, čímž podporuje konzistentní vizuální styl UI.\\n- Definuje základní sadu unit a integračních testů pro klíčové části systému: manifest, runner, UI tokeny a serializéry. Tím zajišťuje ověřitelnost chování a usnadňuje budoucí refaktoring.\\n- Všechny nové moduly respektují existující architekturu: používají sdílené modely z `core/shared_models.py`, centralizované logování přes `serializers.logger.get_logger` a abstrakci `ui_framework` pro nezávislost na konkrétním GUI toolkitu.\",\"chunk_index\":9,\"chunk_count\":10,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4807,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3813,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 8620
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767836254,
+    "store": true
+  }
+}

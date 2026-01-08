@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261903_17dc",
+    "project": "KJOVO",
+    "stage": "A3_FILE",
+    "response_id": "resp_042dcdec0451a29200695ff4fb084c81929731709a547dbb36",
+    "event": "response_text_extracted",
+    "sequence": 282,
+    "logged_at": "2026-01-08T18:18:51.404479"
+  },
+  "details": {
+    "event": "response_text_extracted",
+    "level": "info",
+    "details": {
+      "expected_contract": "A3_FILE",
+      "text_chars": 3927
+    },
+    "timestamp": "2026-01-08T18:18:51.404474"
+  }
+}

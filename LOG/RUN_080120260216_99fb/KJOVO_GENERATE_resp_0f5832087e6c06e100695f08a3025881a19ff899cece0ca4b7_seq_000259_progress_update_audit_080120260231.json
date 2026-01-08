@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260216_99fb",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_0f5832087e6c06e100695f08a3025881a19ff899cece0ca4b7",
+    "event": "progress_update",
+    "sequence": 259,
+    "logged_at": "2026-01-08T01:31:36.715891"
+  },
+  "details": {
+    "event": "progress_update",
+    "level": "info",
+    "details": {
+      "message": "A2X: komprimuji instructions (1/1)",
+      "ratio": 0.3
+    },
+    "timestamp": "2026-01-08T01:31:36.715861"
+  }
+}

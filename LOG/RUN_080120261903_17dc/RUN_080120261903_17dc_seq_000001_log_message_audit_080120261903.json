@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261903_17dc",
+    "project": "",
+    "stage": "",
+    "response_id": "",
+    "event": "log_message",
+    "sequence": 1,
+    "logged_at": "2026-01-08T18:03:58.874115"
+  },
+  "details": {
+    "event": "log_message",
+    "level": "info",
+    "details": {
+      "message": "Ceník: Ceník offline / odhad"
+    },
+    "timestamp": "2026-01-08T18:03:58.874104"
+  }
+}

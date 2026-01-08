@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261936_1829",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "GENERATE_65c01d",
+    "logged_at": "2026-01-08T18:41:20.822986",
+    "request_id": "86c59880"
+  },
+  "payload": {
+    "id": "resp_0f737cc11b10208300695ffa14d32c81a18aebe3bc15ffd8c1",
+    "created_at": 1767897620.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0f737cc11b10208300695ffa15846481a1b2712f380e80482b",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk doplňuje specifikaci o detaily A2/A3 a B1–B3 kontraktů a začátek sekce 16 (GO logika).\\n\\n13) A-varianta – A2 (STRUCTURE)\\n- A2 navazuje na A1 přes `previous_response_id` (z A1 nebo z uživatelského pole RESPONSE ID).\\n- Request JSON pro A2:\\n  - `model`: `<MODEL_FROM_UI>`.\\n  - `previous_response_id`: `<RESP_ID_FROM_A1_OR_USER_FIELD>`.\\n  - `temperature`: 0.2.\\n  - `instructions` definuje roli a kontrakt A2_STRUCTURE:\\n    - Role: generátor projektové struktury podle schváleného plánu.\\n    - Musí explicitně nařídit: OUTPUT pouze validní JSON, žádný markdown, žádný další text.\\n    - Pravidla pro `path`: musí být relativní, nesmí začínat `/`, nesmí obsahovat `..` ani `\\\\\\\\`, nesmí být duplicity.\\n    - Kontrakt A2_STRUCTURE (musí být přesně dodržen):\\n      - `contract`: \\\"A2_STRUCTURE\\\".\\n      - `root`: string (kořen projektu, relativní root pro soubory).\\n      - `files`: pole objektů:\\n        - `path`: string (relativní cesta k souboru, splňující výše uvedená pravidla).\\n        - `purpose`: string (účel souboru).\\n        - `language`: string (jazyk/technologie souboru, např. \\\"Python\\\", \\\"TypeScript\\\").\\n        - `generated_in_phase`: string, fixně \\\"A3\\\" (označuje, že obsah bude generován v A3).\\n  - `input`:\\n    - Textově zadává úkol: vygenerovat file structure pro projekt dle předchozího plánu.\\n    - Redundantně opakuje kontrakt: vrátit pouze JSON dle A2_STRUCTURE (bez markdownu a textu navíc).\\n\\n14) A-varianta – A3 (FILE CONTENT pro 1 soubor, s chunkingem)\\n- A3 generuje obsah jednoho konkrétního souboru definovaného v A2_STRUCTURE.\\n- A3 se volá opakovaně pro každý `path` z A2 (a případně opakovaně pro tentýž path při chunkingu).\\n- Request JSON pro A3:\\n  - `model`: `<MODEL_FROM_UI>`.\\n  - `previous_response_id`: `<RESP_ID_FROM_A2_OR_USER_FIELD>` (navázání na A2 nebo na RESPONSE ID z UI).\\n  - `temperature`: 0.0 (deterministické generování obsahu souboru).\\n  - `instructions`:\\n    - Role: generátor obsahu jednoho konkrétního souboru podle A2_STRUCTURE.\\n    - OUTPUT: pouze validní JSON, žádný markdown, žádný další text.\\n    - Kritické pravidlo: `content` je vždy kompletní čistý obsah souboru (ne diff, ne patch, ne popis změn).\\n    - Chunking:\\n      - Dlouhé soubory (> 500 řádků) musí být vraceny po částech (chunky), které se po spojení stanou kompletním souborem.\\n      - Max 500 řádků v jednom chunku.\\n    - Kontrakt A3_FILE (musí být přesně dodržen):\\n      - `contract`: \\\"A3_FILE\\\".\\n      - `path`: string (konkrétní soubor, pro který se generuje obsah).\\n      - `chunking`: objekt:\\n        - `max_lines`: 500 (konstantní hodnota, v souladu s politikou chunkingu).\\n        - `chunk_index`: integer (index aktuálního chunku, např. 1-based nebo 0-based – implementace musí být konzistentní napříč chunky).\\n        - `chunk_count`: integer (celkový počet chunků pro daný soubor; může být znám až při generování, ale model ho musí vyplnit konzistentně).\\n        - `has_more`: boolean (true, pokud budou následovat další chunky; false u posledního chunku).\\n        - `next_chunk_index`: integer nebo null (index dalšího chunku, nebo null, pokud žádný další není).\\n      - `content`: string (obsah aktuálního chunku nebo celého souboru, pokud je jen jeden chunk).\\n  - `input`:\\n    - Obsahuje instrukci: vrátit obsah souboru `PATH=<PATH_FROM_A2>`.\\n    - Pokud je soubor dlouhý, použít chunking.\\n    - Volitelný parametr: `CHUNK_INDEX=<N>` pro explicitní požadavek konkrétního chunku.\\n    - Redundantní kontrakt: vrátit pouze JSON dle A3_FILE.\\n    - Kritické: žádné diffy/patch, jen čistý obsah souboru (nebo jeho chunk).\\n\\n15) B-varianta – práce s mirrorem ve vector store a file_search\\n- B-varianta se používá pro MODIFY mód (úpravy existujícího projektu).\\n- Základní princip:\\n  - IN adresář se zrcadlí do vector store (mirror).\\n  - Pokud model podporuje `file_search`, používá se jako nástroj s `vector_store_ids` z IN kroku.\\n  - Pokud model `file_search`/vector store nepodporuje, použije se fallback přes Files API + manifest dle dříve definovaných pravidel (12.3.1 – mimo tento chunk, ale závazné).\\n\\n15.1) B1 – PLAN (na základě mirroru)\\n- B1 vytváří plán změn nad existujícím kódem.\\n- Request JSON pro B1:\\n  - `model`: `<MODEL_FROM_UI>`.\\n  - `temperature`: 0.2.\\n  - `tools`: pokud podporováno, obsahuje:\\n    - `{ \\\"type\\\": \\\"file_search\\\", \\\"vector_store_ids\\\": [\\\"<VS_ID_FROM_IN_STEP>\\\"] }`.\\n  - `instructions`:\\n    - Role: senior debug/maintenance inženýr.\\n    - MASTER SOURCE OF TRUTH: existující soubory/config jsou pouze ve vector store přes file_search.\\n    - Model si nesmí vymýšlet neexistující obsah.\\n    - Kritické: i když má file_search, musí brát v úvahu i přiložený manifest + input file-id jako redundantní zdroj (pokud jsou přítomny).\\n    - OUTPUT: pouze validní JSON, žádný markdown, žádný další text.\\n    - Workflow: vždy nejdřív použít file_search; pokud něco chybí, uvést to v `missing_inputs`.\\n    - Kontrakt B1_PLAN (musí být přesně dodržen):\\n      - `contract`: \\\"B1_PLAN\\\".\\n      - `context`:\\n        - `vector_store_ids`: [string] (seznam použitých VS ID).\\n        - `assumed_root`: string (předpokládaný kořen projektu v mirroru).\\n      - `diagnosis`:\\n        - `summary`: string (shrnutí problému/kontextu).\\n        - `evidence`: pole objektů `{ \\\"path\\\": string, \\\"reason\\\": string }` (důkazy, proč je daný soubor relevantní).\\n        - `likely_root_causes`: [string].\\n      - `change_plan`:\\n        - `goals`: [string] (cíle změn).\\n        - `files_to_modify`: pole `{ \\\"path\\\": string, \\\"intent\\\": string }`.\\n        - `files_to_add`: pole `{ \\\"path\\\": string, \\\"intent\\\": string }`.\\n        - `verification_steps`: [string].\\n      - `missing_inputs`: [string] (co chybí k plnému pochopení nebo provedení změn).\\n  - `input`:\\n    - Informuje, že model má přístup k mirroru ve vector store (file_search zapnutý, pokud podporováno).\\n    - Obsahuje uživatelský úkol `<USER_TASK>`.\\n    - Redundantní kontrakt: vrátit pouze JSON dle B1_PLAN.\\n\\n15.2) B2 – STRUCTURE (touched files)\\n- B2 navazuje na B1 přes `previous_response_id`.\\n- Cílem je určit, které soubory se budou měnit nebo přidávat.\\n- Request JSON pro B2:\\n  - `model`: `<MODEL_FROM_UI>`.\\n  - `previous_response_id`: `<RESP_ID_FROM_B1_OR_USER_FIELD>`.\\n  - `temperature`: 0.2.\\n  - `tools`: opět `file_search` s `vector_store_ids` z IN kroku (pokud podporováno).\\n  - `instructions`:\\n    - Role: implementátor změn nad existujícím systémem.\\n    - MASTER: existující soubory a jejich aktuální obsah jsou pouze z vector store (file_search).\\n    - Kritické: i když má file_search, musí brát v úvahu i přiložený manifest + input file-id jako redundantní zdroj.\\n    - OUTPUT: pouze validní JSON, žádný markdown, žádný další text.\\n    - Pravidlo: do `touched_files` nedávat nic, co neexistuje ve store (pokud to není nově přidávaný soubor).\\n    - Kontrakt B2_STRUCTURE:\\n      - `contract`: \\\"B2_STRUCTURE\\\".\\n      - `touched_files`: pole objektů:\\n        - `path`: string.\\n        - `action`: \\\"modify\\\" nebo \\\"add\\\".\\n        - `intent`: string (co se má se souborem stát / proč).\\n      - `invariants`: [string] (co se nesmí změnit, např. určité chování, API, bezpečnostní vlastnosti).\\n  - `input`:\\n    - Zadává úkol: na základě předchozího plánu a mirroru ve vector store vrátit seznam souborů, které se budou měnit/přidávat.\\n    - Redundantní kontrakt: vrátit pouze JSON dle B2_STRUCTURE.\\n\\n15.3) B3 – FILE CONTENT (1 soubor, s chunkingem, MODIFY/ADD)\\n- B3 generuje výsledný obsah jednoho souboru (existujícího nebo nového) podle B2_STRUCTURE.\\n- B3 se volá opakovaně pro každý `path` z `touched_files` a případně opakovaně pro tentýž path při chunkingu.\\n- Pro `action=\\\"modify\\\"` musí model vždy vycházet z aktuální verze souboru ve vector store (file_search).\\n- Request JSON pro B3:\\n  - `model`: `<MODEL_FROM_UI>`.\\n  - `previous_response_id`: `<RESP_ID_FROM_B2_OR_USER_FIELD>`.\\n  - `temperature`: 0.0.\\n  - `tools`: `file_search` s `vector_store_ids` z IN kroku (pokud podporováno).\\n  - `instructions`:\\n    - Role: implementátor obsahu jednoho konkrétního souboru.\\n    - MASTER: pro `modify` vždy načíst aktuální obsah souboru přes file_search a až na něm aplikovat změny.\\n    - Kritické: `content` je vždy kompletní výsledné znění souboru (ne diff, ne patch).\\n    - Chunking: dlouhé soubory vracet po částech, max 500 řádků v chunku, chunky se musí spojit do kompletního souboru.\\n    - OUTPUT: pouze validní JSON, žádný markdown, žádný další text.\\n    - Kontrakt B3_FILE:\\n      - `contract`: \\\"B3_FILE\\\".\\n      - `path`: string.\\n      - `action`: \\\"modify\\\" nebo \\\"add\\\".\\n      - `chunking`: objekt se stejnou strukturou jako u A3_FILE:\\n        - `max_lines`: 500.\\n        - `chunk_index`: integer.\\n        - `chunk_count`: integer.\\n        - `has_more`: boolean.\\n        - `next_chunk_index`: integer nebo null.\\n      - `content`: string (obsah aktuálního chunku nebo celého souboru).\\n      - `notes`: [string] (dodatečné poznámky k implementaci, migracím, kompatibilitě apod.).\\n  - `input`:\\n    - Zadává: vrátit výsledný obsah souboru `PATH=<PATH_FROM_B2>` s `ACTION=<modify|add>`.\\n    - Použít mirror ve vector store jako jediný zdroj pravdy pro existující verzi (pokud je dostupný).\\n    - Pokud je soubor dlouhý, vrátit po chunkech.\\n    - Volitelný parametr: `CHUNK_INDEX=<N>`.\\n    - Redundantní kontrakt: vrátit pouze JSON dle B3_FILE.\\n    - Kritické: žádné diffy/patch, jen čistý obsah souboru (nebo jeho chunk).\\n\\n16) GO – exekuce kroků podle UI (začátek)\\n- Po stisku tlačítka „KÁJO GO'“ se spouští hlavní orchestrátor, který provede validace a následně jednotlivé toky (A/B/QA/C) podle nastavení UI.\\n\\n16.1) Validace nastavení\\n- MODE: musí být vybrán přesně jeden mód (GENERATE, MODIFY, QA, C).\\n- GENERATE (A-pipeline):\\n  - IN adresář nesmí být vybrán.\\n  - OUT adresář musí být vybrán.\\n- MODIFY (B-pipeline):\\n  - IN i OUT adresář musí být vybrán.\\n- QA mód:\\n  - IN ani OUT nesmí být vybrán.\\n- C mód (batch tok C):\\n  - OUT musí být vybrán.\\n  - IN nesmí být vybrán.\\n  - Seznam attached files musí být prázdný.\\n  - Běží pouze přes Batch API (nikdy synchronně).\\n- API key: musí být dostupný (z uložených systémových proměnných nebo z dialogu).\\n- Diagnostics:\\n  - Nelze kombinovat WINDOWS a SSH diagnostiku (vzájemně se vylučují).\\n  - IN volby diagnostiky vyžadují vybraný IN adresář.\\n  - OUT volby diagnostiky vyžadují vybraný OUT adresář.\\n  - OUT volby si automaticky vynutí příslušnou IN volbu (např. pokud je zapnuta WINDOWS OUT, musí být automaticky aktivní i WINDOWS IN, protože je potřeba mít mirror/diagnostiku před změnami).\\n\\n16.2) Připojené soubory (informational) – pouze A/B/QA\\n- Pro módy A (GENERATE), B (MODIFY) a QA se sestaví seznam „Připojených souborů“.\\n- Tento seznam se používá jako informační kontext v `instructions` a `input` každého requestu:\\n  - V `instructions` se přidá textový blok popisující připojené soubory (např. názvy, účel, file_id), pouze jako informaci.\\n  - (Další pravidla pro připojené soubory pokračují v následujícím chunku – zde je jen začátek: explicitně je zmíněno, že se přidávají jako textový blok v instructions; zbytek navazuje v dalších částech specifikace.)\\n\\nVšechna zde popsaná pravidla navazují na předchozí chunky: zachovává se politika čistého JSON výstupu bez markdownu a komentářů, přísné dodržení kontraktů (A2_STRUCTURE, A3_FILE, B1_PLAN, B2_STRUCTURE, B3_FILE), pravidla chunkingu (max 500 řádků, kompletní obsah souboru po spojení chunků) a používání `previous_response_id` pro navazování kroků v A/B pipeline.\",\"chunk_index\":6,\"chunk_count\":15,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 5635,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3722,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 9357
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767897680,
+    "store": true
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "metadata": {
+    "run_id": "RUN_070120261935_09e1",
+    "project": "KAJOVO",
+    "stage": "A3",
+    "response_id": "resp_0a9d3b88a4a4fa3700695ea7ad76bc81919b9b586bca6f9b8c",
+    "logged_at": "2026-01-07T18:36:38.929513"
+  },
+  "payload": {
+    "id": "resp_0a9d3b88a4a4fa3700695ea7ad76bc81919b9b586bca6f9b8c",
+    "created_at": 1767810989.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi generátor obsahu jednoho konkrétního souboru podle A2_STRUCTURE. OUTPUT: VRAŤ POUZE validní JSON. ŽÁDNÝ markdown ani další text. KRITICKÉ: content je vždy čistý obsah souboru (ne DIFF, ne patch). U chunkingu posílej po částech, které se spojí do kompletního souboru. CHUNK: max 500 řádků v jednom chunku, dlouhé soubory vrať po částech. KONTRAKT A3_FILE: {\"contract\":\"A3_FILE\",\"path\":string,\"chunking\":{\"max_lines\":500,\"chunk_index\":integer,\"chunk_count\":integer,\"has_more\":boolean,\"next_chunk_index\":integer|null},\"content\":string}",
+    "metadata": {},
+    "model": "gpt-5.1-codex-max",
+    "object": "response",
+    "output": [
+      {
+        "id": "rs_0a9d3b88a4a4fa3700695ea7adc2bc8191b93ff692120f98bd",
+        "summary": [],
+        "type": "reasoning",
+        "content": null,
+        "encrypted_content": null,
+        "status": null
+      },
+      {
+        "id": "msg_0a9d3b88a4a4fa3700695ea7b04a54819195d58bf0138076d7",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"A3_FILE\",\"path\":\"models.py\",\"chunking\":{\"max_lines\":500,\"chunk_index\":0,\"chunk_count\":1,\"has_more\":false,\"next_chunk_index\":null},\"content\":\"from __future__ import annotations\\n\\nfrom dataclasses import dataclass\\nfrom datetime import datetime\\nfrom enum import Enum\\nfrom typing import Any, Dict, Optional\\n\\n\\nISO_FORMAT = \\\"%Y-%m-%d\\\"\\n\\n\\nclass Status(str, Enum):\\n    TODO = \\\"todo\\\"\\n    IN_PROGRESS = \\\"in-progress\\\"\\n    DONE = \\\"done\\\"\\n\\n\\nclass Priority(str, Enum):\\n    LOW = \\\"low\\\"\\n    MEDIUM = \\\"medium\\\"\\n    HIGH = \\\"high\\\"\\n\\n\\n@dataclass\\nclass Task:\\n    id: int\\n    title: str\\n    description: str\\n    due: Optional[datetime]\\n    priority: Priority\\n    status: Status\\n    created_at: datetime\\n    updated_at: datetime\\n\\n    def to_dict(self) -> Dict[str, Any]:\\n        return {\\n            \\\"id\\\": self.id,\\n            \\\"title\\\": self.title,\\n            \\\"description\\\": self.description,\\n            \\\"due\\\": self.due.strftime(ISO_FORMAT) if self.due else None,\\n            \\\"priority\\\": self.priority.value,\\n            \\\"status\\\": self.status.value,\\n            \\\"created_at\\\": self.created_at.isoformat(),\\n            \\\"updated_at\\\": self.updated_at.isoformat(),\\n        }\\n\\n    @staticmethod\\n    def from_dict(data: Dict[str, Any]) -> \\\"Task\\\":\\n        due_raw = data.get(\\\"due\\\")\\n        due = datetime.strptime(due_raw, ISO_FORMAT) if due_raw else None\\n\\n        return Task(\\n            id=int(data[\\\"id\\\"]),\\n            title=str(data[\\\"title\\\"]),\\n            description=str(data.get(\\\"description\\\", \\\"\\\")),\\n            due=due,\\n            priority=Priority(str(data.get(\\\"priority\\\", Priority.MEDIUM.value))),\\n            status=Status(str(data.get(\\\"status\\\", Status.TODO.value))),\\n            created_at=_parse_datetime(data.get(\\\"created_at\\\")),\\n            updated_at=_parse_datetime(data.get(\\\"updated_at\\\")),\\n        )\\n\\n\\ndef _parse_datetime(value: Any) -> datetime:\\n    if isinstance(value, datetime):\\n        return value\\n    if not value:\\n        return datetime.utcnow()\\n    return datetime.fromisoformat(str(value))\\n\"}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 0.985,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": "resp_0a9d3b88a4a4fa3700695ea76a966c8191847693465fc78190",
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "medium",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 1941,
+      "input_tokens_details": {
+        "cached_tokens": 1024
+      },
+      "output_tokens": 799,
+      "output_tokens_details": {
+        "reasoning_tokens": 256
+      },
+      "total_tokens": 2740
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767810998,
+    "store": true
+  }
+}

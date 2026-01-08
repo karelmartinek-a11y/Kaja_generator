@@ -1,0 +1,89 @@
+{
+  "metadata": {
+    "run_id": "RUN_070120261935_09e1",
+    "project": "KAJOVO",
+    "stage": "A2",
+    "response_id": "resp_0a9d3b88a4a4fa3700695ea76a966c8191847693465fc78190",
+    "logged_at": "2026-01-07T18:35:29.081248"
+  },
+  "payload": {
+    "id": "resp_0a9d3b88a4a4fa3700695ea76a966c8191847693465fc78190",
+    "created_at": 1767810924.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi generátor projektové struktury podle schváleného plánu. OUTPUT: VRAŤ POUZE validní JSON. ŽÁDNÝ markdown ani další text. RULES: path musí být relativní, nesmí začínat '/', nesmí obsahovat '..' ani '\\\\', žádné duplicity. KONTRAKT A2_STRUCTURE: {\"contract\":\"A2_STRUCTURE\",\"root\":string,\"files\":[{\"path\":string,\"purpose\":string,\"language\":string,\"generated_in_phase\":\"A3\"}]}",
+    "metadata": {},
+    "model": "gpt-5.1-codex-max",
+    "object": "response",
+    "output": [
+      {
+        "id": "rs_0a9d3b88a4a4fa3700695ea76ca0388191b738a2bf45854b51",
+        "summary": [],
+        "type": "reasoning",
+        "content": null,
+        "encrypted_content": null,
+        "status": null
+      },
+      {
+        "id": "msg_0a9d3b88a4a4fa3700695ea76eb2848191a4d33a3cf0a12021",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"A2_STRUCTURE\",\"root\":\"taskmanager_cli\",\"files\":[{\"path\":\"main.py\",\"purpose\":\"Vstupní bod aplikace CLI, bootstrap a směrování příkazů.\",\"language\":\"Python\",\"generated_in_phase\":\"A3\"},{\"path\":\"cli.py\",\"purpose\":\"Parsování argumentů příkazové řádky a formátování výstupu.\",\"language\":\"Python\",\"generated_in_phase\":\"A3\"},{\"path\":\"service.py\",\"purpose\":\"Obchodní logika pro CRUD operace a validace.\",\"language\":\"Python\",\"generated_in_phase\":\"A3\"},{\"path\":\"repository.py\",\"purpose\":\"Perzistence úloh v lokálním JSON souboru.\",\"language\":\"Python\",\"generated_in_phase\":\"A3\"},{\"path\":\"models.py\",\"purpose\":\"Datové struktury úloh, stavů a priority.\",\"language\":\"Python\",\"generated_in_phase\":\"A3\"},{\"path\":\"utils.py\",\"purpose\":\"Pomocné funkce pro datum/čas a validace.\",\"language\":\"Python\",\"generated_in_phase\":\"A3\"}]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 0.985,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": "resp_0a9d3b88a4a4fa3700695ea75ec1b08191909e39344ef31089",
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "medium",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 1581,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 347,
+      "output_tokens_details": {
+        "reasoning_tokens": 128
+      },
+      "total_tokens": 1928
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767810928,
+    "store": true
+  }
+}

@@ -72,7 +72,7 @@ class PriceCatalog:
         if not remote:
             self._data['source'] = url
             self._data['verified'] = False
-            self._data['last_refreshed'] = self._data.get('last_refreshed')
+            self._data['last_refreshed'] = datetime.utcnow().isoformat()
             self._save_cache()
             return False
         merged = self._merge_remote(remote)
@@ -101,8 +101,12 @@ class PriceCatalog:
         if not url:
             self._last_error = "Pricing URL není nastaveno."
             return None
+        headers = {
+            "User-Agent": "Mozilla/5.0 (compatible; Kaja/1.0)",
+            "Accept": "text/html,application/json;q=0.9,*/*;q=0.8",
+        }
         try:
-            response = httpx.get(url, timeout=15.0)
+            response = httpx.get(url, timeout=15.0, headers=headers, follow_redirects=True)
             response.raise_for_status()
             if self._is_json_response(response):
                 return response.json()

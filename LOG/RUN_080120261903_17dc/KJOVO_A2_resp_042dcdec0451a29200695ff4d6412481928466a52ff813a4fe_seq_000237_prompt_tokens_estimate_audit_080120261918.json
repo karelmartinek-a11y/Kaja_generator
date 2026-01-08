@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261903_17dc",
+    "project": "KJOVO",
+    "stage": "A2",
+    "response_id": "resp_042dcdec0451a29200695ff4d6412481928466a52ff813a4fe",
+    "event": "prompt_tokens_estimate",
+    "sequence": 237,
+    "logged_at": "2026-01-08T18:18:19.935969"
+  },
+  "details": {
+    "event": "prompt_tokens_estimate",
+    "level": "info",
+    "details": {
+      "stage": "A2",
+      "estimated_tokens": 4066,
+      "max_tokens": 6554,
+      "context_limit": 8192
+    },
+    "timestamp": "2026-01-08T18:18:19.935956"
+  }
+}

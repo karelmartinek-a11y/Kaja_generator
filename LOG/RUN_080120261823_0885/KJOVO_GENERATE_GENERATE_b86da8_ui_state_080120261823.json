@@ -1,0 +1,38 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261823_0885",
+    "response_id": "GENERATE_b86da8",
+    "captured_at": "2026-01-08T17:23:33.455726",
+    "project": "KJOVO",
+    "mode": "GENERATE"
+  },
+  "ui_state": {
+    "project_name": "KJOVO",
+    "prompt_text": "Ve Vectore Store je soubor 2ezvhKrAWPcWYHm11aQJKq, kde najdeš zadání porgramu, který porsím vygeneruj. Dodrž při tom standardy designu, které jsou také ve Vectore Store pod YDeLL1L564LE5WPLFKpSK2",
+    "in_dir": "",
+    "out_dir": "C:/KAJOVO",
+    "versing_enabled": false,
+    "mode": "GENERATE",
+    "response_id": "",
+    "model": "gpt-5.1",
+    "send_as_c": false,
+    "diagnostics": {
+      "windows_in": false,
+      "windows_out": false,
+      "ssh_in": false,
+      "ssh_out": false
+    },
+    "ssh": {
+      "host": "89.221.216.10",
+      "user": "root",
+      "key_path": "",
+      "password": "+Sin8glov8",
+      "port": 10
+    },
+    "attached_file_ids": [
+      "file-YDeLL1L564LE5WPLFKpSK2",
+      "file-2ezvhKrAWPcWYHm11aQJKq",
+      "file-XmRFcHGh2VcT2aAWNN9qPb"
+    ]
+  }
+}

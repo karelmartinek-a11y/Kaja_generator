@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A2X",
+    "response_id": "resp_09e7bfcc9ed782d800695f9ca1f6148194960e4ba0cf58a401",
+    "event": "api_call_success",
+    "sequence": 379,
+    "logged_at": "2026-01-08T12:04:12.089020"
+  },
+  "details": {
+    "event": "api_call_success",
+    "level": "info",
+    "details": {
+      "stage": "A2X",
+      "request_id": "faab4a8c"
+    },
+    "timestamp": "2026-01-08T12:04:12.089010"
+  }
+}

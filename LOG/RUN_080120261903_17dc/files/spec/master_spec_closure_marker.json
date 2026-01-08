@@ -1,0 +1,14 @@
+{
+  "MASTER_SPEC_COMPLETE_FLAG": true,
+  "MASTER_SPEC_VERSION_META": "v1.0",
+  "MASTER_SPEC_STATUS_META": "complete",
+  "MASTER_SPEC_NOTE": "Konec MASTER zadání. Tento soubor pouze strojově signalizuje, že hlavní specifikace Linux + FULL Windows Diagnostics je kompletní; žádné nové technické požadavky zde nejsou definovány.",
+  "MASTER_SPEC_CONTEXT_IMPORTS": [
+    {
+      "source": "external:MASTER_SPEC_PREVIOUS_CHUNKS",
+      "symbols": [
+        "MASTER_SPEC_FULL_CONTEXT"
+      ]
+    }
+  ]
+}

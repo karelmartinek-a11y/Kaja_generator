@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261741_5a1d",
+    "project": "KJOVO",
+    "stage": "A1",
+    "response_id": "GENERATE_e75dc9",
+    "event": "request_payload_built",
+    "sequence": 223,
+    "logged_at": "2026-01-08T16:54:00.142136"
+  },
+  "details": {
+    "event": "request_payload_built",
+    "level": "info",
+    "details": {
+      "stage": "A1",
+      "model": "gpt-5.1",
+      "instructions_chars": 17093,
+      "input_chars": 2739,
+      "input_parts": 1,
+      "previous_response_id": "",
+      "tools_enabled": false,
+      "temperature": 0.2,
+      "attachments": 0,
+      "vector_store_id": null,
+      "file_search_enabled": false
+    },
+    "timestamp": "2026-01-08T16:54:00.142130"
+  }
+}

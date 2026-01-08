@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261903_17dc",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_04836b60c282202d00695ff4cf40b481918a400926a70a5bb9",
+    "logged_at": "2026-01-08T18:17:57.791943",
+    "request_id": "0d42d22a"
+  },
+  "payload": {
+    "id": "resp_04836b60c282202d00695ff4cf40b481918a400926a70a5bb9",
+    "created_at": 1767896271.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_04836b60c282202d00695ff4cfad188191baea32921204770b",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento závěrečný chunk pouze konstatuje „Konec MASTER zadání.“ – tj. uzavírá celé hlavní (MASTER) zadání / specifikaci.\\n\\nV kontextu předchozích chunků:\\n- Neobsahuje žádné nové technické požadavky, struktury ani soubory.\\n- Nepřidává ani nemění žádná pravidla, kontrakty nebo význam předchozí specifikace.\\n- Slouží jen jako explicitní značka, že definice návrhu (Linux + FULL Windows Diagnostics) je kompletní a dál už nenásleduje žádný další obsah.\\n\\nCelkový význam pro další kroky:\\n- Všechny relevantní instrukce, pravidla, struktury adresářů, obsah MANIFEST.md, bezpečnostní omezení (redakce tajných údajů, ACCESS DENIED, NOT PRESENT) a cíle diagnostiky jsou plně definovány v předchozích chuncích.\\n- Tento chunk pouze signalizuje konec, takže při rekonstrukci nebo interpretaci zadání se nemá očekávat žádné další rozšíření nebo korekce.\\n- Výsledný návrh je tedy uzavřený a připravený k deterministickému použití (implementace skriptů, generování diagnostik, validace výstupů).\",\"chunk_index\":15,\"chunk_count\":15,\"notes\":[\"Žádné nové technické detaily; pouze ukončovací značka MASTER zadání.\",\"Při dalším zpracování je nutné brát v úvahu, že všechny závazné informace jsou v předchozích 14 chuncích.\",\"Kontrakty LONG_PROMPT_COMPRESS, pravidla pro strukturu diagnostik a MANIFEST.md zůstávají beze změny.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4632,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 414,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 5046
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767896277,
+    "store": true
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261617_314b",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_01fe002a2e73517900695fcdc7e188819783a26bc94e2bd8cc",
+    "logged_at": "2026-01-08T15:32:16.635204",
+    "request_id": "3093c6a3"
+  },
+  "payload": {
+    "id": "resp_01fe002a2e73517900695fcdc7e188819783a26bc94e2bd8cc",
+    "created_at": 1767886279.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_01fe002a2e73517900695fcdc864d08197b60c56c97c2d4276",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk dokončuje popis architektury modulů, datových toků, chybového zpracování, bezpečnostních zásad a základních informací o spuštění.\\n\\nArchitektura – další moduly:\\n\\n11) io_safety\\n- Role: bezpečné operace se souborovým systémem pro výstupy diagnostiky.\\n- Exporty:\\n  - safe_mkdirs(path: str) -> None\\n  - safe_write_text(path: str, content: str, overwrite: bool = True) -> None\\n  - safe_write_binary(path: str, data: bytes, overwrite: bool = True) -> None\\n  - ensure_empty_dir(path: str) -> None\\n- Závislosti: os, pathlib, logging_setup.\\n- Smysl: centralizovat práci se souborovým systémem tak, aby se minimalizovalo riziko chyb, kolizí a nekonzistentních výstupů. Funkce musí respektovat omezení projektu (žádné mazání mimo cílový adresář, bezpečné vytváření adresářů, kontrola přepisování souborů podle parametru overwrite).\\n\\n12) logging_setup\\n- Role: centralizované nastavení logování.\\n- Exporty:\\n  - setup_logging(level: int, log_file: str | None = None) -> None\\n  - get_logger(name: str) -> logging.Logger\\n- Závislosti: logging, os.\\n- Smysl: zajistit jednotnou konfiguraci logování pro všechny moduly, včetně volitelného logování do souboru a nastavení úrovně detailu. Musí respektovat bezpečnostní zásady (nelogovat tajemství, citlivé cesty apod.).\\n\\n13) error_reporting\\n- Role: sběr a zápis chyb během běhu diagnostiky.\\n- Exporty:\\n  - record_error(section: str, error: Exception | str) -> None\\n  - write_error_report(output_dir: str) -> None\\n  - get_errors() -> list[tuple[str,str]]\\n- Závislosti: logging_setup, io_safety, traceback.\\n- Smysl: centralizovat evidenci chyb z různých částí systému. record_error ukládá informace o sekci a chybě (včetně stack trace, pokud je k dispozici). write_error_report generuje souhrnný errors.log v kořenovém výstupním adresáři. get_errors umožňuje dalším modulům (např. diagnostics_main) rozhodnout o návratovém kódu.\\n\\n14) path_layout\\n- Role: deterministická definice adresářové a souborové struktury výstupu pro Ubuntu a Windows.\\n- Exporty:\\n  - UbuntuLayout (dataclass)\\n  - WindowsLayout (dataclass)\\n  - get_ubuntu_output_layout(base_dir: str) -> UbuntuLayout\\n  - get_windows_output_layout(base_dir: str) -> WindowsLayout\\n- Závislosti: os, dataclasses.\\n- Smysl: poskytnout jednoznačnou a stabilní definici, kde se mají nacházet jednotlivé výstupní soubory a podsložky (např. system, network, logs atd.), a to odděleně pro Ubuntu web server diagnostiku a Windows FULL diagnostiku. Tato struktura je pevně daná existujícími návrhy a nesmí být měněna.\\n\\n15) summary_report\\n- Role: generování lidsky čitelného souhrnu hlavních zjištění.\\n- Exporty:\\n  - generate_summary(output_dir: str, platform: str) -> None\\n  - summarize_section(section_name: str, data: DiagnosticSectionSummary) -> str\\n- Závislosti: data_models, io_safety, redaction.\\n- Smysl: vytvořit v kořeni výstupu souhrnný report (např. SUMMARY.md nebo podobný soubor), který shrnuje klíčové informace z jednotlivých sekcí (systém, síť, logy, služby atd.) a odkazuje na detailní soubory. Musí respektovat redakční pravidla (žádná tajemství, redakce citlivých údajů).\\n\\nData flow (tok dat mezi moduly):\\n1) diagnostics_main.main() zavolá cli_interface.parse_args(), aby získal parametry běhu (platforma, výstupní adresář, úroveň detailu, volitelné vypnutí sekcí).\\n2) Pokud platforma není zadána, diagnostics_main použije os_detection.detect_platform() k určení, zda běží na Ubuntu nebo Windows (případně vrátí 'unknown').\\n3) diagnostics_main inicializuje logování přes logging_setup.setup_logging() (úroveň podle CLI parametrů) a připraví výstupní adresář pomocí io_safety.ensure_empty_dir(). Tím se zajistí čistý cílový adresář bez kolizí se staršími výstupy.\\n4) diagnostics_main podle výsledné platformy zavolá ubuntu_diagnostics_runner.run_ubuntu_diagnostics() nebo windows_diagnostics_runner.run_windows_diagnostics(). V případě 'unknown' může vrátit chybu nebo použít konzervativní režim (dle širší specifikace v jiných částech zadání).\\n5) ubuntu_diagnostics_runner/windows_diagnostics_runner získají layout výstupu z path_layout.get_ubuntu_output_layout()/get_windows_output_layout() a podle něj vědí, do jakých podsložek a souborů mají zapisovat výstupy jednotlivých collectorů.\\n6) Runnery postupně volají příslušné funkce z ubuntu_collectors/windows_collectors. Každý collector vrací datové modely definované v data_models (např. SystemInfo, NetworkEndpoint, LogFileSummary). Runnery tyto struktury převádějí na textové nebo jinak strukturované výstupy (např. JSON, YAML, Markdown – dle širšího návrhu), proženou je přes redaction.redact_secrets() a případně redaction.redact_path(), a zapisují je pomocí io_safety.safe_write_text() nebo safe_write_binary().\\n7) Během sběru případné chyby (např. nedostupné soubory, selhání příkazů) zachytává error_reporting.record_error(), ale běh pokračuje pro ostatní sekce. Tím je zajištěno, že selhání jedné části diagnostiky neukončí celý proces.\\n8) Po dokončení sběru runner zavolá manifest_writer.create_manifest() a manifest_writer.write_manifest(), aby vytvořil MANIFEST.md a případné další indexové soubory. Manifest obsahuje seznam všech generovaných souborů, jejich velikost, stručný popis a poznámky o redakci či nedostupnosti (MISSING, ERROR, NOT PRESENT, ACCESS DENIED).\\n9) summary_report.generate_summary() vytvoří souhrnný report v kořeni výstupu, který shrnuje hlavní zjištění a odkazuje na klíčové soubory (např. systémové informace, síťovou konfiguraci, logy, bezpečnostní nastavení).\\n10) diagnostics_main po dokončení běhu runneru zavolá error_reporting.write_error_report(), aby zapsal errors.log, a na základě přítomnosti fatálních chyb (zjištěných přes error_reporting.get_errors() a interní logiku) vrátí odpovídající návratový kód (0 pro úspěch, nenulový pro fatální selhání).\\n\\nChybové zpracování (error_handling):\\n- Všechny sběrné funkce v ubuntu_collectors a windows_collectors musí zachytávat očekávané výjimky (např. FileNotFoundError, PermissionError, subprocess.CalledProcessError). Místo pádu musí vracet struktury, které explicitně označují stav NOT PRESENT (pokud subsystém neexistuje) nebo ACCESS DENIED (pokud chybí oprávnění). Tím se zachová konzistence výstupu a splní se požadavek, aby chybějící nebo nedostupné informace nebyly ponechány prázdné.\\n- Neočekávané výjimky v collectorech musí být zachyceny na úrovni runneru (ubuntu_diagnostics_runner/windows_diagnostics_runner). Runner je zaloguje přes logging_setup (s ohledem na redakci citlivých údajů) a zaznamená přes error_reporting.record_error(), aniž by ukončil celý běh diagnostiky.\\n- diagnostics_main musí zachytit top-level výjimky, zalogovat je, zapsat stručnou zprávu do stderr a vrátit nenulový návratový kód. Tím se zajistí robustní chování i při neočekávaných selháních mimo jednotlivé sekce.\\n- io_safety.safe_write_text() a safe_write_binary() musí ošetřit chyby zápisu (např. nedostatek místa na disku, chybějící oprávnění, neplatné cesty). Tyto chyby nesmí způsobit nekontrolovaný pád; místo toho se mají předat přes error_reporting.record_error() s jasnou informací o cestě souboru a typu chyby.\\n- manifest_writer musí být robustní vůči chybějícím nebo částečně vytvořeným souborům. V manifestu musí být takové položky označeny jako MISSING nebo ERROR, aby bylo zřejmé, že se je nepodařilo korektně vytvořit nebo zapsat.\\n- error_reporting.write_error_report() musí být idempotentní a nesmí selhat, i když neexistují žádné zaznamenané chyby (v takovém případě může vytvořit prázdný nebo minimální soubor, případně žádný, dle detailní specifikace, ale bez vyvolání výjimky).\\n\\nBezpečnostní poznámky (security_notes):\\n- Žádný modul nesmí číst ani exportovat obsah souborů, které jsou zjevně citlivé (např. soubory s příponami .key, .pem, .pfx, .kdb, nebo známé cesty k heslům a tajemstvím). V takových případech se mají zaznamenat pouze bezpečná metadata (např. název souboru, velikost, existence) a poznámka REDACTED, případně se soubor úplně vynechá z obsahu a jen se uvede v manifestu jako redigovaný.\\n- Modul redaction musí obsahovat konzervativní heuristiky pro detekci potenciálních tajemství (např. dlouhé base64 řetězce, typické prefixy tokenů, formáty API klíčů). Tyto hodnoty musí být nahrazeny placeholderem [REDACTED]. Heuristiky mají raději redigovat více než méně, aby se minimalizovalo riziko úniku tajemství.\\n- Diagnostika nesmí měnit systémová nastavení, registry, služby ani firewall; všechny operace musí být read-only. To platí jak pro Ubuntu, tak pro Windows, včetně všech volaných nástrojů přes subprocess.\\n- Výstupy diagnostiky mohou obsahovat citlivé systémové informace (verze OS, seznam procesů, otevřené síťové porty, konfigurace služeb). Uživatel musí být v dokumentaci upozorněn, aby s výsledným balíčkem zacházel jako s potenciálně citlivým, i když by neměl obsahovat přímo tajemství (hesla, klíče, tokeny).\\n- Při označování ACCESS DENIED nesmí diagnostika obcházet bezpečnostní omezení (např. pokusy o privilege escalation, změnu oprávnění, spouštění s vyššími právy). Musí respektovat aktuální oprávnění procesu a pouze zaznamenat, že přístup byl odepřen.\\n- Logování nesmí obsahovat plné cesty k citlivým souborům ani obsahy příkazů, které by mohly odhalit tajemství (např. příkazy obsahující hesla v argumentech). V případě pochybností se má použít redaction.redact_path() a redaction.redact_secrets() před zápisem do logu.\\n\\nBuild & run (základní informace):\\nPředpoklady:\\n- Nainstalovaný Python 3.10+ na cílovém systému (Ubuntu i Windows).\\n- Možnost spouštět příkazy shellu (bash na Ubuntu, PowerShell/cmd na Windows) z Pythonu přes subprocess.\\n- Dostatečná oprávnění pro čtení systémových informací a logů, podle očekávaného rozsahu diagnostiky.\\n- Dostatek volného místa v cílovém výstupním adresáři pro uložení všech diagnostických souborů.\\n\\nPříklady příkazů ke spuštění:\\n- Automatická detekce OS: python diagnostics_main.py --output ./diagnostics_output\\n- Explicitní Ubuntu diagnostika: python diagnostics_main.py --platform ubuntu --output ./diagnostics_ubuntu\\n- Explicitní Windows diagnostika: python diagnostics_main.py --platform windows --output .\\\\\\\\diagnostics_windows\\n\\nTento chunk tak doplňuje architekturu o moduly io_safety, logging_setup, error_reporting, path_layout a summary_report, popisuje detailní tok dat mezi moduly, robustní chybové zpracování a bezpečnostní zásady (redakce tajemství, read-only přístup, respektování oprávnění) a uvádí základní předpoklady a příklady spuštění diagnostiky. Všechny zde uvedené názvy modulů, funkcí a datových struktur jsou závazné a musí zůstat stabilní pro další fáze návrhu a implementace.\",\"chunk_index\":3,\"chunk_count\":6,\"notes\":[\"Navazuje na předchozí chunk s architekturou; doplňuje zbývající moduly a jejich exporty, zejména io_safety, logging_setup, error_reporting, path_layout a summary_report.\",\"Upřesňuje datový tok mezi hlavním entrypointem, detekcí OS, runnery, collectory, redakcí, zápisem souborů, manifestem a souhrnným reportem.\",\"Specifikuje robustní chybové zpracování na úrovni collectorů, runnerů, hlavního modulu a IO operací, včetně požadavku na idempotentní error_reporting.write_error_report().\",\"Rozpracovává bezpečnostní zásady: žádné čtení zjevně citlivých souborů, konzervativní redakce tajemství, read-only charakter diagnostiky, respektování oprávnění a omezení obsahu logů.\",\"Uvádí minimální technické předpoklady (Python 3.10+, možnost spouštět shell příkazy, dostatek oprávnění a místa) a příklady příkazů pro spuštění diagnostiky s automatickou i explicitní volbou platformy.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4176,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3375,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 7551
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767886336,
+    "store": true
+  }
+}

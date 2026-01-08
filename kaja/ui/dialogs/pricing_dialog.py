@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
 
 from kaja.core.price_catalog import PriceCatalog
 from kaja.core.pricing import PricingStore
+from ..style_tokens import PALETTE_GRAY, PALETTE_WHITE
 
 
 class PricingDialog(QDialog):
@@ -41,17 +42,20 @@ class PricingDialog(QDialog):
         header.addWidget(self._refresh_catalog_button)
         layout.addLayout(header)
 
-        price_group = QGroupBox("Modelové sazby / ceník")
+        price_group = QGroupBox("Modelové sazby / ceník".upper())
         price_layout = QVBoxLayout(price_group)
         self._price_table = QTableWidget(0, 6)
         self._price_table.setHorizontalHeaderLabels(
             [
-                "Model",
-                "Input token (USD)",
-                "Output token (USD)",
-                "Vector file (USD)",
-                "Vector GB (USD)",
-                "File API (USD)",
+                label.upper()
+                for label in [
+                    "Model",
+                    "Input token (USD)",
+                    "Output token (USD)",
+                    "Vector file (USD)",
+                    "Vector GB (USD)",
+                    "File API (USD)",
+                ]
             ]
         )
         self._price_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -59,19 +63,22 @@ class PricingDialog(QDialog):
         price_layout.addWidget(self._price_table)
         layout.addWidget(price_group)
 
-        receipts_group = QGroupBox("Účtenky")
+        receipts_group = QGroupBox("Účtenky".upper())
         receipts_layout = QVBoxLayout(receipts_group)
         self._table = QTableWidget(0, 8)
         self._table.setHorizontalHeaderLabels(
             [
-                "Run ID",
-                "Project",
-                "Model",
-                "Mode",
-                "Response ID",
-                "Estimated",
-                "Actual",
-                "Status",
+                label.upper()
+                for label in [
+                    "Run ID",
+                    "Project",
+                    "Model",
+                    "Mode",
+                    "Response ID",
+                    "Estimated",
+                    "Actual",
+                    "Status",
+                ]
             ]
         )
         self._table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -108,7 +115,7 @@ class PricingDialog(QDialog):
         source = summary.get("source") or "lokální"
         refreshed = summary.get("last_refreshed") or "nikdy"
         verified = summary.get("verified", False)
-        color = "#fff" if verified else "#808080"
+        color = PALETTE_WHITE if verified else PALETTE_GRAY
         self._status_label.setText(
             f"{status} • Zdroj: {source} • Poslední aktualizace: {refreshed}"
         )
@@ -173,7 +180,11 @@ class PricingDialog(QDialog):
             self._table.setItem(row, 6, QTableWidgetItem(actual_text))
             status_text = "ověřeno" if receipt.verified_pricing else "odhad"
             status_item = QTableWidgetItem(status_text)
-            status_color = QColor("#fff") if receipt.verified_pricing else QColor("#808080")
+            status_color = (
+                QColor(PALETTE_WHITE)
+                if receipt.verified_pricing
+                else QColor(PALETTE_GRAY)
+            )
             status_item.setForeground(status_color)
             self._table.setItem(row, 7, status_item)
         if receipts:

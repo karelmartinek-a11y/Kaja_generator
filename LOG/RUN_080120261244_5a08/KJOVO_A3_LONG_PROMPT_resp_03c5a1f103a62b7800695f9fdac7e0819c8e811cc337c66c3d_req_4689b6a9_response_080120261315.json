@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "resp_03c5a1f103a62b7800695f9fdac7e0819c8e811cc337c66c3d",
+    "logged_at": "2026-01-08T12:15:40.435602",
+    "request_id": "4689b6a9"
+  },
+  "payload": {
+    "id": "resp_03c5a1f103a62b7800695f9fdac7e0819c8e811cc337c66c3d",
+    "created_at": 1767874522.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2064 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_03c5a1f103a62b7800695f9fdb55e4819cbed9a49e2d2c30eb",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Uživatel ve fázi A3 požaduje obsah souboru PATH=pyproject.toml. V této fázi se má vracet pouze skutečný obsah souboru (TOML), případně po částech dle CHUNK_INDEX, a to zabalený do JSON dle schématu A3_FILE. Výstup A3 nesmí obsahovat diffy, patche ani další metadata mimo předepsané klíče A3_FILE.\\n\\nProjekt „DiagMaster“ je konzolový nástroj v Pythonu 3.12 pro plnou (FULL) diagnostiku Linux/Windows v neinteraktivním režimu, ovládaný přepínači jako --full-linux a --full-windows. Nástroj vytváří deterministickou adresářovou strukturu výstupů s MANIFESTy, bez ZIP archivace. Předchozí MASTER chunky (nejsou zde obsaženy) definují přesné diagnostické příkazy, formáty MANIFESTů a adresářovou strukturu; tyto definice jsou závazné a nesmí být měněny.\\n\\nFunkční požadavky (souhrn):\\n- Nástroj provádí FULL diagnostiku pro Linux i Windows, neinteraktivně, pomocí přepínačů jako --full-linux a --full-windows.\\n- Výstup je organizován do deterministické adresářové struktury (např. system_info, network, storage, processes, services, logs atd.).\\n- V kořeni výstupu je MANIFEST_ROOT.json, který popisuje strukturu výstupu, verzi nástroje, čas běhu, cílový OS a stav jednotlivých kroků.\\n- Každá hlavní podsložka má vlastní MANIFEST (např. MANIFEST_system_info.json) s popisem souborů, použitých příkazů a návratových kódů.\\n- Nástroj nesmí vytvářet ZIP ani jiné archivy, vše je uloženo jako běžné soubory a adresáře.\\n- Podporuje parametr --output-dir pro určení cílového adresáře.\\n- Logování probíhá do run.log v kořeni výstupu a zároveň na stdout, s podporou úrovní verbóznosti (--quiet, --verbose, --debug).\\n- Kořenový MANIFEST zaznamenává verzi nástroje a verzi Python runtime.\\n- Pro každý krok se zaznamenává příkaz/API, návratový kód, stderr a cesta k výstupu.\\n- Lze přeskočit vybrané oblasti diagnostiky (např. --skip-logs, --skip-network).\\n- Při selhání kritických kroků má proces nenulový návratový kód; kritičnost je konfigurovatelná.\\n- Přepínač --dry-run pouze vypíše plánované kroky, nesmí vytvářet soubory ani adresáře.\\n- Přepínač --config <soubor> umožňuje načíst konfiguraci.\\n- Podpora opakovaných běhů s unikátními adresáři (run_id); strategie generování run_id je zaznamenána v MANIFESTu.\\n- Podporuje --version a --help.\\n- Pro Linux používá standardní příkazy/soubory (/proc, /sys, systemd, ip, ss, df, journalctl atd.).\\n- Pro Windows používá PowerShell/WMI/systeminfo/ipconfig/Get-EventLog/Get-WinEvent atd.\\n- Nástroj funguje offline, bez síťové komunikace.\\n- Výstupy jsou textové/JSON, bez nestandardních binárních formátů.\\n- Timeouty kroků jsou nastavitelné.\\n- V MANIFESTech je jasně označen stav kroků: SUCCESS/FAILED/SKIPPED/TIMEOUT.\\n- Architektura je navržena tak, aby bylo možné později přidat GUI nadstavbu bez změny doménové logiky a datových modelů.\\n\\nNefunkční požadavky:\\n- Determinismus: stejné prostředí a konfigurace vedou ke stejné struktuře a názvům výstupů (časová razítka jsou výjimka, ale jsou zaznamenána).\\n- Multiplatformnost s minimálními rozdíly v kódu mezi Linux a Windows.\\n- Snadná rozšiřitelnost o nové diagnostické kroky.\\n- Jasně definované datové modely pro běh, kroky a manifesty.\\n- Možnost spouštění v CI/CD prostředí.\\n- Minimální externí závislosti.\\n- Konzistentní logování.\\n- Modulární, čitelná architektura.\\n- Schopnost zpracovat velké objemy dat (streamování, ne vše do paměti).\\n- Kompatibilita s běžnými LTS Linux distribucemi a podporovanými verzemi Windows.\\n- Konzistentní pojmenování entit, souborů a adresářů.\\n- Chování nástroje musí být rekonstruovatelné pouze z adresářové struktury a MANIFESTů.\\n\\nOmezení:\\n- Návrhový plán nesmí používat externí soubory.\\n- Žádná archivace (ZIP ani jiné formáty).\\n- Konkrétní seznam příkazů a přesná struktura výstupu jsou dány v MASTER chuncích a nesmí se měnit.\\n- Nesmí být přidávány nové funkční požadavky; neznámé detaily patří jen do assumptions, ne do závazných požadavků.\\n- Nástroj je jednorázový proces (žádný daemon, žádný dlouho běžící server).\\n- Žádné odesílání dat mimo lokální systém.\\n- Read-only diagnostika mimo vlastní výstupní adresář.\\n- Žádné GUI, pouze CLI.\\n- Žádné nestandardní binární formáty.\\n- Nesmí být porušena rekonstruovatelnost konfigurace z výstupů.\\n\\nArchitektura: kořenový objekt „architecture“ obsahuje pole „modules“. Definované moduly a jejich role:\\n- core.cli: parsování CLI, mapování na příkazy, spuštění běhu. Exportuje: CLIArguments, parse_cli_args(argv)->CLIArguments, run_from_cli(argv)->int. Závislosti: core.runner, core.config, core.logging.\\n- core.config: načítání/validace konfigurace, slučování s CLI. Exportuje: DiagnosticConfig, load_config(path)->DiagnosticConfig, merge_cli_with_config(cli, base)->DiagnosticConfig. Závislosti: core.models.\\n- core.models: sdílené doménové modely. Exportuje: RunId, DiagnosticRun, StepStatus enum, DiagnosticStepDefinition, DiagnosticStepResult, ManifestRoot, ManifestSection, ManifestSectionRef, ManifestStepEntry, ManifestFileEntry. Bez závislostí.\\n- core.runner: orchestrace běhu, plánování kroků, volání OS-specifických modulů, sběr výsledků. Exportuje: run_diagnostics(cli_args)->int; execute_run(config)->DiagnosticRun; determine_os_target(cli_args, config)->str ('linux'/'windows'). Závislosti: core.models, core.config, core.logging, core.fs_layout, core.manifest, os_linux.steps, os_windows.steps.\\n- core.fs_layout: deterministické vytváření adresářové struktury a generování cest. Exportuje: FsLayout; create_run_root(base_output_dir, run_id)->FsLayout; path_for_step_output(layout, step, suffix)->str; path_for_manifest_root(layout)->str; path_for_manifest_section(layout, section_name)->str. Závislosti: core.models, os, pathlib.\\n- core.manifest: sestavování a zápis MANIFESTů. Exportuje: build_root_manifest(run, layout, section_refs)->ManifestRoot; build_section_manifest(section_name, step_results, files)->ManifestSection; write_root_manifest(manifest, path); write_section_manifest(manifest, path); collect_manifest_file_entries(layout, step_results)->dict[str, list[ManifestFileEntry]]. Závislosti: core.models, core.fs_layout, json.\\n- core.logging: logování do souboru a na konzoli, úrovně verbóznosti. Exportuje: LogLevel enum ('QUIET','INFO','DEBUG'); init_logging(layout|None, level)->None; log_info; log_debug; log_error; log_step_result(step_result). Závislosti: logging, core.models.\\n- core.exec: bezpečné spouštění externích příkazů. Exportuje: ExecResult (exit_code, stdout_path, stderr_path, started_at, finished_at, error_message); run_command(command, cwd, timeout_seconds, stdout_path, stderr_path)->ExecResult; format_command_for_manifest(command)->str. Závislosti: subprocess, datetime, core.logging.\",\"chunk_index\":1,\"chunk_count\":3,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 2074,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2001,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 4075
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767874540,
+    "store": true
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261617_314b",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_0b75c16fa39eef6e00695fce2d87048194ab59d5d05212ffa1",
+    "logged_at": "2026-01-08T15:33:17.862423",
+    "request_id": "1c68d2cd"
+  },
+  "payload": {
+    "id": "resp_0b75c16fa39eef6e00695fce2d87048194ab59d5d05212ffa1",
+    "created_at": 1767886381.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0b75c16fa39eef6e00695fce2de9a88194920a9b73bbc79785",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento závěrečný chunk dokončuje položku `MANIFEST_PROJECT.md` v objektu A2_STRUCTURE a formálně uzavírá celé master zadání, aniž by přidával nové technické požadavky.\\n\\n1) MANIFEST_PROJECT.md (dokončení)\\n- path: \\\"MANIFEST_PROJECT.md\\\"\\n- purpose: Lidsky čitelný manifest samotného projektu s přehledem modulů, jejich odpovědností a veřejných API. Jde o čistě dokumentační soubor, který neobsahuje žádné programové symboly.\\n- language: markdown\\n- generated_in_phase: A3\\n- EXPORTS: žádné programové symboly (dokumentační soubor).\\n- IMPORTS: žádné programové importy.\\n\\nTímto je uzavřen výčet všech souborů v A2_STRUCTURE, který již v předchozích chuncích definoval:\\n- CLI a orchestraci diagnostik pro Ubuntu a Windows (včetně rozdělení na web/Ubuntu diagnostiku a FULL Windows Diagnostics),\\n- sběrné moduly pro Ubuntu (ubuntu_collectors.py) a Windows (windows_collectors.py) s přesně danými funkcemi a návratovými datovými modely,\\n- infrastrukturní moduly: manifest_writer.py, data_models.py, redaction.py, io_safety.py, logging_setup.py, error_reporting.py, path_layout.py, summary_report.py,\\n- dokumentační soubor README.md,\\n- a nyní i projektový manifest MANIFEST_PROJECT.md.\\n\\nChunk dále explicitně říká, že poslední část master promptu pouze konstatuje „Konec MASTER zadání.“ a nepřidává žádné nové technické požadavky, struktury ani pravidla. Slouží jen jako formální ukončení.\\n\\nRekapitulace celkového stavu po všech chuncích (důležitá pro další fáze A2X_FILE_MAP):\\n- Máme kompletní návrh diagnostik pro Ubuntu (primárně web server) včetně:\\n  - definované adresářové a souborové struktury výstupu,\\n  - obsahu MANIFEST.md,\\n  - jednotlivých sekcí diagnostiky (system, network, filesystem, logs, web server config atd.).\\n- Máme kompletní návrh FULL Windows Diagnostics (kap. 29) včetně:\\n  - detailní adresářové struktury výstupu,\\n  - obsahu MANIFEST.md,\\n  - podrobných výpisů a sekcí: system, registry, filesystem, python, processes_services, network, security, hardware, storage, drivers, devtools, virtualization, wsl, logs.\\n- Infrastrukturní moduly zajišťují:\\n  - manifest_writer.py: generování a zápis MANIFEST.md, správa položek manifestu,\\n  - data_models.py: sdílené datové modely (SystemInfo, NetworkEndpoint, FilesystemEntry, LogFileSummary, PackageInfo, WebServerConfigSummary, RegistrySummary, PythonEnvironmentSummary, ProcessesServicesSummary, SecuritySummary, HardwareSummary, StorageSummary, DriversSummary, DevToolsSummary, VirtualizationSummary, WslSummary, DiagnosticSectionSummary, ManifestItem, Manifest, UbuntuLayout, WindowsLayout),\\n  - redaction.py: redakce citlivých údajů (redact_secrets, redact_path, contains_potential_secret),\\n  - io_safety.py: bezpečné operace se souborovým systémem (safe_mkdirs, safe_write_text, safe_write_binary, ensure_empty_dir),\\n  - logging_setup.py: centrální nastavení logování (setup_logging, get_logger),\\n  - error_reporting.py: sběr a zápis chyb (record_error, write_error_report, get_errors),\\n  - path_layout.py: deterministická definice výstupního layoutu (get_ubuntu_output_layout, get_windows_output_layout),\\n  - summary_report.py: generování lidsky čitelného SUMMARY.md (generate_summary, summarize_section),\\n  - README.md: stručná dokumentace projektu a návod ke spuštění.\\n\\nGlobální zásady, které platí pro všechny části návrhu a nejsou tímto chunkem nijak měněny:\\n- Žádná tajemství nesmí být exportována do výstupů (hesla, privátní klíče, tokeny, API klíče apod.). Redakce je řešena konzervativně v modulu redaction.py.\\n- Chybějící subsystémy nebo nedostupné části systému se označují jako \\\"NOT PRESENT\\\" nebo \\\"ACCESS DENIED\\\" místo selhání nebo prázdných hodnot.\\n- Každá diagnostika musí poskytovat lidsky čitelný manifest/index (MANIFEST.md) pro snadnou orientaci v adresářové struktuře a souborech.\\n- Struktura výstupu je deterministická a verifikovatelná pomocí path_layout.py a manifest_writer.py.\\n\\nTento chunk tedy pouze doplňuje metadata pro MANIFEST_PROJECT.md a potvrzuje, že master zadání je kompletní. Všechny dříve popsané moduly, jejich EXPORTS/IMPORTS, jazyky a fáze generování (A3) zůstávají závazné a beze změny. Následující fáze (A2X_FILE_MAP) musí vycházet výhradně z již uzavřeného seznamu souborů A2_STRUCTURE a respektovat všechny uvedené kontrakty, zejména:\\n- žádné nové soubory mimo A2_STRUCTURE,\\n- každý path z A2_STRUCTURE přesně jednou v mapě,\\n- konzistentní a deterministické mapování exportů/importů mezi soubory,\\n- externí knihovny označovat prefixem \\\"external:\\\" v imports.path.\\n\",\"chunk_index\":6,\"chunk_count\":6,\"notes\":[\"MANIFEST_PROJECT.md je čistě dokumentační markdown soubor generovaný ve fázi A3; nemá žádné programové exporty ani importy.\",\"A2_STRUCTURE je nyní kompletní; žádné další soubory ani API se již nepřidávají.\",\"Všechny dříve definované moduly (ubuntu/windows collectors, infrastrukturní moduly, README.md) a jejich rozhraní zůstávají beze změny a jsou závazné pro A2X_FILE_MAP.\",\"Globální zásady: žádná tajemství ve výstupech, označování NOT PRESENT/ACCESS DENIED, deterministická struktura výstupu a lidsky čitelné manifesty.\",\"Další krok (A2X_FILE_MAP) musí vytvořit přesnou mapu souborů, exportů a importů pouze na základě již uzavřeného A2_STRUCTURE.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 2937,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1519,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 4456
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767886397,
+    "store": true
+  }
+}

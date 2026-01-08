@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_0402edf83cae14b500695f9c41c7608194aa16a4e37da60ff9",
+    "logged_at": "2026-01-08T12:00:38.161326",
+    "request_id": "3506f59b"
+  },
+  "payload": {
+    "id": "resp_0402edf83cae14b500695f9c41c7608194aa16a4e37da60ff9",
+    "created_at": 1767873601.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0402edf83cae14b500695f9c4274ec8194bce4e88185688885",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk pokračuje v A2_STRUCTURE – specifikaci adresářové a souborové struktury projektu „diagmaster“. Navazuje na předchozí část, kde už byl definován kořen repozitáře a soubor pyproject.toml, a nyní rozepisuje další soubory včetně jejich účelu, exportů/importů a fáze generování (A3).\\n\\n1) README.md\\n- path: implicitně navazuje na předchozí položku (z textu je zřejmé, že jde o dokumentaci projektu, i když název souboru není v tomto výřezu explicitně zopakován, ale kontextově jde o README v rootu).\\n- purpose: Základní dokumentace projektu DiagMaster.\\n  - Popisuje účel nástroje, podporované operační systémy, způsob spuštění a strukturu výstupů.\\n  - EXPORTS (v textovém smyslu): specifikace CLI rozhraní – parametry jako `--full-linux`, `--full-windows`, `--output-dir`, `--config`, `--dry-run`, `--verbose`, `--quiet`.\\n  - Dále popisuje adresářovou strukturu a MANIFEST soubory.\\n  - IMPORTS: pouze textové odkazy na implementační moduly v adresáři `diagmaster/` (např. `diagmaster/core/cli.py`, `diagmaster/core/runner.py`), bez programových importů.\\n- language: markdown.\\n- generated_in_phase: A3 (obsah bude generován později).\\n\\n2) diagmaster/__init__.py\\n- path: \\\"diagmaster/__init__.py\\\".\\n- purpose: Inicializační soubor balíčku `diagmaster`, definující veřejné API na úrovni balíčku.\\n- EXPORTS:\\n  - `__all__ = ['run_from_cli', 'CLIArguments', 'DiagnosticConfig', 'run_diagnostics']`.\\n  - `run_from_cli` – alias na `core.cli.run_from_cli`.\\n  - `CLIArguments` – alias na `core.cli.CLIArguments`.\\n  - `DiagnosticConfig` – alias na `core.config.DiagnosticConfig`.\\n  - `run_diagnostics` – alias na `core.runner.run_diagnostics`.\\n- IMPORTS:\\n  - `from .core.cli import run_from_cli, CLIArguments`.\\n  - `from .core.config import DiagnosticConfig`.\\n  - `from .core.runner import run_diagnostics`.\\n- language: python.\\n- generated_in_phase: A3.\\n\\n3) diagmaster/__main__.py\\n- path: \\\"diagmaster/__main__.py\\\".\\n- purpose: Vstupní bod pro spuštění balíčku jako modulu (`python -m diagmaster`).\\n- EXPORTS:\\n  - Funkce `main() -> int`, která volá `diagmaster.core.cli.run_from_cli(sys.argv[1:])` a vrací návratový kód.\\n  - Blok `if __name__ == '__main__': sys.exit(main())` pro přímé spuštění.\\n- IMPORTS:\\n  - `import sys`.\\n  - `from .core.cli import run_from_cli`.\\n- language: python.\\n- generated_in_phase: A3.\\n\\n4) diagmaster/core/__init__.py\\n- path: \\\"diagmaster/core/__init__.py\\\".\\n- purpose: Inicializační soubor pro podbalíček `core`, sjednocující přístup k hlavním doménovým modulům.\\n- EXPORTS:\\n  - `__all__ = ['CLIArguments', 'DiagnosticConfig', 'DiagnosticRun', 'DiagnosticStepDefinition', 'DiagnosticStepResult', 'RunId', 'run_diagnostics']`.\\n  - Aliasy na symboly z `core.cli`, `core.config`, `core.models`, `core.runner`.\\n- IMPORTS:\\n  - `from .cli import CLIArguments`.\\n  - `from .config import DiagnosticConfig`.\\n  - `from .models import DiagnosticRun, DiagnosticStepDefinition, DiagnosticStepResult, RunId`.\\n  - `from .runner import run_diagnostics`.\\n- language: python.\\n- generated_in_phase: A3.\\n\\n5) diagmaster/core/cli.py\\n- path: \\\"diagmaster/core/cli.py\\\".\\n- purpose: Implementace parsování CLI argumentů a vstupního bodu z příkazové řádky.\\n- EXPORTS:\\n  - `class CLIArguments` – reprezentuje vstupní parametry CLI; atributy např.: `mode`, `os_target`, `output_dir`, `config_path`, `verbosity`, `dry_run`, `skip_sections`, `timeouts`.\\n  - `function parse_cli_args(argv: list[str]) -> CLIArguments` – zpracuje `argv` pomocí `argparse` a vrátí instanci `CLIArguments`.\\n  - `function run_from_cli(argv: list[str] | None = None) -> int` – high-level vstupní bod pro CLI, který:\\n    - zpracuje argumenty,\\n    - načte/zkombinuje konfiguraci,\\n    - inicializuje logování,\\n    - spustí diagnostiku (`run_diagnostics`),\\n    - vrátí návratový kód.\\n- IMPORTS:\\n  - `import sys`.\\n  - `import argparse`.\\n  - `from .config import load_config, merge_cli_with_config, DiagnosticConfig`.\\n  - `from .runner import run_diagnostics`.\\n  - `from .logging import init_logging, LogLevel, log_error`.\\n  - `from .return_code import EXIT_CONFIG_ERROR`.\\n  - `from . import models as models` – pro typové anotace (např. `DiagnosticRun`).\\n- language: python.\\n- generated_in_phase: A3.\\n\\n6) diagmaster/core/config.py\\n- path: \\\"diagmaster/core/config.py\\\".\\n- purpose: Načítání, validace a slučování konfiguračních souborů diagnostiky s CLI parametry.\\n- EXPORTS:\\n  - `class DiagnosticConfig` – centrální konfigurace běhu; atributy např.: `enabled_sections`, `critical_steps`, `timeouts`, `os_target`, `output_dir`, `run_id_strategy`, `verbosity`.\\n  - `function load_config(path: str | None) -> DiagnosticConfig` – načte konfiguraci z JSON/YAML (v textu je zmíněn `json`), provede validaci a vrátí `DiagnosticConfig`. Při chybě loguje a může vést k `EXIT_CONFIG_ERROR`.\\n  - `function merge_cli_with_config(cli: 'CLIArguments', base: DiagnosticConfig) -> DiagnosticConfig` – sloučí CLI parametry s konfigurací ze souboru (CLI má typicky prioritu), vrací výslednou konfiguraci.\\n- IMPORTS:\\n  - `import json`.\\n  - `from typing import Optional, Dict, Any`.\\n  - `from .models import RunId`.\\n  - `from .logging import log_debug, log_error`.\\n  - `from .return_code import EXIT_CONFIG_ERROR`.\\n  - `from .cli import CLIArguments` – pouze pro typové anotace, řešeno lazy importem nebo přes `TYPE_CHECKING`, aby se předešlo cyklickým importům.\\n- language: python.\\n- generated_in_phase: A3.\\n\\n7) diagmaster/core/models.py\\n- path: \\\"diagmaster/core/models.py\\\".\\n- purpose: Definice sdílených doménových datových modelů pro běh diagnostiky, kroky, výsledky a MANIFESTy.\\n- EXPORTS (datové třídy / typy):\\n  - `class RunId` – identifikátor běhu; atributy: `value: str`.\\n  - `class DiagnosticRun` – metadata běhu; atributy: `run_id: RunId`, `os_target: str`, `start_time: str`, `end_time: str | None`, `tool_version: str`, `python_version: str`, `status: str`.\\n  - `class StepStatus (Enum)` – stav kroku; členy: `SUCCESS`, `FAILED`, `SKIPPED`, `TIMEOUT`, `ERROR`.\\n  - `class DiagnosticStepDefinition` – definice diagnostického kroku; atributy: `id: str`, `name: str`, `section: str`, `os_target: str`, `is_critical: bool`, `command_template: list[str]`, `timeout_seconds: int | None`.\\n  - `class DiagnosticStepResult` – výsledek kroku; atributy: `definition_id: str`, `status: StepStatus`, `exit_code: int`, `started_at: str`, `finished_at: str`, `stdout_path: str`, `stderr_path: str`, `error_message: str | None`.\\n  - `class ManifestRoot` – kořenový MANIFEST; atributy: `run: DiagnosticRun`, `sections: list[ManifestSectionRef]`, `generated_at: str`, `schema_version: str`.\\n  - `class ManifestSection` – sekční MANIFEST; atributy: `section_name: str`, `steps: list[ManifestStepEntry]`, `files: list[ManifestFileEntry]`.\\n  - `class ManifestSectionRef` – reference na sekční MANIFEST; atributy: `section_name: str`, `manifest_path: str`.\\n  - `class ManifestStepEntry` – záznam o kroku v MANIFESTu; atributy: `step_id: str`, `name: str`, `status: str`, `exit_code: int`, `stdout_path: str`, `stderr_path: str`, `command_executed: str`, `timeout_seconds: int | None`.\\n  - `class ManifestFileEntry` – záznam o souboru v MANIFESTu; atributy: `relative_path: str`, `description: str`, `generated_by_step_id: str | None`.\\n- IMPORTS:\\n  - `from enum import Enum`.\\n  - `from dataclasses import dataclass`.\\n  - `from typing import List, Optional`.\\n- language: python.\\n- generated_in_phase: A3.\\n\\n8) diagmaster/core/runner.py (začátek definice)\\n- path: \\\"diagmaster/core/runner.py\\\" je pouze naznačen, ale jeho detailní purpose a obsah budou rozvedeny v následujícím chunku. Z kontextu předchozích částí MASTER zadání víme, že `runner.py` bude obsahovat orchestraci běhu diagnostiky (`run_diagnostics`), práci s `fs_layout`, spouštění kroků, sběr výsledků a volání manifest/logging modulů.\\n\\nTento chunk tedy rozšiřuje A2_STRUCTURE o klíčové soubory balíčku `diagmaster` a podbalíčku `core`, včetně jejich rolí, exportovaných API a závislostí. Vše je v souladu s globálními pravidly projektu (determinismus, čistě CLI, read-only diagnostika, MANIFEST-based rekonstruovatelnost) popsanými v předchozích chuncích; zde se však soustředíme čistě na strukturální a API popisy souborů, nikoli na běhovou logiku, která je už popsána jinde.\",\"chunk_index\":5,\"chunk_count\":7,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4788,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2578,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 7366
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767873637,
+    "store": true
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261617_314b",
+    "project": "KJOVO",
+    "stage": "A2X_FILE_MAP",
+    "response_id": "resp_0f55f6c8ddb8979700695fce3df77c8195ae4e3b0a8187287e",
+    "event": "response_json_repair_attempt",
+    "sequence": 376,
+    "logged_at": "2026-01-08T15:34:04.518280"
+  },
+  "details": {
+    "event": "response_json_repair_attempt",
+    "level": "warning",
+    "details": {
+      "expected_contract": "A2X_FILE_MAP",
+      "method": "model_repair",
+      "text_chars": 25906,
+      "error": "A2X_FILE_MAP.root musí být string."
+    },
+    "timestamp": "2026-01-08T15:34:04.518273"
+  }
+}

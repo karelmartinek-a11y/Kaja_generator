@@ -4,14 +4,16 @@ from PySide6.QtCore import QPoint, QRect, Qt
 from PySide6.QtGui import QColor, QFont, QFontMetrics, QPainter, QPen
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
+from .style_tokens import KJA_BORDER_PX, KJA_RADIUS, PALETTE_BLACK, PALETTE_WHITE
+
 
 class SectionCard(QFrame):
     def __init__(self, title: str, content: QWidget, parent=None):
         super().__init__(parent)
         self.setObjectName("sectionCard")
         self.setAttribute(Qt.WA_StyledBackground, True)
-        self.setStyleSheet("background:#000;")
-        self._border_radius = 12
+        self.setStyleSheet(f"background:{PALETTE_BLACK};")
+        self._border_radius = KJA_RADIUS
         layout = QVBoxLayout(self)
         header_row = QHBoxLayout()
         header_row.setContentsMargins(0, 0, 0, 0)
@@ -19,7 +21,9 @@ class SectionCard(QFrame):
         self._header_label = QLabel(title.upper())
         self._header_label.setObjectName("sectionTitle")
         self._header_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        self._header_label.setStyleSheet("color:#fff; border:none; background:#000; padding:0;")
+        self._header_label.setStyleSheet(
+            f"color:{PALETTE_WHITE}; border:none; background:{PALETTE_BLACK}; padding:0;"
+        )
         self._header_label.setFont(QFont("Montserrat", 12, QFont.Bold))
         header_row.addWidget(self._header_label)
         header_row.addStretch()
@@ -33,11 +37,17 @@ class SectionCard(QFrame):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         rect = self.rect().adjusted(0, 0, -1, -1)
-        pen = QPen(QColor("#fff"))
-        pen.setWidth(1)
+        pen = QPen(QColor(PALETTE_WHITE))
+        pen.setWidth(KJA_BORDER_PX)
         painter.setPen(pen)
         painter.setBrush(Qt.NoBrush)
         painter.drawRoundedRect(rect, self._border_radius, self._border_radius)
+        inner_rect = rect.adjusted(1, 1, -1, -1)
+        inner_radius = max(0, self._border_radius - 1)
+        inner_pen = QPen(QColor(PALETTE_BLACK))
+        inner_pen.setWidth(KJA_BORDER_PX)
+        painter.setPen(inner_pen)
+        painter.drawRoundedRect(inner_rect, inner_radius, inner_radius)
 
         if not self._header_label:
             return
@@ -55,7 +65,7 @@ class SectionCard(QFrame):
                 max(1, gap_end - gap_start),
                 self._border_radius,
             )
-            painter.fillRect(fill_rect, QColor("#000"))
+            painter.fillRect(fill_rect, QColor(PALETTE_BLACK))
         left_end = gap_start
         right_start = gap_end
         if left_end > rect.left() + self._border_radius:
@@ -70,4 +80,4 @@ class SectionCard(QFrame):
 
     def _gap_width(self) -> int:
         metrics = QFontMetrics(self._header_label.font())
-        return max(8, metrics.horizontalAdvance("A"))
+        return metrics.horizontalAdvance("A")

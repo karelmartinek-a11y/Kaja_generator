@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_089a99ed53417ce200695f9bc69bb08193a2aaeb7356d0d544",
+    "logged_at": "2026-01-08T11:58:38.692524",
+    "request_id": "33adc686"
+  },
+  "payload": {
+    "id": "resp_089a99ed53417ce200695f9bc69bb08193a2aaeb7356d0d544",
+    "created_at": 1767873478.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_089a99ed53417ce200695f9bc731ac8193af38f8ff3ca18a05",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"A1_PLAN / MASTER zadání definuje návrh nástroje DiagMaster – konzolový, multiplatformní (Linux, Windows) diagnostický nástroj v Pythonu 3.12, který provádí FULL diagnostiku a generuje deterministickou adresářovou strukturu s JSON MANIFESTy, bez jakékoliv interní archivace (ZIP apod.). Nástroj je čistě CLI, nevyžaduje GUI, ale architektura musí umožnit budoucí GUI nadstavbu bez změny doménové logiky a datových modelů.\\n\\nDoplněné nefunkční požadavky a omezení:\\n- Kompatibilita: nástroj musí být kompatibilní s běžnými LTS verzemi Linux distribucí a podporovanými verzemi Windows Server / Windows 10+.\\n- Konzistence pojmenování: názvy souborů a adresářů musí být konzistentní, aby bylo možné výstupy snadno procházet a analyzovat (deterministické a předvídatelné názvy, struktura definovaná v MASTER zadání).\\n- Rekonstruovatelnost: chování nástroje (včetně konfigurace a provedených kroků) musí být plně rekonstruovatelné pouze z výstupní adresářové struktury a MANIFESTů, bez nutnosti ZIP archivace nebo dalších externích metadat.\\n\\nGlobální constraints (omezení návrhu):\\n- V rámci návrhového plánu nesmí být použity žádné externí soubory; dokumentuje se pouze struktura, API a architektura. Nesmí se odkazovat na další soubory jako součást implementace návrhu.\\n- Nástroj nesmí provádět ZIP ani jinou archivaci výstupů; archivace je ponechána na externích nástrojích. Výstupem je vždy čistá adresářová struktura se soubory.\\n- Konkrétní seznam diagnostických příkazů a přesná adresářová struktura jsou dány v předchozích chuncích MASTER zadání a zde nesmí být svévolně měněny ani doplňovány. Jakékoliv neznámé detaily musí být řešeny přes assumptions, nikoliv rozšiřováním požadavků.\\n- Nesmí být přidávány nové funkční požadavky nad rámec toho, co je explicitně nebo implicitně odvozeno z MASTER zadání. Pokud je něco nejasné, musí být označeno jako assumption, nikoli implementováno jako nový požadavek.\\n- Nástroj nesmí vyžadovat trvalý daemon nebo službu; běží jako jednorázový proces, který po dokončení diagnostiky skončí.\\n- Nástroj nesmí odesílat žádná data mimo lokální stroj (žádná telemetrie, žádné volání vzdálených serverů, žádné cloudové uploady). Všechny výstupy zůstávají lokálně.\\n- Nástroj nesmí měnit konfiguraci systému; je čistě read-only diagnostický, s výjimkou vytváření a používání dočasných souborů a adresářů ve vlastním výstupním stromu.\\n- Nástroj nesmí vyžadovat GUI prostředí; základní implementace je čistě CLI, vhodná i pro serverové prostředí bez grafiky.\\n- Nesmí být použity nestandardní binární formáty výstupů; preferovány jsou textové formáty a JSON (např. .txt, .log, .json). To podporuje snadnou čitelnost a parsovatelnost.\\n- Nesmí být porušena rekonstruovatelnost konfigurace pouze z adresářové struktury a MANIFESTů – tzn. z výstupů musí být možné zjistit, jaké nastavení a kroky byly použity (včetně skip voleb, timeoutů, kritičnosti kroků atd.).\\n\\nArchitektura – moduly (část):\\n\\n1) Modul core.cli\\n- Odpovědnost: parsování CLI argumentů, mapování na příkazy aplikace, spuštění hlavního běhu diagnostiky.\\n- Exporty:\\n  - class CLIArguments: datový model pro všechny CLI parametry (mode, os_target, output_dir, config_path, verbosity, dry_run, skip_sections, timeouts). Slouží jako jednotná reprezentace vstupu z příkazové řádky.\\n  - function parse_cli_args(argv: list[str]) -> CLIArguments: zpracuje sys.argv (nebo předaný seznam argumentů) a vrátí strukturované CLIArguments.\\n  - function run_from_cli(argv: list[str]) -> int: hlavní vstupní bod pro __main__; provede parse_cli_args, zavolá core.runner.run_diagnostics a vrátí návratový kód procesu.\\n- Závislosti: core.runner, core.config, core.logging.\\n\\n2) Modul core.config\\n- Odpovědnost: načítání a validace konfiguračních souborů diagnostiky, slučování s CLI parametry a výchozí konfigurací.\\n- Exporty:\\n  - class DiagnosticConfig: datový model pro konfiguraci běhu (enabled_sections, critical_steps, timeouts, os_target, output_dir, run_id_strategy). Reprezentuje kompletní efektivní konfiguraci.\\n  - function load_config(path: str | None) -> DiagnosticConfig: načte konfiguraci z JSON/YAML (konkrétní formát je definován v MASTER zadání) nebo vrátí výchozí konfiguraci, pokud není soubor zadán.\\n  - function merge_cli_with_config(cli: core.cli.CLIArguments, base: DiagnosticConfig) -> DiagnosticConfig: deterministicky sloučí CLI parametry a souborovou konfiguraci (definuje precedence a pravidla slučování).\\n- Závislosti: core.models.\\n\\n3) Modul core.models\\n- Odpovědnost: sdílené doménové datové modely pro běh diagnostiky, jednotlivé kroky, výsledky a MANIFESTy.\\n- Exporty (datové třídy / enumy):\\n  - class RunId: reprezentace identifikátoru běhu (např. timestamp, inkrementální číslo, kombinace; konkrétní strategie je konfigurovatelná a zaznamenaná v MANIFESTu).\\n  - class DiagnosticRun: metadata běhu (run_id, os_target, start_time, end_time, tool_version, python_version, status).\\n  - class StepStatus: enum('SUCCESS','FAILED','SKIPPED','TIMEOUT','ERROR') – standardizuje stav kroků.\\n  - class DiagnosticStepDefinition: definice kroku (id, name, section, os_target, is_critical, command_template, timeout_seconds). Slouží jako plán, co se má spustit.\\n  - class DiagnosticStepResult: výsledek kroku (definition_id, status, exit_code, started_at, finished_at, stdout_path, stderr_path, error_message).\\n  - class ManifestRoot: datový model kořenového MANIFESTu (run: DiagnosticRun, sections: list[ManifestSectionRef], generated_at, schema_version).\\n  - class ManifestSection: datový model sekčního MANIFESTu (section_name, steps: list[ManifestStepEntry], files: list[ManifestFileEntry]).\\n  - class ManifestSectionRef: reference na sekční MANIFEST (section_name, manifest_path).\\n  - class ManifestStepEntry: záznam o kroku v MANIFESTu (step_id, name, status, exit_code, stdout_path, stderr_path, command_executed, timeout_seconds).\\n  - class ManifestFileEntry: záznam o souboru (relative_path, description, generated_by_step_id).\\n- Závislosti: žádné (základní doménová vrstva).\\n\\n4) Modul core.runner\\n- Odpovědnost: orchestrace celého běhu diagnostiky, plánování kroků, volání OS-specifických modulů, sběr výsledků.\\n- Exporty:\\n  - function run_diagnostics(cli_args: core.cli.CLIArguments) -> int: hlavní orchestrátor, který na základě CLI argumentů a konfigurace provede běh a vrátí návratový kód procesu (zohledňuje kritické kroky, chyby atd.).\\n  - function execute_run(config: core.config.DiagnosticConfig) -> core.models.DiagnosticRun: provede běh podle již sloučené konfigurace, vytvoří adresářovou strukturu, spustí jednotlivé kroky, uloží výsledky a vrátí metadata běhu.\\n  - function determine_os_target(cli_args: core.cli.CLIArguments, config: core.config.DiagnosticConfig) -> str: vrátí 'linux' nebo 'windows' dle vstupů a aktuálního OS, s jasnými pravidly precedence.\\n- Závislosti: core.models, core.config, core.logging, core.fs_layout, core.manifest, os_linux.steps, os_windows.steps.\\n\\n5) Modul core.fs_layout\\n- Odpovědnost: deterministické vytváření adresářové struktury pro výstupy diagnostiky a generování cest k souborům.\\n- Exporty:\\n  - class FsLayout: datový model pro kořenový adresář běhu a standardní podsložky (root_dir, system_info_dir, network_dir, storage_dir, processes_dir, services_dir, logs_dir, custom_dirs). Konkrétní struktura je dána MASTER zadáním.\\n  - function create_run_root(base_output_dir: str, run_id: core.models.RunId) -> FsLayout: vytvoří kořenový adresář běhu a standardní podsložky podle definované struktury.\\n  - function path_for_step_output(layout: FsLayout, step: core.models.DiagnosticStepDefinition, suffix: str) -> str: vrátí deterministickou cestu pro výstupní soubor kroku (např. stdout.txt, stderr.txt) v příslušné sekci.\\n  - function path_for_manifest_root(layout: FsLayout) -> str: vrátí cestu ke kořenovému MANIFESTu.\\n\\nVšechny výše uvedené body doplňují a rozšiřují předchozí shrnutí: zachovávají požadavky na determinismus, multiplatformnost, čistě CLI charakter, read-only diagnostiku, žádnou archivaci, žádné externí přenosy dat a rekonstruovatelnost chování nástroje pouze z výstupní struktury a MANIFESTů. Konkrétní seznam kroků, příkazů a přesná adresářová struktura zůstávají definovány v jiných částech MASTER zadání a zde se pouze odkazuje na jejich existenci bez změn.\",\"chunk_index\":2,\"chunk_count\":7,\"notes\":[\"Zachovat, že žádné nové funkční požadavky nesmí být přidávány mimo to, co je v MASTER zadání; nejasnosti řešit přes assumptions.\",\"Adresářová struktura a seznam diagnostických příkazů jsou pevně dané v jiných chuncích a zde se nesmí měnit ani rozšiřovat.\",\"Nástroj je čistě read-only, bez jakýchkoli změn systémové konfigurace, a nesmí komunikovat s externími servery.\",\"Architektura modulů core.cli, core.config, core.models, core.runner a core.fs_layout je závazná; další moduly (core.logging, core.manifest, os_linux.steps, os_windows.steps) jsou zmíněny jako závislosti a budou rozvedeny jinde.\",\"Rekonstruovatelnost běhu pouze z adresářové struktury a MANIFESTů je klíčový nefunkční požadavek, který musí být respektován v návrhu datových modelů i logiky.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4202,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2655,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 6857
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767873518,
+    "store": true
+  }
+}

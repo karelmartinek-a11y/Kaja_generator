@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261823_0885",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_b86da8",
+    "event": "run_start",
+    "sequence": 4,
+    "logged_at": "2026-01-08T17:23:34.608982"
+  },
+  "details": {
+    "event": "run_start",
+    "level": "info",
+    "details": {
+      "mode": "GENERATE",
+      "model": "gpt-5.1",
+      "project": "KJOVO",
+      "response_id": "GENERATE_b86da8",
+      "user_spec_chars": 195,
+      "attachments": 3,
+      "attachments_bytes": 232641,
+      "vector_store_requested": [],
+      "diagnostics": [],
+      "out_dir": "C:/KAJOVO",
+      "in_dir": ""
+    },
+    "timestamp": "2026-01-08T17:23:34.608976"
+  }
+}

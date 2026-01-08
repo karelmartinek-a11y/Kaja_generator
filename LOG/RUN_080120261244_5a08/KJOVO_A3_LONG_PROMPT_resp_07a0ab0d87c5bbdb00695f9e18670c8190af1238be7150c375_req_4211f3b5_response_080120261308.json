@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "resp_07a0ab0d87c5bbdb00695f9e18670c8190af1238be7150c375",
+    "logged_at": "2026-01-08T12:08:37.442278",
+    "request_id": "4211f3b5"
+  },
+  "payload": {
+    "id": "resp_07a0ab0d87c5bbdb00695f9e18670c8190af1238be7150c375",
+    "created_at": 1767874072.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_07a0ab0d87c5bbdb00695f9e19834c819083e9657f4f746ba4",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Instrukce A3: uživatel chce obsah souboru PATH=pyproject.toml, případně po chuncích s parametrem CHUNK_INDEX=<N>. Výstup musí být pouze JSON dle schématu A3_FILE, bez diffů/patchů, jen čistý obsah souboru (nebo jeho část). Projekt „DiagMaster“: konzolový Python 3.12 nástroj pro FULL diagnostiku Linux/Windows. Vytváří deterministickou adresářovou strukturu výstupů s MANIFESTy, bez ZIP archivace. Předchozí chunky (nepřítomné) definují přesné diagnostické příkazy, formáty MANIFESTů a adresářovou strukturu. Nástroj běží s dostatečnými oprávněními, ukládá výstupy na lokální disk, ovládá se z CLI. Kájovo UI Design Standard je relevantní pro budoucí GUI, ale nyní jde o CLI; musí být zachován determinismus a rekonstruovatelnost. Nástroj neprovádí archivaci, jen vytváří adresáře/soubory vhodné pro externí archivaci. Pro Linux/Windows existují ekvivalentní diagnostické příkazy/API. Časová razítka a generování ID běhu jsou povolena, pokud jsou deterministicky zaznamenána v MANIFESTu.\\n\\nFunkční požadavky (shrnutí): FULL diagnostika pro Linux i Windows. Pro každý běh vzniká deterministická adresářová struktura s podsložkami (system_info, network, storage, processes, services, logs atd.). Pro každý běh existuje kořenový MANIFEST (např. MANIFEST_ROOT.json) popisující strukturu výstupu, verzi nástroje, čas běhu, cílový OS a stav kroků. Každá hlavní podsložka má lokální MANIFEST (např. MANIFEST_system_info.json) s popisem souborů, použitých příkazů a návratových kódů. Nástroj nesmí vytvářet ZIP ani jiné archivy; výstup je adresářová struktura. Musí existovat neinteraktivní režim pro skriptování (např. --full-linux, --full-windows). Podpora parametru --output-dir pro explicitní kořen výstupu. Logování průběhu do run.log v kořenovém adresáři a zároveň na stdout. Kořenový MANIFEST zaznamená verzi nástroje a Python runtime. Pro každý krok se zaznamená použitý příkaz/API, návratový kód, stderr a cesta k výstupu. Možnost přeskočit oblasti diagnostiky (např. --skip-logs, --skip-network). Proces vrací nenulový návratový kód, pokud selže některý kritický krok; kritičnost je konfigurovatelná. Parametr --dry-run vypíše plánované kroky bez jejich provedení. Parametr --config <soubor> pro konfiguraci (povolené/zakázané kroky, limity, cesty). Nástroj musí podporovat opakované běhy s unikátními adresáři (časové razítko nebo inkrementální index); způsob generování ID běhu je v MANIFESTu. Příkaz --version vypíše verzi nástroje a build info. Příkaz --help popíše parametry a režimy. Podpora úrovní verbóznosti (--quiet, --verbose, --debug). Pro Linux se používají standardní příkazy/soubory (/proc, /sys, systemd, ip, ss, df, journalctl atd.). Pro Windows se používají API/nástroje (PowerShell cmdlety, WMI, systeminfo, ipconfig, Get-EventLog/Get-WinEvent atd.). Nástroj funguje offline, bez online závislostí. Výstupy jsou textové (.txt, .json, .log), čitelné a parsovatelné. Lze nastavit timeout pro jednotlivé kroky a zaznamenat jej v MANIFESTu. V MANIFESTech musí být jasně označeno, které kroky uspěly, selhaly, byly přeskočeny nebo timeoutovaly. Architektura musí umožnit pozdější GUI nadstavbu dle Kájova standardu bez změny doménové logiky a datových modelů.\\n\\nNefunkční požadavky: Determinismus (stejné prostředí+konfigurace => stejná struktura a názvy souborů; časová razítka jsou výjimka, ale zaznamenaná). Multiplatformnost pro Linux/Windows s minimálními rozdíly v kódu; OS-specifické kroky jsou abstrahovány. Snadná rozšiřitelnost o nové diagnostické kroky přes definovaná rozhraní. Jasně definované datové modely pro běh, kroky, výsledky a MANIFESTy. Možnost spouštění v CI/CD. Minimální externí závislosti (běžný Python ekosystém). Konzistentní struktura logování napříč OS a běhy. Modulární, čitelná architektura, jasná API. Schopnost zpracovat velké objemy dat (logy) bez nadměrné paměti – preferováno streamované čtení/zápis. Kompatibilita s běžnými LTS Linux distribucemi a podporovanými verzemi Windows Server/Windows 10+. Konzistentní pojmenování souborů a adresářů. Chování nástroje musí být plně rekonstruovatelné pouze z výstupní adresářové struktury a MANIFESTů, bez ZIP archivace.\\n\\nOmezení: V návrhovém plánu nesmí být použity žádné externí soubory; popisuje se pouze struktura a API. Nástroj nesmí provádět ZIP ani jinou archivaci výstupů; archivace je na externích nástrojích. Konkrétní seznam diagnostických příkazů a přesná adresářová struktura jsou dány v MASTER chuncích a nesmí být svévolně měněny ani doplňovány. Nesmí být přidávány nové funkční požadavky nad rámec MASTER zadání; neznámé detaily musí být v assumptions. Nástroj nesmí vyžadovat trvalý daemon/službu; běží jako jednorázový proces. Nesmí odesílat žádná data mimo lokální stroj (žádná telemetrie, žádné vzdálené servery). Nesmí měnit konfiguraci systému; je read-only diagnostický (kromě dočasných souborů ve vlastním výstupním adresáři). Nesmí vyžadovat GUI; základ je čistě CLI. Nesmí používat nestandardní binární formáty výstupů; preferovány text/JSON. Nesmí být porušena rekonstruovatelnost konfigurace pouze z adresářové struktury a MANIFESTů.\\n\\nArchitektonický popis – kořenový objekt \\\"architecture\\\" obsahuje pole \\\"modules\\\".\\n\\nModul core.cli: parsování CLI argumentů, mapování na příkazy aplikace a spuštění hlavního běhu diagnostiky. Exportuje: CLIArguments (mode, os_target, output_dir, config_path, verbosity, dry_run, skip_sections, timeouts); parse_cli_args(argv: list[str]) -> CLIArguments; run_from_cli(argv: list[str]) -> int (vstupní bod pro __main__, zavolá core.runner.run_diagnostics a vrátí návratový kód). Závislosti: core.runner, core.config, core.logging.\\n\\nModul core.config: načítání a validace konfiguračních souborů, slučování s CLI parametry a výchozí konfigurací. Exportuje: DiagnosticConfig (enabled_sections, critical_steps, timeouts, os_target, output_dir, run_id_strategy); load_config(path: str | None) -> DiagnosticConfig; merge_cli_with_config(cli: core.cli.CLIArguments, base: DiagnosticConfig) -> DiagnosticConfig. Závislosti: core.models.\\n\\nModul core.models: sdílené doménové datové modely. Exportuje: RunId; DiagnosticRun (run_id, os_target, start_time, end_time, tool_version, python_version, status); StepStatus enum ('SUCCESS','FAILED','SKIPPED','TIMEOUT','ERROR'); DiagnosticStepDefinition (id, name, section, os_target, is_critical, command_template, timeout_seconds); DiagnosticStepResult (definition_id, status, exit_code, started_at, finished_at, stdout_path, stderr_path, error_message); ManifestRoot (run: DiagnosticRun, sections: list[ManifestSectionRef], generated_at, schema_version); ManifestSection (section_name, steps: list[ManifestStepEntry], files: list[ManifestFileEntry]); ManifestSectionRef (section_name, manifest_path); ManifestStepEntry (step_id, name, status, exit_code, stdout_path, stderr_path, command_executed, timeout_seconds); ManifestFileEntry (relative_path, description, generated_by_step_id). Bez závislostí.\\n\\nModul core.runner: orchestrace běhu diagnostiky, plánování kroků, volání OS-specifických modulů, sběr výsledků. Exportuje: run_diagnostics(cli_args: core.cli.CLIArguments) -> int; execute_run(config: core.config.DiagnosticConfig) -> core.models.DiagnosticRun (provede běh dle konfigurace, vytvoří adresářovou strukturu, spustí kroky a vrátí metadata běhu); determine_os_target(cli_args: core.cli.CLIArguments, config: core.config.DiagnosticConfig) -> str ('linux' nebo 'windows'). Závislosti: core.models, core.config, core.logging, core.fs_layout, core.manifest, os_linux.steps, os_windows.steps.\\n\\nModul core.fs_layout: deterministické vytváření adresářové struktury pro výstupy a generování cest k souborům. Exportuje: FsLayout (root_dir, system_info_dir, network_dir, storage_dir, processes_dir, services_dir, logs_dir, custom_dirs); create_run_root(base_output_dir: str, run_id: core.models.RunId) -> FsLayout (vytvoří kořenový adresář běhu a standardní podsložky); path_for_step_output(layout: FsLayout, step: core.models.DiagnosticStepDefinition, suffix: str) -> str (deterministická cesta pro výstupní soubor kroku, např. stdout.txt, stderr.txt); path_for_manifest_root(layout: FsLayout) -> str (cesta ke kořenovému MANIFESTu); path_for_manifest_section(layout: FsLayout, section_name: str) -> str (cesta k sekčnímu MANIFESTu). Závislosti: core.models, os, pathlib.\\n\\nModul core.manifest: sestavování a zápis MANIFEST souborů na základě výsledků kroků a layoutu. Exportuje: build_root_manifest(run: core.models.DiagnosticRun, layout: core.fs_layout.FsLayout, section_refs: list[core.models.ManifestSectionRef]) -> core.models.ManifestRoot; build_section_manifest(section_name: str, step_results: list[core.models.DiagnosticStepResult], files: list[core.models.ManifestFileEntry]) -> core.models.ManifestSection; write_root_manifest(manifest: core.models.ManifestRoot, path: str) -> None; write_section_manifest(manifest: core.models.ManifestSection, path: str) -> None; collect_manifest_file_entries(layout: core.fs_layout.FsLayout, step_results: list[core.models.DiagnosticStepResult]) -> dict[str, list[core.models.ManifestFileEntry]] (mapa section_name -> seznam souborů). Závislosti: core.models, core.fs_layout, json.\\n\\nModul core.logging: inicializace a správa logování do souboru a na konzoli s různými úrovněmi verbóznosti. Exportuje: enum LogLevel ('QUIET','INFO','DEBUG'); init_logging(layout: core.fs_layout.FsLayout | None, level: LogLevel) -> None (nastaví logging, případně run.log v kořenovém adresáři); log_info(message: str) -> None; log_debug(message: str) -> None; log_error(message: str) -> None; log_step_result(step_result: core.models.DiagnosticStepResult) -> None (strukturované logování výsledku kroku). Závislosti: logging, core.models.\\n\\nModul core.exec: bezpečné a deterministické spouštění externích příkazů a sběr jejich výstupů. Exportuje: třídu ExecResult (exit_code, stdout_path, stderr_path, started_at, finished_at, error_message); run_command(command: list[str], cwd: str | None, timeout_seconds: int | None, stdout_path: str, stderr_path: str) -> ExecResult (spustí příkaz, přesměruje výstupy do souborů a vrátí výsledek); format_command_for_manifest(command: list[str]) -> str (deterministická textová reprezentace příkazu pro MANIFEST). Závislosti: subprocess, datetime, core.logging.\\n\\nModul os_linux.steps: definice a implementace diagnostických kroků pro Linux dle MASTER zadání. Exportuje: get_linux_step_definitions() -> list[core.models.DiagnosticStepDefinition] (seznam všech kroků pro Linux FULL diagnostiku); run_linux_steps(layout: core.fs_layout.FsLayout, config: core.config.DiagnosticConfig) -> list[core.models.DiagnosticStepResult] (provede povolené kroky pro Linux, využije core.exec.run_command a vrátí výsledky). Závislosti: core.models, core.exec, core.fs_layout, core.logging.\\n\\nModul os_windows.steps: definice a implementace diagnostických kroků pro Windows dle MASTER zadání. Exportuje: get_windows_step_definitions() -> list[core.models.DiagnosticStepDefinition]; run_windows_steps(layout: core.fs_layout.FsLayout, config: core.config.DiagnosticConfig) -> list[core.models.DiagnosticStepResult] (provede povolené kroky pro Windows, využije core.exec.run_command včetně PowerShell). Závislosti: core.models, core.exec, core.fs_layout, core.logging.\\n\\nModul core.return_code: deterministické určení návratového kódu procesu na základě výsledků kroků a konfigurace kritických kroků. Exportuje: compute_exit_code(step_results: list[core.models.DiagnosticStepResult], config: core.config.DiagnosticConfig) -> int (0 při úspěchu, nenulový při selhání kritických kroků); konstanty EXIT_SUCCESS=0, EXIT_PARTIAL_FAILURE=1, EXIT_CRITICAL_FAILURE=2, EXIT_CONFIG_ERROR=3. Závislosti: core.models.\\n\\nData flow (část): 1) Uživatel spustí program (např. diagmaster --full-linux --output-dir /tmp/diag). 2) core.cli.parse_cli_args načte a zvaliduje argumenty, vytvoří CLIArguments. 3) core.config.load_config načte volitelný konfigurační soubor, core.config.merge_cli_with_config sloučí konfiguraci s CLI parametry do DiagnosticConfig. 4) core.runner.determine_os_target rozhodne, zda se spustí linux nebo windows diagnostika. 5) core.models vytvoří RunId a DiagnosticRun pro nový běh. 6) core.fs_layout.create_run_root vytvoří kořenový adresář běhu a standardní podsložky, vrátí FsLayout. 7) core.logging.init_logging inicializuje logování do run.log v kořenovém adresáři a na konzoli. 8) Podle os_target core.runner zavolá buď os_linux.steps.run_linux_steps nebo os_windows.steps.run_windows_steps s layoutem a konfigurací.\",\"chunk_index\":3,\"chunk_count\":9,\"notes\":[\"Zachovat, že žádné ZIP/archivace nejsou povoleny a že vše je deterministické a rekonstruovatelné z adresářové struktury a MANIFESTů.\",\"Architektura je modulární: core.* pro společnou logiku, os_* pro OS-specifické kroky; datové modely v core.models jsou centrální a používají se v MANIFESTech i běhu.\",\"FsLayout a core.manifest společně zajišťují deterministické cesty a strukturu MANIFESTů; core.exec standardizuje spouštění příkazů a sběr výstupů.\",\"Nesmí se přidávat nové funkční požadavky mimo MASTER; nejasnosti mají být vedeny v assumptions v dalších krocích.\",\"Tento chunk doplňuje definice modulů core.fs_layout, core.manifest, core.logging, core.exec, os_linux.steps, os_windows.steps, core.return_code a část datového toku.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4383,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3729,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 8112
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767874116,
+    "store": true
+  }
+}

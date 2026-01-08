@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261741_5a1d",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_0ad6e7b4d98f151b00695fe186dedc81a084ca0b5a5cac5b65",
+    "event": "run_failed",
+    "sequence": 258,
+    "logged_at": "2026-01-08T16:57:06.534226"
+  },
+  "details": {
+    "event": "run_failed",
+    "level": "error",
+    "details": {
+      "error": "Kontrakt neodpovídá A2_STRUCTURE: None",
+      "type": "ValueError",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3422, in execute\n    files = self._run_generate(user_spec, assets, ui_state, progress_callback, stop_check)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3652, in _run_generate\n    a2_data = self._parse_json_response(a2_response, \"A2_STRUCTURE\", assets=assets)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2858, in _parse_json_response\n    self._validate_contract(payload, expected_contract, assets)\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2897, in _validate_contract\n    raise ValueError(f\"Kontrakt neodpovídá {expected_contract}: {contract_value}\")\nValueError: Kontrakt neodpovídá A2_STRUCTURE: None\n"
+    },
+    "timestamp": "2026-01-08T16:57:06.534220"
+  }
+}

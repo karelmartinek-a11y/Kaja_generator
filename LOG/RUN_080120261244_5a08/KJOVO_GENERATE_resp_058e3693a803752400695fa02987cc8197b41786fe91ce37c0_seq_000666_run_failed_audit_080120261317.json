@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_058e3693a803752400695fa02987cc8197b41786fe91ce37c0",
+    "event": "run_failed",
+    "sequence": 666,
+    "logged_at": "2026-01-08T12:17:38.980428"
+  },
+  "details": {
+    "event": "run_failed",
+    "level": "error",
+    "details": {
+      "error": "Kontrakt neodpovídá A3_FILE: A2_STRUCTURE",
+      "type": "ValueError",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2956, in execute\n    files = self._run_generate(user_spec, assets, ui_state, progress_callback, stop_check)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3364, in _run_generate\n    a3_data = self._parse_json_response(a3_response, \"A3_FILE\", assets=assets)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2411, in _parse_json_response\n    self._validate_contract(payload, expected_contract, assets)\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2431, in _validate_contract\n    raise ValueError(f\"Kontrakt neodpovídá {expected_contract}: {contract_value}\")\nValueError: Kontrakt neodpovídá A3_FILE: A2_STRUCTURE\n"
+    },
+    "timestamp": "2026-01-08T12:17:38.980417"
+  }
+}

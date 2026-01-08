@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_0acbe25fc2826b8500695f99d2516c8195831b1e438429e169",
+    "logged_at": "2026-01-08T11:50:17.794833",
+    "request_id": "b0655687"
+  },
+  "payload": {
+    "id": "resp_0acbe25fc2826b8500695f99d2516c8195831b1e438429e169",
+    "created_at": 1767872978.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0acbe25fc2826b8500695f99d2e86881958ef6d3ccffa8fa1a",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk doplňuje specifikaci o observabilitu, pricing, výstupní požadavky na program „Kája“ a začátek UI design standardu.\\n\\n19.4 Observabilita (mimo LOG soubory)\\n- Program vede interní „run timeline“:\\n  - pro každý krok ukládá: název kroku, start/end timestamp, výsledek, související ID (file_id, response_id, batch_id, vector_store_id).\\n  - Timeline je zobrazena v UI a je exportovatelná do LOG (tj. musí být součástí logovacího systému, ale je definována jako samostatný koncept nad rámec běžných log souborů).\\n- Export „Run bundle“ (zip):\\n  - Program umí vytvořit ZIP balík obsahující:\\n    - všechny requesty,\\n    - všechny response,\\n    - manifesty (mirror, diagnostické, další dle předchozích sekcí),\\n    - snapshoty (pokud to uživatel povolí; jinak jen odkazy/metadata na snapshoty),\\n    - skripty (např. generované opravné/diagnostické skripty z OUT režimu),\\n    - soubor `readmerepair.txt`,\\n    - timeline běhu.\\n  - Export je dostupný z UI, typicky z progress dialogu po dokončení běhu. Musí být konzistentní s ostatními pravidly (žádné diffy, kompletní soubory, správné cesty, atd.).\\n\\n19.5 Pricing\\n- Program podporuje automatickou aktualizaci ceníku z oficiálních zdrojů:\\n  - URL/endpoint pro ceník je konfigurovatelný v SETTINGS.\\n  - Ceník se používá pro výpočet nákladů běhu.\\n- Pro každý běh se ukládá „účtenka“ (pricing record), která obsahuje minimálně:\\n  - usage: počty input a output tokenů,\\n  - batch discount/pricing: informace o slevách či specifickém nacenění batch režimu,\\n  - tool calls (např. file_search): jejich počet/usage a cenu,\\n  - odhad storage-days (z usage_bytes a doby držení souborů na Files API / ve storage) – jde o odhad, ne nutně přesné účtování.\\n- Pokud nelze ceny ověřit (např. offline režim, nedostupný pricing endpoint):\\n  - běh nesmí být blokován – může pokračovat,\\n  - účtenka musí být označena jako „odhad / neověřeno“, aby bylo zřejmé, že pricing není potvrzený oficiálním ceníkem.\\n\\n20) Co musí výstupní program „Kája“ dodat\\n- Výsledkem generování má být plně funkční aplikace splňující všechny dříve popsané UI a logické požadavky, včetně:\\n  - kompletní zdrojové soubory projektu,\\n  - jasné instrukce pro spuštění (např. `pip install -r requirements.txt` a `python ui_main.py` nebo ekvivalentní příkaz),\\n  - implementace kroků a kontraktů A1/A2/A3 a B1/B2/B3,\\n  - logování, progress dialogy, SAVE/LOAD/LOAD REQUEST,\\n  - správu API klíče (API-KEY management),\\n  - správu Files API (upload, delete, refresh, manifesty, mirror, diagnostika),\\n  - Windows/SSH diagnostiku (IN snapshot + OUT očekávání skriptu dle předchozích sekcí),\\n  - správu vector store (vytváření, připojování souborů, diagnostik, manifestů),\\n  - Batch monitor a tok C (Batch-only) dle sekce 14 a 16.6,\\n  - Pricing screen (ikona „$“ nebo ekvivalent) a účtenky pro každý běh,\\n  - VERSING dle pravidel v sekci 12.4 (snapshoty, možnost návratu k předchozím verzím).\\n- Všechna dříve definovaná pravidla (žádné diffy, čistý JSON, kontrakty struktur, práce s cestami, LOG, resume, STOP, bezpečnost, secret scanning, allow/deny listy, panic wipe, dry-run, post-run hooky, diff viewer pouze vizuální atd.) zůstávají závazná.\\n\\n21) KÁJOVO UI DESIGN STANDARD (MASTER v1.0)\\n- Normativní specifikace UI pro generování programů, závazná pro aplikaci „Kája“.\\n- title: „KÁJOVO UI DESIGN STANDARD“, designation: MASTER, version: MASTER v1.0, date: 2026-01-07, status: ZÁVAZNÉ, audience: OpenAI generování programů, language: cs-CZ.\\n- Klíčová slova MUSÍ / NESMÍ / MĚL BY se vykládají striktně (RFC styl). Tento standard je „single source of truth“ pro vzhled a chování UI.\\n\\n22) TOKENS (jediný zdroj pravdy pro vizuální tokeny)\\n22.1 Barvy (HEX)\\n- BÍLÁ: #FFFFFF\\n- ČERNÁ: #000000\\n- ČERVENÁ: #FF0000\\n- ŠEDIVÁ: #808080\\n- UI je striktně černobílé s omezeným použitím šedé a červené (detailněji v sekci 23).\\n\\n22.2 Vrstvy prvku (pořadí a tloušťky)\\n- Každý UI prvek je složen ze 4 vrstev (zvenku dovnitř):\\n  1) LEM: 2 px\\n  2) OKRAJ: 1 px\\n  3) POZADÍ: vnitřní výplň\\n  4) OBSAH: text / piktogram / grafika\\n- „Obsahová plocha“ = plocha uvnitř okraje (tj. uvnitř lemu 2 px a okraje 1 px). Všechny komponenty musí tento model respektovat.\\n\\n22.3 UI SCALE (deterministicky)\\n- Referenční okno: 1280×720 při UI_scale = 1.0.\\n- Výpočet: UI_scale = min(W/1280, H/720), kde W a H jsou aktuální rozměry okna.\\n- Co se škáluje s UI_scale:\\n  - typografie (velikost písma),\\n  - paddingy,\\n  - výšky řádků,\\n  - rozměry ikon,\\n  - rozměry modulů času/datu,\\n  - tloušťky čar ikon.\\n- Co se neskáluje:\\n  - tloušťka lemu (2 px) a okraje (1 px),\\n  - minimální mezera mezi sibling prvky (2 px).\\n- Implementace musí být deterministická (stejné W/H → stejné rozměry prvků).\\n\\n22.4 Typografie (font kontrakt)\\n- Povolený font:\\n  - Rodina: Montserrat\\n  - Řezy: Regular, Bold\\n  - Jiné fonty nebo řezy jsou zakázané.\\n- Distribuce fontu:\\n  - Fonty musí být součástí aplikace (bundled assets/resources),\\n  - Aplikace nesmí spoléhat na systémovou instalaci fontů,\\n  - Aplikace musí fonty načíst/registrovat při startu,\\n  - Pokud font nelze načíst, aplikace musí zobrazit chybový dialog ve stylu Kájovo UI a ukončit se,\\n  - Build proces by měl kontrolovat hash souborů fontu (např. SHA-256) pro determinismus a integritu.\\n- Velikosti:\\n  - Základní velikost písma při UI_scale = 1.0: FS_base = 16 px,\\n  - Výsledná velikost písma: FS = round(FS_base × UI_scale),\\n  - Line-height: LH = round(1.25 × FS).\\n- Použití:\\n  - Nadpisy, názvy sekcí, hlavičky tabulek: Montserrat Bold, VŠE VELKÝMI PÍSMENY,\\n  - Běžný obsah a hodnoty: Montserrat Regular.\\n\\n22.5 Radius (zaoblení)\\n- Radius všech prvků: R = max(1, round(0.35 × FS)).\\n- Ostré rohy jsou zakázány – všechny komponenty musí mít zaoblení dle tohoto vzorce.\\n\\n22.6 Rozestupy a standardní rozměry (tokeny)\\n- Minimální mezera mezi dvěma sibling prvky (vnější hrana lemu → vnější hrana lemu): GAP_MIN = 2 px.\\n- Standardní vnitřní odsazení (padding) pro prvky s textem:\\n  - PAD_X = round(0.8 × FS),\\n  - PAD_Y = round(0.4 × FS).\\n- Standardní výška řádku seznamů/roletek/tabulek: ROW_H = round(1.4 × LH).\\n- Výška stavového řádku (STATUS bar): STATUS_H = round(1.6 × LH).\\n\\n22.7 Ikony (obecný styl)\\n- Základní velikost ikony: ICON = round(1.5 × FS) (čtverec ICON×ICON).\\n- Ikony jsou outline (bez výplně), pokud není u konkrétní komponenty výslovně řečeno jinak.\\n- Tloušťka čáry ikony: STROKE = max(1, round(0.12 × FS)).\\n- Barva ikony je vždy jedna z definovaných token barev (bílá, černá, šedivá, červená) dle kontextu.\\n\\n23) Obecná pravidla vzhledu\\n1) UI je striktně černobílé:\\n   - Šedivá se používá pouze pro neaktivní text/symboly.\\n   - Červená pouze pro ukončení/kritické akce a stavy „nebezpečí/nedostupné“.\\n2) Žádné stíny, gradienty, textury, průhlednosti (kromě overlay vrstev jako tooltip, dialog, roletka, overlay scrollbar). Vzhled je plochý a čistý.\\n3) Všechny komponenty musí používat vrstvy LEM/OKRAJ/POZADÍ/OBSAH dle sekce 22.2.\\n4) Překryv prvků je zakázán, výjimky:\\n   - tooltip,\\n   - roletka dropdown/combobox,\\n   - dialog,\\n   - overlay scrollbar.\\n5) Změna stavu prvku (hover, focus, aktivní, disabled) nesmí měnit layout ani rozměry – mění se pouze barvy (a u textu případně velikost v rámci pravidel fit/scale, ale bez rozbití layoutu).\\n\\n24) Interakce a input (globální kontrakty)\\n24.1 Hover\\n- Běžné prvky: žádný hover efekt (žádná změna barvy ani layoutu).\\n- Tooltipy:\\n  - U tabulek: tooltip se zobrazí pouze při overflow textu a po 2 sekundách setrvání kurzoru.\\n  - U položek dropdown/combobox: tooltip pouze při overflow a po 2 sekundách.\\n- Vzhled tooltipu:\\n  - lem: černý 2 px,\\n  - okraj: bílý 1 px,\\n  - pozadí: bílá,\\n  - text: černý (Montserrat Regular).\\n\\n24.2 Focus a klávesnice\\n- Navigace:\\n  - TAB → další fokusovatelný prvek,\\n  - SHIFT+TAB → předchozí fokusovatelný prvek,\\n  - ENTER nebo MEZERNÍK aktivuje fokusovaný prvek (výjimka: textová pole, kde ENTER může mít jinou funkci nebo žádnou).\\n- Vizuální indikace focusu:\\n  - Focus je overlay stav: LEM = bílý (#FFFFFF) 2 px,\\n  - Ostatní vrstvy (okraj, pozadí, obsah) zůstávají dle aktuálního stavu prvku,\\n  - Focus nesmí měnit rozměry prvku ani rozložení.\\n\\n24.3 ESC (globální chování)\\n- ESC zavírá otevřený overlay prvek v tomto pořadí:\\n  1) tooltip,\\n  2) roletka dropdown/combobox,\\n  3) dialog.\\n- ESC odpovídá akci CLOSE v dialogu (tj. chová se jako stisk tlačítka CLOSE v daném dialogu).\\n\\n25) Layout aplikace (záhlaví, sekce, status)\\n25.1 Záhlaví programu\\n- Záhlaví musí obsahovat:\\n  - název programu a verzi,\\n  - ovládací prvky (např. přepínače módů, ikony pro SETTINGS, pricing, atd. – detaily v jiných částech standardu),\\n  - ukončovací prvek (EXIT/QUIT/CLOSE) vpravo.\\n- Ukončovací prvek je vždy kritický (červený kontrakt – použití červené barvy, potvrzení, atd.).\\n\\n25.2 Sekce\\n- Sekce je rámovaná oblast (LEM/OKRAJ/POZADÍ) pro logickou skupinu prvků.\\n- Název sekce:\\n  - je součást horního lemu (přeruší horní lem v místě textu),\\n  - typografie: Montserrat Bold, VŠE VELKÝMI PÍSMENY.\\n\\n25.3 Stavový řádek (STATUS)\\n- Výška: STATUS_H (dle tokenu z 22.6).\\n- Status vždy zobrazuje:\\n  - vlevo: text aktuálního kroku (Regular) + volitelně progress „teploměr“ (grafická indikace průběhu),\\n  - vpravo: čas (PRAGOTRON / flap styl) a datum (kalendářová kresba).\\n- Čas (PRAGOTRON / flap):\\n  - formát: HH:MM:SS.\\n- Další detaily o vzhledu času/datu a jejich ikon mohou být v následujících částech standardu (mimo tento chunk).\\n\\nVšechna zde uvedená UI pravidla jsou závazná a doplňují předchozí logické a technické kontrakty (A1–A3, B1–B3, GO pipeline, Files API, mirror, diagnostika, bezpečnost, pricing, logging, resume, STOP atd.). Implementace „Kája“ musí tento UI standard plně respektovat, aby byla považována za validní výstup.\", \"chunk_index\":8, \"chunk_count\":15, \"notes\":[\"Zachovat povinné prvky observability: interní timeline s ID a export do LOG, možnost exportu run bundle (zip) s requesty, response, manifesty, snapshoty (volitelně), skripty, readmerepair.txt a timeline.\",\"Pricing modul musí umět pracovat s dynamickým ceníkem (konfigurovatelný endpoint), ukládat účtenky pro každý běh a označovat je jako odhadované, pokud nelze ceny ověřit.\",\"Program „Kája“ musí dodat kompletní aplikaci včetně zdrojových kódů, návodu ke spuštění, implementace všech kontraktů A/B, diagnostiky, vector store, batch toku C, pricing obrazovky a VERSING dle dřívějších sekcí.\",\"UI DESIGN STANDARD (MASTER v1.0) je závazný: definice barev, vrstev prvku, škálování UI, typografie (Montserrat Regular/Bold, bundlované fonty, kontrola hashů), radius, rozestupy, výšky řádků, ikony (outline, velikost, stroke).\",\"UI musí být černobílé s omezeným použitím šedé a červené, bez stínů/gradientů/efektů, s přísným dodržováním vrstev LEM/OKRAJ/POZADÍ/OBSAH a bez překryvů mimo tooltip, dropdown, dialog a overlay scrollbar.\",\"Interakční kontrakty: žádný hover efekt pro běžné prvky, tooltipy jen při overflow a po 2 s, focus jako bílý lem 2 px bez změny layoutu, klávesová navigace TAB/SHIFT+TAB/ENTER/SPACE, ESC zavírá overlay prvky v definovaném pořadí a odpovídá CLOSE v dialogu.\",\"Layout: záhlaví s názvem, verzí a červeným EXIT vpravo; sekce jako rámované oblasti s názvem v horním lemu (BOLD CAPS); stavový řádek s textem kroku vlevo a časem (HH:MM:SS, PRAGOTRON styl) + datem vpravo.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 5894,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3985,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 9879
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767873017,
+    "store": true
+  }
+}

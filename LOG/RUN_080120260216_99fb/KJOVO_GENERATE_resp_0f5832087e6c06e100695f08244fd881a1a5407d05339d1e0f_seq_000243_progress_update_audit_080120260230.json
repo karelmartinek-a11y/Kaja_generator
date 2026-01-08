@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260216_99fb",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_0f5832087e6c06e100695f08244fd881a1a5407d05339d1e0f",
+    "event": "progress_update",
+    "sequence": 243,
+    "logged_at": "2026-01-08T01:30:11.393681"
+  },
+  "details": {
+    "event": "progress_update",
+    "level": "info",
+    "details": {
+      "message": "A2: odesílám request",
+      "ratio": 0.25
+    },
+    "timestamp": "2026-01-08T01:30:11.393671"
+  }
+}

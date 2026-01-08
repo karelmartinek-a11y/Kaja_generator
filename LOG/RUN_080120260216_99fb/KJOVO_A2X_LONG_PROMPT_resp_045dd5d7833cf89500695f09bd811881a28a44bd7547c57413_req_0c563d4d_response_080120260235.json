@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260216_99fb",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_045dd5d7833cf89500695f09bd811881a28a44bd7547c57413",
+    "logged_at": "2026-01-08T01:35:32.701718",
+    "request_id": "0c563d4d"
+  },
+  "payload": {
+    "id": "resp_045dd5d7833cf89500695f09bd811881a28a44bd7547c57413",
+    "created_at": 1767836093.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_045dd5d7833cf89500695f09bdf58881a29ccbec6c354fe7c0",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk začíná výpisem souborů a jejich účelů pro fázi A3 (návrh struktury a API modulů). Navazuje na předchozí architekturní plán a rozepisuje, jaké balíčky/soubory budou existovat, jaké entity exportují a jaké importují. Jde o návrh modulární struktury projektu „CrossPlatformDiagSuite“.\\n\\nDefinované soubory a jejich role:\\n\\n1) core/__init__.py\\n- Účel: Inicializace balíčku `core` a re-export vybraných API pro jednodušší import v ostatních částech aplikace.\\n- EXPORTS (re-exporty z jiných modulů v `core`):\\n  - Z core/manifest.py: `ManifestLoader`, `ManifestWriter`, `Manifest`, `validate_manifest`.\\n  - Z core/shared_models.py: `SystemInfo`, `CpuInfo`, `MemoryInfo`, `DiskInfo`, `NetworkInterfaceInfo`, `ProcessInfo`, `ServiceInfo`, `EventLogEntry`, generická `DiagnosticModuleResult`, `DiagnosticRunSummary`, `DiagnosticScenarioDefinition`, `DiagnosticErrorInfo`.\\n  - Z core/runner.py: `DiagnosticRunner`.\\n  - Z core/config.py: `AppConfig`, `load_config`, `resolve_output_dir`.\\n- IMPORTS: Tyto symboly importuje z `core/manifest.py`, `core/shared_models.py`, `core/runner.py`, `core/config.py` a zpřístupňuje je na úrovni balíčku `core`.\\n\\n2) core/manifest.py\\n- Účel: Implementace správy MANIFESTu diagnostických běhů a modulů.\\n- EXPORTS:\\n  - Třída `ManifestLoader` – načítání manifestu z disku (pravděpodobně JSON) a jeho převod do interního datového modelu `Manifest`.\\n  - Třída `ManifestWriter` – ukládání manifestu (např. výsledného běhu nebo konfigurace scénářů) zpět na disk.\\n  - Dataclass `Manifest` – strukturovaná reprezentace manifestu (scénáře, moduly, metadata běhu atd.).\\n  - Funkce `validate_manifest(manifest: Manifest) -> None` – validace manifestu podle očekávaného schématu; při chybě vyvolává dříve popsanou výjimku (např. `ManifestValidationError`, definovanou jinde v plánu).\\n- IMPORTS:\\n  - `DiagnosticRunSummary` z `core/shared_models.py` (manifest může obsahovat nebo odkazovat na souhrn běhu).\\n  - Standardní modul `json`.\\n  - `pathlib.Path` pro práci se souborovými cestami.\\n  - Typy z `typing` (`Optional`, `List`, `Dict`).\\n  - `serializers.json_serializer.to_json` a `serializers.json_serializer.write_json` pro serializaci manifestu.\\n  - `serializers.logger.get_logger` pro logování operací s manifestem.\\n\\n3) core/shared_models.py\\n- Účel: Definice sdílených datových modelů pro diagnostiku, používaných napříč core, CLI, GUI i moduly.\\n- EXPORTS (dataclasses a generika):\\n  - `SystemInfo` – základní informace o systému (OS, verze, hostname atd.).\\n  - `CpuInfo` – informace o CPU.\\n  - `MemoryInfo` – informace o paměti.\\n  - `DiskInfo` – informace o discích/úložištích.\\n  - `NetworkInterfaceInfo` – informace o síťových rozhraních.\\n  - `ProcessInfo` – informace o procesech.\\n  - `ServiceInfo` – informace o službách/daemonech.\\n  - `EventLogEntry` – záznam z logu/událostí systému.\\n  - Generická dataclass `DiagnosticModuleResult[T]` – výsledek běhu jednoho diagnostického modulu, parametrizovaný typem dat, která modul vrací.\\n  - `DiagnosticRunSummary` – souhrn celého běhu diagnostiky (seznam výsledků modulů, chyby, metadata běhu atd.).\\n  - `DiagnosticScenarioDefinition` – definice scénáře (jaké moduly se mají spustit, v jakém pořadí, případně další parametry).\\n  - `DiagnosticErrorInfo` – strukturované informace o chybách (typ, zpráva, stack trace, modul, kde chyba nastala atd.).\\n- IMPORTS:\\n  - `dataclasses` (`dataclass`, `field`).\\n  - `typing` (`List`, `Optional`, `Dict`, `Generic`, `TypeVar`).\\n  - `datetime.datetime` pro časová razítka (např. začátek/konec běhu, čas událostí).\\n\\n4) core/runner.py\\n- Účel: Orchestrace běhu diagnostických scénářů a modulů – centrální běhový engine.\\n- EXPORTS:\\n  - Třída `DiagnosticRunner` s metodami:\\n    - `run_full() -> DiagnosticRunSummary` – spustí kompletní diagnostiku podle defaultního nebo manifestem definovaného scénáře.\\n    - `run_scenario(name: str) -> DiagnosticRunSummary` – spustí konkrétní scénář podle jména.\\n    - `list_scenarios() -> list[DiagnosticScenarioDefinition]` – vrátí seznam dostupných scénářů.\\n  - Funkce `discover_modules() -> dict[str, callable]` – dynamické zjištění dostupných diagnostických modulů (např. podle registru nebo introspekce).\\n  - Funkce `register_module(name: str, callable) -> None` – registrace modulu do běhového prostředí.\\n- IMPORTS:\\n  - `DiagnosticRunSummary`, `DiagnosticScenarioDefinition`, `DiagnosticModuleResult`, `DiagnosticErrorInfo` z `core/shared_models.py`.\\n  - `ManifestLoader`, `ManifestWriter` z `core/manifest.py` (načítání/ukládání manifestu běhu).\\n  - `ModuleRegistry`, `ScenarioRegistry` z `modules/registry.py` – centrální registr modulů a scénářů.\\n  - `init_logging`, `get_logger`, `log_run_summary` ze `serializers/logger.py` – inicializace logování, získání loggeru a zápis souhrnu běhu do logu.\\n  - `write_json` ze `serializers/json_serializer.py` – zápis výsledků do JSON.\\n  - `generate_summary_report`, `write_summary_report` ze `serializers/text_report.py` – generování a zápis textového souhrnného reportu.\\n  - `create_output_archive` z `modules/archive.py` – vytvoření archivu s výstupy (ZIP apod.).\\n  - `AppConfig`, `resolve_output_dir` z `core/config.py` – konfigurace běhu a určení výstupního adresáře.\\n  - Standardní moduly `sys`, `traceback` a typy z `typing` (`Dict`, `List`, `Callable`).\\n\\n5) core/config.py\\n- Účel: Načítání a správa konfigurace běhu diagnostiky.\\n- EXPORTS:\\n  - Dataclass `AppConfig` s poli např. `output_dir: str`, `log_level: str`, `scenarios_enabled: list[str]` – základní konfigurační parametry.\\n  - Funkce `load_config(path: str | None) -> AppConfig` – načte konfiguraci z dané cesty (např. JSON) nebo použije defaulty.\\n  - Funkce `resolve_output_dir(config: AppConfig) -> str` – určí finální výstupní adresář (může kombinovat konfiguraci, timestamp, uživatele apod.).\\n- IMPORTS:\\n  - `dataclasses` (`dataclass`, `field`).\\n  - `typing` (`List`, `Optional`).\\n  - Standardní moduly `os`, `json`, `pathlib.Path`.\\n  - `serializers.logger.get_logger` pro logování načítání konfigurace a případných chyb.\\n\\n6) serializers/__init__.py\\n- Účel: Inicializace balíčku `serializers` a re-export klíčových funkcí pro logování a serializaci, aby je bylo možné pohodlně importovat z jednoho místa.\\n- EXPORTS:\\n  - Z `serializers/logger.py`: `init_logging`, `get_logger`, `log_run_summary`.\\n  - Z `serializers/json_serializer.py`: `to_json`, `write_json`.\\n  - Z `serializers/text_report.py`: `generate_summary_report`, `write_summary_report`.\\n- IMPORTS: Tyto symboly importuje z příslušných modulů v balíčku `serializers` a zpřístupňuje je na úrovni balíčku.\\n\\n7) serializers/logger.py\\n- Účel: Centralizované logování diagnostiky.\\n- EXPORTS:\\n  - `init_logging(output_dir: str, level: str) -> None` – nastaví logging (souborové logy v daném výstupním adresáři, úroveň logování atd.).\\n  - `get_logger(name: str)` – vrátí logger se zadaným jménem.\\n  - `log_run_summary(summary: DiagnosticRunSummary) -> None` – zapíše souhrn běhu do logu ve strukturované podobě.\\n- IMPORTS:\\n  - Standardní modul `logging`.\\n  - `os`, `pathlib.Path` pro práci se souborovým systémem.\\n  - `datetime.datetime` pro časová razítka v logu.\\n  - `DiagnosticRunSummary` z `core/shared_models.py`.\\n  - `typing.Optional`.\\n\\n8) serializers/json_serializer.py\\n- Účel: Serializace datových modelů do JSON.\\n- EXPORTS:\\n  - `to_json(obj: object) -> str` – převede objekt (včetně dataclass) na JSON řetězec, pravděpodobně s podporou nested dataclass struktur.\\n  - `write_json(obj: object, path: str) -> None` – zapíše JSON reprezentaci objektu na disk.\\n- IMPORTS:\\n  - Standardní modul `json`.\\n  - `pathlib.Path`.\\n  - Z `dataclasses`: `is_dataclass`, `asdict` – pro převod dataclass na slovníky před serializací.\\n  - `typing.Any`.\\n  - `serializers.logger.get_logger` pro logování chyb při serializaci/zápisu.\\n\\n9) serializers/text_report.py\\n- Účel: Generování textových souhrnných reportů z diagnostických dat (např. lidsky čitelný přehled výsledků).\\n- EXPORTS:\\n  - `generate_summary_report(summary: DiagnosticRunSummary) -> str` – vytvoří textový report ze souhrnu běhu.\\n  - `write_summary_report(summary: DiagnosticRunSummary, path: str) -> None` – zapíše textový report na disk.\\n- IMPORTS:\\n  - `DiagnosticRunSummary` z `core/shared_models.py`.\\n  - `pathlib.Path`.\\n  - `typing.List` (např. pro interní práci s řádky reportu).\\n  - `serializers.logger.get_logger` pro logování generování/zápisu reportu.\\n\\n10) modules/__init__.py\\n- Účel: Inicializace balíčku `modules` a zpřístupnění registru modulů a scénářů.\\n- EXPORTS:\\n  - `ModuleRegistry`, `ScenarioRegistry` z `modules/registry.py`.\\n- IMPORTS: Tyto symboly importuje z `modules/registry.py` a re-exportuje.\\n\\n11) modules/registry.py\\n- V tomto chunku je uveden pouze začátek položky se `path`: `modules/registry.py`, bez dalšího popisu. Z kontextu předchozích chunků a zdejších importů je ale jasné, že tento modul bude obsahovat:\\n  - definici `ModuleRegistry` – registr diagnostických modulů (mapování jména modulu na callable a metadata),\\n  - definici `ScenarioRegistry` – registr scénářů (mapování jména scénáře na `DiagnosticScenarioDefinition` a seznam modulů),\\n  - případně pomocné funkce pro registraci a získávání modulů/scénářů.\\n\\nTento chunk tedy rozpracovává konkrétní souborovou a modulovou strukturu jádra aplikace (core), serializační vrstvy (serializers) a registru modulů (modules). Specifikuje, jaké třídy a funkce budou v jednotlivých souborech, jaké typy importů mezi nimi existují a jak se budou re-exportovat pro pohodlné použití v CLI/GUI a dalších částech systému. Navazuje na dříve definované koncepty (Manifest, DiagnosticRunSummary, registr modulů a scénářů, logging, JSON/text reporty) a převádí je do konkrétního návrhu modulů v Pythonu.\",\"chunk_index\":6,\"chunk_count\":10,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4409,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3018,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 7427
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767836131,
+    "store": true
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "metadata": {
+    "run_id": "RUN_070120261837_cc7c",
+    "project": "Kájovo",
+    "stage": "A1",
+    "response_id": "GENERATE_4be085",
+    "logged_at": "2026-01-07T17:37:08.287631"
+  },
+  "payload": {
+    "model": "gpt-5.1-codex-max",
+    "temperature": 0.2,
+    "instructions": "Jsi senior software architekt a implementátor. MASTER: žádné externí soubory. OUTPUT: VRAŤ POUZE validní JSON. ŽÁDNÝ markdown, žádné komentáře, žádný další text. KONTRAKT A1_PLAN: {\"contract\":\"A1_PLAN\",\"project\":{\"name\":string,\"one_liner\":string,\"target_os\":string,\"language\":string,\"runtime\":string},\"assumptions\":[string],\"requirements\":{\"functional\":[string],\"non_functional\":[string],\"constraints\":[string]},\"architecture\":{\"modules\":[{\"name\":string,\"responsibility\":string}],\"data_flow\":[string],\"error_handling\":[string],\"security_notes\":[string]},\"build_run\":{\"prerequisites\":[string],\"commands\":[string],\"verification\":[string]},\"deliverable_policy\":{\"file_generation_strategy\":\"PLAN->STRUCTURE->FILE_CONTENT\",\"max_lines_per_chunk\":500}}\n\nZADÁNÍ PROGRAMU: Posílám ti soubory se zadáním pro generování programu, který prosím vygeneruj plně funkční při dodržení zázného dokumentu Design Standard, který ti rovněž posílám.\n\nPŘIPOJENÉ SOUBORY (informational):\n- ZADANI_KAJA_FINAL.md | file_id=ATT_da35d1 | purpose=user data | size=200221 B | dostupnost=files_api (soubor není nahrán)\n- Kajovo_UI_Design_Standard_MASTER_v1.0_AI (1).md | file_id=ATT_f3bde3 | purpose=user data | size=16210 B | dostupnost=files_api (soubor není nahrán)",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "ZADÁNÍ PROGRAMU: Posílám ti soubory se zadáním pro generování programu, který prosím vygeneruj plně funkční při dodržení zázného dokumentu Design Standard, který ti rovněž posílám.. REDUNDANTNÍ KONTRAKT: vrať pouze JSON dle A1_PLAN (bez md, bez textu navíc).\n\nZADÁNÍ PROGRAMU: Posílám ti soubory se zadáním pro generování programu, který prosím vygeneruj plně funkční při dodržení zázného dokumentu Design Standard, který ti rovněž posílám.\n\nPRAVIDLA A KONTRAKT:\nJsi senior software architekt a implementátor. MASTER: žádné externí soubory. OUTPUT: VRAŤ POUZE validní JSON. ŽÁDNÝ markdown, žádné komentáře, žádný další text. KONTRAKT A1_PLAN: {\"contract\":\"A1_PLAN\",\"project\":{\"name\":string,\"one_liner\":string,\"target_os\":string,\"language\":string,\"runtime\":string},\"assumptions\":[string],\"requirements\":{\"functional\":[string],\"non_functional\":[string],\"constraints\":[string]},\"architecture\":{\"modules\":[{\"name\":string,\"responsibility\":string}],\"data_flow\":[string],\"error_handling\":[string],\"security_notes\":[string]},\"build_run\":{\"prerequisites\":[string],\"commands\":[string],\"verification\":[string]},\"deliverable_policy\":{\"file_generation_strategy\":\"PLAN->STRUCTURE->FILE_CONTENT\",\"max_lines_per_chunk\":500}}\n\nPŘIPOJENÉ SOUBORY (informational):\n- ZADANI_KAJA_FINAL.md | file_id=ATT_da35d1 | purpose=user data | size=200221 B | dostupnost=files_api (soubor není nahrán)\n- Kajovo_UI_Design_Standard_MASTER_v1.0_AI (1).md | file_id=ATT_f3bde3 | purpose=user data | size=16210 B | dostupnost=files_api (soubor není nahrán)"
+          }
+        ]
+      }
+    ],
+    "ui_state_snapshot": {
+      "ui_state": {
+        "project_name": "Kájovo",
+        "prompt_text": "Posílám ti soubory se zadáním pro generování programu, který prosím vygeneruj plně funkční při dodržení zázného dokumentu Design Standard, který ti rovněž posílám.",
+        "in_dir": "",
+        "out_dir": "C:/KAJOVO",
+        "versing_enabled": false,
+        "mode": "GENERATE",
+        "response_id": "",
+        "model": "gpt-5.1-codex-max",
+        "send_as_c": false,
+        "diagnostics": {
+          "windows_in": false,
+          "windows_out": false,
+          "ssh_in": false,
+          "ssh_out": false
+        },
+        "ssh": {
+          "host": "89.221.216.10",
+          "user": "root",
+          "key_path": "",
+          "password": "+Sin8glov8",
+          "port": 10
+        },
+        "attached_file_ids": [
+          "ATT_da35d1",
+          "ATT_f3bde3"
+        ]
+      },
+      "attached_files": [
+        {
+          "file_id": "ATT_da35d1",
+          "filename": "C:/Users/provo/Downloads/ZADANI_KAJA_FINAL.md",
+          "purpose": "user data",
+          "size_bytes": 200221
+        },
+        {
+          "file_id": "ATT_f3bde3",
+          "filename": "C:/Users/provo/Downloads/Kajovo_UI_Design_Standard_MASTER_v1.0_AI (1).md",
+          "purpose": "user data",
+          "size_bytes": 16210
+        }
+      ],
+      "file_api_records": [],
+      "vector_stores": [],
+      "vector_store_files": {},
+      "batch_jobs": [
+        {
+          "run_id": "RUN_070120261346_84bd",
+          "project": "Kajovo",
+          "mode": "GENERATE",
+          "response_id": "resp_0c08a12b94e2bb5d00695e561008fc81908c8fe24b7f4d81e1",
+          "status": "completed",
+          "start": "2026-01-07T12:46:48.207171",
+          "end": "2026-01-07T12:48:20.327817",
+          "duration_s": 92.112,
+          "manifest": "Kajovo_resp_0c08a12b94e2bb5d00695e561008fc81908c8fe24b7f4d81e1_run_manifest_070120261348.json",
+          "timeline": "RUN_070120261346_84bd_timeline_070120261348.json",
+          "log_dir": "LOG\\RUN_070120261346_84bd",
+          "diagnostics": []
+        },
+        {
+          "run_id": "RUN_070120260113_b3ae",
+          "project": "Kajovo",
+          "mode": "GENERATE",
+          "response_id": "GENERATE_d3b011",
+          "status": "completed",
+          "start": "2026-01-07T00:13:04.268912",
+          "end": "2026-01-07T00:16:10.123766",
+          "duration_s": 185.832,
+          "manifest": "Kajovo_GENERATE_d3b011_run_manifest_070120260116.json",
+          "timeline": "RUN_070120260113_b3ae_timeline_070120260116.json",
+          "log_dir": "LOG\\RUN_070120260113_b3ae",
+          "diagnostics": []
+        },
+        {
+          "run_id": "RUN_040120261548_3af0",
+          "project": "Dry Run Test",
+          "mode": "MODIFY",
+          "response_id": "MODIFY_1c0d5f",
+          "status": "completed",
+          "start": "2026-01-04T14:48:59.735363",
+          "end": "2026-01-04T14:48:59.767914",
+          "duration_s": 0.024,
+          "manifest": "Dry_Run_Test_MODIFY_1c0d5f_run_manifest_040120261548.json",
+          "timeline": "RUN_040120261548_3af0_timeline_040120261548.json",
+          "log_dir": "LOG\\RUN_040120261548_3af0",
+          "diagnostics": []
+        },
+        {
+          "run_id": "RUN_040120261546_3f78",
+          "project": "E2E Diff/Hook Test",
+          "mode": "MODIFY",
+          "response_id": "MODIFY_c683ad",
+          "status": "completed",
+          "start": "2026-01-04T14:46:23.603001",
+          "end": "2026-01-04T14:46:23.687206",
+          "duration_s": 0.061,
+          "manifest": "E2E_Diff_Hook_Test_MODIFY_c683ad_run_manifest_040120261546.json",
+          "timeline": "RUN_040120261546_3f78_timeline_040120261546.json",
+          "log_dir": "LOG\\RUN_040120261546_3f78",
+          "diagnostics": []
+        }
+      ]
+    }
+  }
+}

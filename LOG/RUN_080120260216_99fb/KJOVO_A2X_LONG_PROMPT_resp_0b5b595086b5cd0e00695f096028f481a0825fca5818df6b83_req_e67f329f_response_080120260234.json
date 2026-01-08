@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120260216_99fb",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_0b5b595086b5cd0e00695f096028f481a0825fca5818df6b83",
+    "logged_at": "2026-01-08T01:34:04.995688",
+    "request_id": "e67f329f"
+  },
+  "payload": {
+    "id": "resp_0b5b595086b5cd0e00695f096028f481a0825fca5818df6b83",
+    "created_at": 1767836000.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0b5b595086b5cd0e00695f0960da3481a0be119aff6fc63842",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk dokončuje architekturní popis modulů GUI, assetů a testů a doplňuje sekce `data_flow` a `error_handling` pro projekt „CrossPlatformDiagSuite“.\\n\\nNově popsané moduly:\\n\\n1) gui.app\\n- Odpovědnost: Vstupní bod GUI aplikace pro Windows.\\n- Exporty:\\n  - Funkce `run_gui() -> None` – spustí GUI aplikaci (hlavní smyčka, inicializace oken, načtení konfigurace, logování, fontů atd.).\\n  - Třída `DiagnosticApplication` se základním životním cyklem: `start()`, `shutdown()`.\\n- Vazby:\\n  - Používá `gui.ui_tokens` (výpočet měřítka UI a barev), `gui.layout` (sestavení hlavního okna), `gui.widgets.*` (konkrétní ovládací prvky), `core.runner` (spouštění diagnostiky), `core.config` (načtení konfigurace), `serializers.logger` (logování).\\n\\n2) gui.ui_tokens\\n- Odpovědnost: Implementace Kájovo UI tokenů a výpočtů pro konzistentní vzhled.\\n- Exporty:\\n  - `dataclass UiScale` s poli: `ui_scale: float`, `fs: int` (font size), `lh: int` (line height), `radius: int` (zaoblení rohů), `pad_x: int`, `pad_y: int` (odsazení), `icon: int` (velikost ikon), `stroke: int` (tloušťka čar), `row_h: int` (výška řádku), `status_h: int` (výška stavového řádku).\\n  - Funkce `compute_ui_scale(window_width: int, window_height: int) -> UiScale` – vypočítá měřítko UI a odvozené rozměry podle velikosti okna.\\n  - Konstanty barev: `COLOR_WHITE`, `COLOR_BLACK`, `COLOR_GRAY`, `COLOR_RED` – základní barevná paleta.\\n- Vazby:\\n  - Používán všemi `gui.*` moduly pro jednotný vzhled a rozměry.\\n\\n3) gui.widgets.buttons\\n- Odpovědnost: Implementace tlačítek dle Kájovo standardu.\\n- Exporty:\\n  - Třída `KButton` s vlastnostmi: `text`, `is_critical`, `state`, `on_click` (callback). Poskytuje veřejné metody `set_state(state)` a `set_text(text)`.\\n  - Třída `KToggleButton` – přepínací tlačítko (on/off), navazuje na KButton, ale udržuje stav přepnutí.\\n  - Třída `KIconButton` – tlačítko s ikonou (např. pro akce v toolbaru nebo statusbaru).\\n- Vazby:\\n  - Používán v `gui.layout` (hlavní okno, ovládací prvky) a `gui.dialogs` (tlačítka OK/Cancel/Close).\\n\\n4) gui.widgets.inputs\\n- Odpovědnost: Textová pole, dropdowny a comboboxy.\\n- Exporty:\\n  - Třída `KTextField` s vlastnostmi: `editable: bool`, `placeholder: str` – textové vstupní pole, může být jen pro čtení nebo editovatelné.\\n  - Třída `KDropdown` s vlastností `items: list[str]` – jednoduchý výběr z předdefinovaných položek.\\n  - Třída `KComboBox` s vlastností `items: list[str]` – kombinace textového pole a výběru.\\n  - Společné metody: `get_value()`, `set_value()`, `set_items()` – pro čtení a změnu hodnot a seznamu položek.\\n- Vazby:\\n  - Používán v `gui.layout` (filtry, volba scénářů) a `gui.dialogs` (konfigurační dialogy, potvrzovací dialogy s volbami).\\n\\n5) gui.widgets.tables\\n- Odpovědnost: Tabulky a seznamy pro zobrazení diagnostických dat.\\n- Exporty:\\n  - Třída `KTable` s metodami: `set_columns(cols)`, `set_rows(rows)`, `get_selected_row()` – tabulka pro strukturovaná data (např. seznam scénářů, výsledky modulů, seznam procesů).\\n  - Třída `KList` – jednodušší seznam (např. logové zprávy, seznam modulů).\\n- Vazby:\\n  - Používán v `gui.layout` (hlavní obsahové panely) a `gui.viewmodels` (napojení dat na tabulky/listy).\\n\\n6) gui.widgets.dialogs\\n- Odpovědnost: Dialogy dle standardu (OK/CANCEL/CLOSE) pro chyby, potvrzení a informace.\\n- Exporty:\\n  - Třída `KDialog` s metodou `show(message: str) -> DialogResult` – základní dialog, vrací výsledek (např. OK/Cancel).\\n  - Třída `KErrorDialog` – specializovaný dialog pro chyby (zobrazení detailu chyby, možnost kopírování textu chyby).\\n  - Třída `KConfirmExitDialog` – potvrzovací dialog při ukončení aplikace.\\n- Vazby:\\n  - Používán v `gui.app` (např. při kritických chybách, potvrzení ukončení) a `gui.controllers` (obsluha uživatelských akcí, které vyžadují potvrzení).\\n\\n7) gui.layout\\n- Odpovědnost: Sestavení hlavního okna GUI – hlavička, sekce, stavový řádek, obsahové panely.\\n- Exporty:\\n  - Třída `MainWindow` s metodami `init_layout()` (vytvoření a rozmístění widgetů) a `bind_events()` (napojení akcí na logiku).\\n  - Metody `update_status(text: str)` – aktualizace textu ve stavovém řádku.\\n  - Metoda `show_run_progress(summary: DiagnosticRunSummary)` – zobrazení průběhu a výsledků diagnostiky (např. v tabulkách, textových polích, indikátorech stavu).\\n- Vazby:\\n  - Používá `gui.widgets.*` (tlačítka, vstupy, tabulky, dialogy), `gui.statusbar` (stavový řádek), `gui.viewmodels` (převod dat na zobrazitelnou formu), `core.runner` (spouštění diagnostiky a získání `DiagnosticRunSummary`).\\n\\n8) gui.statusbar\\n- Odpovědnost: Stavový řádek s textem a PRAGOTRON časem a datem.\\n- Exporty:\\n  - Třída `StatusBar` s metodami: `set_status_text(text: str)` – nastavení textu stavu (např. „Běží diagnostika…“, „Hotovo“, „Chyba“).\\n  - `start_clock()` – spuštění časovače, který pravidelně aktualizuje zobrazení času a data ve stylu „PRAGOTRON“.\\n  - `stop_clock()` – zastavení časovače při ukončení aplikace.\\n- Vazby:\\n  - Používán v `gui.layout` (součást hlavního okna) a `gui.app` (řízení životního cyklu – start/stop při spuštění/ukončení).\\n\\n9) gui.viewmodels\\n- Odpovědnost: ViewModel vrstva mezi `core.runner` a GUI – transformace doménových dat na data vhodná pro zobrazení.\\n- Exporty:\\n  - `dataclass ScenarioVm` s poli `name`, `description`, `enabled` – reprezentace scénáře pro GUI (např. seznam scénářů s možností zapnutí/vypnutí).\\n  - `dataclass RunProgressVm` – reprezentace průběhu běhu (např. seznam modulů, jejich stav, procenta, chyby); přesná pole nejsou v chunku vypsána, ale navazují na `DiagnosticRunSummary`.\\n  - Funkce `map_summary_to_vm(summary: DiagnosticRunSummary) -> RunProgressVm` – převod výsledků běhu na ViewModel pro GUI (např. pro tabulky a indikátory).\\n- Vazby:\\n  - Používán v `gui.layout` (napojení dat na widgety), `gui.widgets.tables` (tabulky pro scénáře a výsledky), `core.runner` (zdroj dat – `DiagnosticRunSummary`).\\n\\n10) assets.fonts\\n- Odpovědnost: Distribuce a načtení fontů Montserrat-Regular a Montserrat-Bold.\\n- Exporty:\\n  - Funkce `load_fonts() -> None` – načte fonty z distribuovaných assetů a zaregistruje je v GUI frameworku.\\n  - Funkce `verify_font_hashes() -> None` – ověří integritu fontů (např. pomocí hashů) pro zajištění, že nejsou poškozené nebo podvržené.\\n- Vazby:\\n  - Používán v `gui.app` při startu aplikace; při selhání (např. chybějící soubory, neplatné hashe) se zobrazí chybový dialog a aplikace se bezpečně ukončí.\\n\\n11) tests\\n- Odpovědnost: Automatizované testy.\\n- Exporty:\\n  - Testovací moduly: `test_manifest.py`, `test_runner.py`, `test_ui_tokens.py`, `test_serializers.py`.\\n- Vazby:\\n  - Testy používají `core.*` (např. manifest, runner), `serializers.*` (logger, json_serializer, text_report) a `gui.ui_tokens` (výpočet měřítka UI a tokenů).\\n  - Cílem je ověřit správnost klíčových částí systému (manifest, orchestraci běhu, serializaci, UI tokeny).\\n\\nData flow (tok dat v systému):\\n1) Uživatel spustí buď CLI (`cli.main.main`), nebo GUI (`gui.app.run_gui`).\\n2) Vstupní bod (CLI/GUI) načte konfiguraci přes `core.config.load_config` a inicializuje logování přes `serializers.logger.init_logging` (např. nastavení log levelu, umístění log souborů).\\n3) `core.runner.discover_modules` použije `modules.registry` k registraci a načtení dostupných diagnostických modulů pro aktuální OS (Linux: `modules.linux.*`, Windows: `modules.windows.*`).\\n4) Při spuštění plné diagnostiky `core.runner.run_full` sestaví seznam scénářů a modulů dle Manifestu (`core.manifest.ManifestLoader`) a registru scénářů (`modules.registry.ScenarioRegistry`).\\n5) `core.runner` postupně spouští jednotlivé diagnostické moduly (např. `modules.linux.system_info.collect_linux_system_info`), každý vrací `DiagnosticModuleResult` s daty nebo chybou.\\n6) Výsledky modulů se ukládají do struktury `DiagnosticRunSummary` (`core.shared_models`) a zároveň se serializují do JSON/textu pomocí `serializers.json_serializer` a `serializers.text_report` do výstupního adresáře.\\n7) Po dokončení běhu `core.manifest.ManifestWriter.write_run_manifest` vytvoří manifest běhu (např. `manifest_run.json`) a aktualizuje `MANIFEST.md` dle specifikace.\\n8) `modules.archive.create_output_archive` volitelně vytvoří archiv všech výstupů (např. ZIP) a vrátí cestu k archivu.\\n9) CLI varianta vypíše souhrnné informace do konzole (shrnutí výsledků, chyby, cestu k výstupům). GUI varianta aktualizuje ViewModel (`gui.viewmodels`) a zobrazí výsledky v tabulkách a textových polích (`gui.widgets.tables`, `gui.layout`).\\n10) GUI používá `gui.ui_tokens.compute_ui_scale` pro výpočet `UiScale` a odvozených rozměrů, které jsou předány do `gui.widgets.*` pro vykreslení prvků dle Kájovo standardu (konzistentní velikosti, odsazení, barvy).\\n11) `gui.statusbar.StatusBar.start_clock` spustí časovač, který aktualizuje PRAGOTRON čas a datum v pravidelných intervalech; stavový řádek zároveň zobrazuje textový stav (např. „Běží diagnostika…“).\\n12) Při chybách v diagnostických modulech jsou chyby zachyceny v `core.runner`, zalogovány přes `serializers.logger` a promítnuty do `DiagnosticRunSummary.errors`. GUI je zobrazí v dialogu (`KErrorDialog`) nebo v dedikované sekci (např. tabulka chyb), CLI vypíše varování do konzole.\\n13) Při ukončení aplikace (EXIT) GUI zobrazí potvrzovací dialog (`gui.widgets.dialogs.KConfirmExitDialog`); po potvrzení dojde k uklizení zdrojů (zastavení časovače, uzavření souborů, ukončení běhu modulů) a ukončení procesu.\\n\\nError handling (zacházení s chybami):\\n1) Všechny diagnostické moduly musí zachytávat výjimky a vracet je ve struktuře `DiagnosticModuleResult.error` (`DiagnosticErrorInfo`) místo pádu procesu. Tím je zajištěno, že selhání jednoho modulu neukončí celou diagnostiku.\\n2) `core.runner` obalí volání modulů `try/except` blokem; při výjimce zaloguje chybu přes `serializers.logger` a pokračuje k dalšímu modulu, pokud to scénář dovoluje (scénáře mohou definovat, zda je chyba kritická nebo lze pokračovat).\\n3) Kritické chyby při inicializaci (např. selhání načtení konfigurace, nemožnost vytvořit výstupní adresář, selhání načtení fontů v `assets.fonts`) vedou k zobrazení chybového dialogu (v GUI přes `KErrorDialog`) nebo chybové hlášky (v CLI) a k ukončení aplikace s nenulovým návratovým kódem.\\n4) Chyby při zápisu souborů (např. nedostatek místa, nedostatečná oprávnění) jsou zachyceny, zalogovány a promítnuty do manifestu běhu; uživatel je informován o neúplnosti výstupů (např. některé logy nebo JSON soubory chybí).\\n5) GUI vrstva zachytává neošetřené výjimky na úrovni hlavní smyčky a zobrazuje je v `KErrorDialog` s možností zkopírovat detail chyby; poté může aplikaci bezpečně ukončit (zajištění, že se neztratí informace o chybě a nedojde k nekonzistentnímu stavu).\\n\\nTento chunk tak doplňuje architekturu o konkrétní GUI moduly (vstupní bod, layout, widgety, statusbar, viewmodely), modul pro fonty a testovací sadu a zároveň popisuje end-to-end tok dat a jednotnou strategii zpracování chyb v celém systému. Vše navazuje na předchozí definice core, serializers, modules.* a CLI a zachovává požadavky na determinismus, robustnost a přenositelnost mezi Linux/Windows.\",\"chunk_index\":4,\"chunk_count\":10,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 3861,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3663,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 7524
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767836044,
+    "store": true
+  }
+}

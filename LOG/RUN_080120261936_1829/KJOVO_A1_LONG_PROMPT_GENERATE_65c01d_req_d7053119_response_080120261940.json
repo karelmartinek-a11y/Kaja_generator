@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261936_1829",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "GENERATE_65c01d",
+    "logged_at": "2026-01-08T18:40:20.725698",
+    "request_id": "d7053119"
+  },
+  "payload": {
+    "id": "resp_05e48f83eb322ba000695ff9e556708193b7aef02b06c6cfb1",
+    "created_at": 1767897573.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_05e48f83eb322ba000695ff9e615e48193a2f93a9e9e2e8096",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk rozšiřuje specifikaci o řetězení přes RESPONSE ID, redundanci diagnostiky, volbu variant A/B/QA, chunking souborů, tok C (batch), jeho UI/validaci, kontrakt C_FILES_ALL, batch implementaci C, ukládání souborů z C a explicitní kontrakty A/B (zejména A1/A2). Všechna pravidla navazují na předchozí části a musí být zachována přesně.\\n\\n1) Řetězení přes RESPONSE ID\\n- Pokud je v UI vyplněno pole RESPONSE ID:\\n  - První request v daném běhu použije `previous_response_id = <hodnota RESPONSE ID>`.\\n- Pokud pole není vyplněno:\\n  - Řetězení se nezačíná (žádné `previous_response_id`).\\n- Toto pravidlo platí pro A/B pipeline (A1→A2→A3-X, B1→B2→B3-X) a obecně pro první request běhu, pokud má navazovat na starší odpověď.\\n\\n2) Redundance diagnostiky (WINDOWS/SSH)\\n- Pokud je aktivní WINDOWS IN nebo SSH IN:\\n  - Diagnostické soubory se posílají redundantně:\\n    - V instructions: explicitní zmínka o existenci diagnostiky, popis obsahu a `file_id` každého diagnostického balíku.\\n    - V input: stejné soubory jako `input_file` části.\\n    - Pokud je aktivní vector store: diagnostické soubory se navíc připojí do vector store (s atributy typu `source=diagnostics`, `scope=windows|ssh`, `captured_at=...`).\\n- Pokud je aktivní WINDOWS OUT nebo SSH OUT:\\n  - Očekávání skriptu + `readmerepair.txt` se zapisuje redundantně:\\n    - Do instructions.\\n    - I do input.\\n  - To platí jak pro A/B toky, tak pro C tok, pokud je diagnostika OUT povolena.\\n\\n3) Volba varianty podle MODE (A/B/QA)\\n- GENERATE:\\n  - Použije se série A1 → A2 → A3-X.\\n  - Nesmí být zvolen IN adresář, musí být zvolen OUT (viz předchozí chunk).\\n- MODIFY:\\n  - Použije se série B1 → B2 → B3-X.\\n  - IN i OUT musí být zvoleny.\\n  - IN vytváří mirror; primárně se používá vector store + file_search, fallback dle dříve definovaných pravidel (12.3.1 – není zde, ale musí být respektováno).\\n- QA:\\n  - Pošle se pouze 1 request.\\n  - V instructions i v input musí být explicitně uvedeno, že se očekává čistě textová odpověď, bez souborů.\\n  - IN ani OUT se nepoužijí, žádné soubory se negenerují.\\n\\n4) Chunking pro soubory delší než 500 řádků (A3/B3)\\n- Pro kroky A3/B3 (generování/modifikace obsahu souborů):\\n  - Pokud má výsledný obsah souboru více než 500 řádků:\\n    - Výstup se musí vracet po částech (chunking).\\n    - Program musí iterovat více requestů pro stejný `path`, dokud není soubor kompletní.\\n    - V requestu pro file content se bude měnit pouze to, co je nutné pro chunking (např. `path` a/nebo `chunk_index`, případně další chunkovací metadata dle detailu v jiných částech specifikace).\\n  - Výsledkem po spojení chunků musí být kompletní soubor (žádné diffy, žádné patche – viz politika výstupů níže).\\n\\n5) Tok C (Batch-only, bez pipeline návazností)\\n- Tok C je samostatný režim odeslání, aktivovaný přepínačem „SEND AS C (BATCH)“.\\n- Charakteristika:\\n  - C je vlastní, separátně sestavovaný request.\\n  - Instructions pro C obsahově odpovídají promptu pro generování programu (stejné požadavky na robustnost, logování, UI styl atd.), ale C request builder je implementován odděleně od A/B pipeline.\\n  - C se posílá pouze jako batch (přes /batches), nikdy synchronně.\\n  - C nepoužívá A1/A2/A3 ani B1/B2/B3, nemá řetězení, nepoužívá `previous_response_id`.\\n  - C nepoužívá žádné vstupní soubory:\\n    - Žádný IN adresář.\\n    - Žádné attached files.\\n    - Žádné `file_search`.\\n    - Žádné `vector_store_ids`.\\n  - C vrací v jedné odpovědi všechny soubory najednou (žádné navazující kroky).\\n  - Z existující logiky se pro C znovu využije pouze zpracování přijatých souborů: uložení do OUT, VERSING, logování, evidence cen.\\n\\n6) UI a validace pro C\\n- Pokud uživatel zvolí „SEND AS C (BATCH)“, spouští se samostatný tok C.\\n- Před odesláním C musí proběhnout validace:\\n  - OUT adresář musí být vybrán.\\n  - IN adresář nesmí být vybrán.\\n  - Seznam připojených souborů musí být prázdný.\\n  - RESPONSE ID se v C nepoužívá (ignoruje se nebo musí být prázdné).\\n  - Musí být zvolen model.\\n- Diagnostika v C:\\n  - Diagnostika IN je v C zakázaná (protože C nemá IN ani vstupní soubory).\\n  - Diagnostika OUT (WINDOWS OUT nebo SSH OUT) může být v C použita pouze tehdy, pokud je zvolena a validace je splněna.\\n    - V takovém případě musí C výstup obsahovat i skript(y) a `readmerepair.txt` (viz níže v kontraktu C_FILES_ALL).\\n\\n7) C request kontrakt – C_FILES_ALL\\n- C musí vyžadovat jediný výstupní JSON dokument, bez jakéhokoli dalšího textu:\\n  - Žádné markdown code-fences.\\n  - Žádné komentáře.\\n  - Žádné vysvětlování mimo JSON.\\n- Přesný kontrakt C_FILES_ALL:\\n  - Struktura (musí být zachována):\\n    - `contract`: \\\"C_FILES_ALL\\\".\\n    - `project`: objekt s poli:\\n      - `name`: string.\\n      - `target_os`: \\\"Windows 10/11\\\" (hodnota je fixně daná v zadání, ale může být i součástí UI zadání projektu; program musí respektovat kontrakt).\\n      - `runtime`: string.\\n      - `language`: string.\\n    - `root`: string (kořenový adresář projektu, relativní root pro `files[].path`).\\n    - `files`: pole objektů:\\n      - `path`: \\\"relative/path/file.ext\\\" (relativní cesta).\\n      - `purpose`: string (popis účelu souboru).\\n      - `content`: string (kompletní obsah souboru).\\n    - `build_run`: objekt:\\n      - `prerequisites`: [string].\\n      - `commands`: [string].\\n      - `verification`: [string].\\n    - `notes`: [string].\\n- Instructions pro C:\\n  - Musí obsahově odpovídat běžnému promptu pro generování programu (stejné požadavky jako u A/B generování – robustnost, logování, UI styl, bezpečnostní zásady atd.).\\n  - Musí explicitně nařídit vrácení pouze JSON dle C_FILES_ALL.\\n- Pokud je aktivní diagnostika OUT (WINDOWS OUT nebo SSH OUT):\\n  - C request musí navíc explicitně vyžadovat, aby `files[]` obsahoval:\\n    - Soubor `readmerepair.txt`.\\n    - Opravný skript (případně více skriptů) pro provedení změn systému.\\n\\n8) Batch implementace pro C\\n- Implementační kroky:\\n  1) Vytvořit JSONL soubor, který obsahuje přesně 1 řádek = 1 request na `/responses` (tj. jeden C request).\\n  2) JSONL uploadnout na Files API jako batch vstup.\\n  3) Vytvořit batch job (endpoint /batches) s tímto JSONL.\\n  4) Sledovat stav batch jobu přes BATCH MONITOR (viz předchozí chunk – REFRESH, DOWNLOAD RESULT, CANCEL atd.).\\n  5) Po dokončení batch jobu stáhnout výsledek.\\n- Validace výsledku C:\\n  - Nejprve `json.loads()` na přijatý JSON.\\n  - Validace schématu C_FILES_ALL (všechna povinná pole, typy, struktura).\\n  - Validace pravidel pro `path` u každého souboru:\\n    - Cesta musí být relativní.\\n    - Nesmí začínat `/`.\\n    - Nesmí obsahovat `..` (žádné traversaly).\\n    - Nesmí obsahovat `\\\\\\\\` (zpětná lomítka – pouze `/`).\\n    - Nesmí být duplicity cest v rámci `files[]`.\\n- Pokud validace selže (schéma nebo path):\\n  - Výstup se uloží do karantény do adresáře `OUT/_invalid/`.\\n  - V UI se zobrazí jasné upozornění (popup), že výstup je nevalidní.\\n  - Do LOG se zapíše detail chyby.\\n  - Soubory se NEzapisují do cílových cest (OUT root).\\n\\n9) Uložení souborů z C\\n- Pokud validace proběhne úspěšně:\\n  - Všechny položky z `files[]` se uloží do OUT adresáře.\\n  - `root` z C_FILES_ALL určuje kořen, ale implementace musí zajistit, že výsledné cesty jsou pod OUT (OUT/root/path).\\n  - Pokud soubor se stejnou cestou již existuje, je bez upozornění přepsán.\\n  - Pokud je zapnutý VERSING:\\n    - Před prvním zápisem v rámci běhu se provede VERSING kopie existujících souborů (podle dříve definovaných pravidel verzování).\\n\\n10) Explicitní kontrakty A/B – obecná politika\\n- Odpovědi modelu pro A/B kontrakty musí být vždy parsovatelné přes `json.loads()` a validovatelné proti příslušnému schématu.\\n- Politika výstupů souborů (kritická):\\n  - Pokud model generuje nebo modifikuje soubory, nikdy nesmí vracet diff/patch/\\\"změny\\\".\\n  - Očekává se kompletní výsledné znění souboru:\\n    - Buď celé v jednom `content`.\\n    - Nebo (u chunkingu) po částech, které se po spojení stanou kompletním souborem.\\n  - Žádné markdown code-fences.\\n  - Žádné komentáře.\\n  - Žádné dodatečné vysvětlování mimo JSON.\\n\\n11) A-varianta – A1 (PLAN) – bez vstupních souborů\\n- A1 je první krok pro GENERATE (bez vstupních souborů, bez file_search, bez vector store).\\n- Request JSON pro A1 (PLAN / manifest projektu):\\n  - `model`: `<MODEL_FROM_UI>`.\\n  - `temperature`: 0.2 (default pro plánování, v souladu s temperature policy – není file content).\\n  - `instructions`: text, který:\\n    - Nastaví roli: \\\"Jsi senior software architekt a implementátor.\\\".\\n    - Obsahuje MASTER pravidlo: žádné externí soubory.\\n    - Nařizuje: OUTPUT: vrať pouze validní JSON, žádný markdown, žádné komentáře, žádný další text.\\n    - Definuje přesný kontrakt A1_PLAN jako JSON schéma v textu instructions:\\n      - `contract`: \\\"A1_PLAN\\\".\\n      - `project`: objekt s poli `name`, `one_liner`, `target_os`, `language`, `runtime` (vše stringy).\\n      - `assumptions`: [string].\\n      - `requirements`: objekt s poli `functional`, `non_functional`, `constraints` – každé pole je [string].\\n      - `architecture`: objekt s poli:\\n        - `modules`: pole objektů `{ \\\"name\\\": string, \\\"responsibility\\\": string }`.\\n        - `data_flow`: [string].\\n        - `error_handling`: [string].\\n        - `security_notes`: [string].\\n      - `build_run`: objekt s poli `prerequisites`, `commands`, `verification` – vše [string].\\n      - `deliverable_policy`: objekt s poli:\\n        - `file_generation_strategy`: \\\"PLAN->STRUCTURE->FILE_CONTENT\\\".\\n        - `max_lines_per_chunk`: 500.\\n  - `input`: text, který:\\n    - Obsahuje zadání programu: `ZADÁNÍ PROGRAMU: <USER_SPEC>.` (uživatelská specifikace).\\n    - Redundantně opakuje kontrakt: \\\"REDUNDANTNÍ KONTRAKT: vrať pouze JSON dle A1_PLAN (bez md, bez textu navíc).\\\".\\n- A1 nepoužívá `file_search` ani `vector_store_ids`.\\n\\n12) A-varianta – A2 (STRUCTURE)\\n- A2 navazuje na A1 přes `previous_response_id`:\\n  - `previous_response_id` je Response ID z A1 (nebo z pole RESPONSE ID, pokud uživatel ručně zadal navázání na starší A1).\\n- Request JSON pro A2 (STRUCTURE / výstup souborové struktury) začíná:\\n  - `model`: `<MODEL_FROM_UI>`.\\n  - `previous_response_id`: `<RESP_ID_FROM_A1_OR_USER_FIELD>`.\\n  - `temperature`: 0.2 (stále plánovací/strukturální krok, ne file content).\\n- Zbytek kontraktu A2 (STRUCTURE) je definován v navazujících částech specifikace (mimo tento chunk) a musí být dodržen stejně striktně jako A1.\\n\\nShrnutí vazeb:\\n- RESPONSE ID řídí navazování přes `previous_response_id` (A1→A2→A3, B1→B2→B3, případně ruční navázání).\\n- Diagnostika IN/OUT má redundantní zápis (instructions + input) a může být navázána na vector store.\\n- MODE určuje, zda se použije A pipeline, B pipeline, nebo jednorázový QA request.\\n- Chunking je povinný pro soubory > 500 řádků v A3/B3.\\n- Tok C je zcela oddělený, batch-only, bez vstupních souborů, s kontraktem C_FILES_ALL a přísnou validací.\\n- Všechny kontrakty (A1_PLAN, A2_*, C_FILES_ALL atd.) musí být dodrženy přesně, výstupy vždy čistý JSON bez doprovodného textu.\",\"chunk_index\":5,\"chunk_count\":15,\"notes\":[\"Zachovat přesnou strukturu kontraktů A1_PLAN a C_FILES_ALL, včetně názvů polí a typů.\",\"Tok C je zcela oddělený od A/B pipeline: žádné previous_response_id, žádné vstupní soubory, pouze batch.\",\"Při aktivní diagnostice OUT musí C i A/B výstupy obsahovat skript(y) a readmerepair.txt, očekávání je vždy redundantně v instructions i input.\",\"Při validaci C_FILES_ALL je kritická kontrola cest (relativní, bez / na začátku, bez .., bez \\\\\\\\ a bez duplicit).\",\"Všechny modelové odpovědi pro A/B/C musí být parsovatelné přes json.loads() a nesmí obsahovat markdown ani komentáře.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 5122,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3821,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 8943
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767897620,
+    "store": true
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261617_314b",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "resp_064f0e142edc6ce900695fce181278819e94919fa30ac949f1",
+    "logged_at": "2026-01-08T15:33:01.412646",
+    "request_id": "477ce72d"
+  },
+  "payload": {
+    "id": "resp_064f0e142edc6ce900695fce181278819e94919fa30ac949f1",
+    "created_at": 1767886360.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_064f0e142edc6ce900695fce1891e4819e9215f0676daf027b",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk pokračuje v objektu A2_STRUCTURE a doplňuje specifikaci zbývajících klíčových souborů projektu CrossPlatformDiagnosticsSuite. Navazuje přímo na předchozí definici položky \\\"windows_collectors.py\\\" a dále rozvádí strukturu repozitáře.\\n\\n1) windows_collectors.py (dokončení)\\n- purpose: Implementace sběrných funkcí pro Windows FULL Diagnostics, které vracejí datové modely nebo textová shrnutí.\\n- EXPORTS (funkce):\\n  - collect_windows_system() -> SystemInfo\\n  - collect_windows_registry() -> RegistrySummary\\n  - collect_windows_filesystem() -> list[FilesystemEntry]\\n  - collect_windows_python() -> PythonEnvironmentSummary\\n  - collect_windows_processes_services() -> ProcessesServicesSummary\\n  - collect_windows_network() -> list[NetworkEndpoint]\\n  - collect_windows_security() -> SecuritySummary\\n  - collect_windows_hardware() -> HardwareSummary\\n  - collect_windows_storage() -> StorageSummary\\n  - collect_windows_drivers() -> DriversSummary\\n  - collect_windows_devtools() -> DevToolsSummary\\n  - collect_windows_virtualization() -> VirtualizationSummary\\n  - collect_windows_wsl() -> WslSummary\\n  - collect_windows_logs(limit_bytes: int) -> list[LogFileSummary]\\n- IMPORTS:\\n  - subprocess (standardní knihovna)\\n  - os (standardní knihovna)\\n  - typing.List (standardní knihovna)\\n  - datové modely: SystemInfo, RegistrySummary, FilesystemEntry, PythonEnvironmentSummary, ProcessesServicesSummary, SecuritySummary, HardwareSummary, StorageSummary, DriversSummary, DevToolsSummary, VirtualizationSummary, WslSummary, LogFileSummary, NetworkEndpoint z data_models.py\\n  - redact_secrets z redaction.py\\n  - get_logger z logging_setup.py\\n  - record_error z error_reporting.py\\n  - platform (standardní knihovna)\\n- language: python\\n- generated_in_phase: A3\\n\\n2) manifest_writer.py\\n- purpose: Generování a zápis MANIFEST.md a správa položek manifestu pro diagnostické výstupy.\\n- EXPORTS:\\n  - ManifestItem\\n  - Manifest\\n  - create_manifest(root_dir: str, platform: str) -> Manifest\\n  - write_manifest(manifest: Manifest, path: str) -> None\\n  - add_manifest_item(manifest: Manifest, item: ManifestItem) -> None\\n- IMPORTS:\\n  - os (standardní knihovna)\\n  - typing.List (standardní knihovna)\\n  - ManifestItem, Manifest z data_models.py\\n  - safe_write_text z io_safety.py\\n  - get_logger z logging_setup.py\\n- language: python\\n- generated_in_phase: A3\\n\\n3) data_models.py\\n- purpose: Definice sdílených datových modelů pro diagnostické záznamy a manifest, včetně layoutů výstupní struktury.\\n- EXPORTS (vše jako dataclass):\\n  - SystemInfo\\n  - NetworkEndpoint\\n  - ServiceStatus\\n  - FilesystemEntry\\n  - LogFileSummary\\n  - PackageInfo\\n  - WebServerConfigSummary\\n  - RegistrySummary\\n  - PythonEnvironmentSummary\\n  - ProcessesServicesSummary\\n  - SecuritySummary\\n  - HardwareSummary\\n  - StorageSummary\\n  - DriversSummary\\n  - DevToolsSummary\\n  - VirtualizationSummary\\n  - WslSummary\\n  - DiagnosticSectionSummary\\n  - ManifestItem\\n  - Manifest\\n  - UbuntuLayout\\n  - WindowsLayout\\n- IMPORTS:\\n  - dataclasses.dataclass (standardní knihovna)\\n  - typing.List, typing.Optional, typing.Dict (standardní knihovna)\\n- language: python\\n- generated_in_phase: A3\\n\\n4) redaction.py\\n- purpose: Redakce citlivých údajů v textu a cestách pomocí konzervativních heuristik, aby se do výstupů nedostala tajemství.\\n- EXPORTS:\\n  - redact_secrets(text: str) -> str\\n  - redact_path(path: str) -> str\\n  - contains_potential_secret(text: str) -> bool\\n- IMPORTS:\\n  - re (standardní knihovna)\\n  - os (standardní knihovna)\\n  - get_logger z logging_setup.py\\n- language: python\\n- generated_in_phase: A3\\n\\n5) io_safety.py\\n- purpose: Bezpečné operace se souborovým systémem pro tvorbu adresářů a zápis textových i binárních souborů diagnostiky, včetně přípravy prázdného výstupního adresáře.\\n- EXPORTS:\\n  - safe_mkdirs(path: str) -> None\\n  - safe_write_text(path: str, content: str, overwrite: bool = True) -> None\\n  - safe_write_binary(path: str, data: bytes, overwrite: bool = True) -> None\\n  - ensure_empty_dir(path: str) -> None\\n- IMPORTS:\\n  - os (standardní knihovna)\\n  - pathlib.Path (standardní knihovna)\\n  - shutil (standardní knihovna)\\n  - get_logger z logging_setup.py\\n  - record_error z error_reporting.py\\n- language: python\\n- generated_in_phase: A3\\n\\n6) logging_setup.py\\n- purpose: Centralizované nastavení logování a poskytování loggerů pro ostatní moduly.\\n- EXPORTS:\\n  - setup_logging(level: int, log_file: str | None = None) -> None\\n  - get_logger(name: str) -> logging.Logger\\n- IMPORTS:\\n  - logging (standardní knihovna)\\n  - os (standardní knihovna)\\n  - typing.Optional (standardní knihovna)\\n- language: python\\n- generated_in_phase: A3\\n\\n7) error_reporting.py\\n- purpose: Sběr, ukládání a zápis chyb vzniklých během běhu diagnostiky do souhrnného reportu (např. errors.log) a poskytování jejich přehledu pro návratové kódy a verifikaci.\\n- EXPORTS:\\n  - record_error(section: str, error: Exception | str) -> None\\n  - write_error_report(output_dir: str) -> None\\n  - get_errors() -> list[tuple[str, str]]\\n- IMPORTS:\\n  - typing.List, typing.Tuple (standardní knihovna)\\n  - traceback (standardní knihovna)\\n  - io_safety.safe_write_text z io_safety.py\\n  - get_logger z logging_setup.py\\n- language: python\\n- generated_in_phase: A3\\n\\n8) path_layout.py\\n- purpose: Deterministická definice adresářové a souborové struktury výstupu pro Ubuntu a Windows diagnostiky. Tvoří základ pro verifikační kroky struktury výstupu.\\n- EXPORTS:\\n  - get_ubuntu_output_layout(base_dir: str) -> UbuntuLayout\\n  - get_windows_output_layout(base_dir: str) -> WindowsLayout\\n- IMPORTS:\\n  - os (standardní knihovna)\\n  - UbuntuLayout, WindowsLayout z data_models.py\\n- language: python\\n- generated_in_phase: A3\\n\\n9) summary_report.py\\n- purpose: Generování lidsky čitelného souhrnného reportu hlavních zjištění diagnostiky (např. SUMMARY.md) na základě strukturovaných dat.\\n- EXPORTS:\\n  - generate_summary(output_dir: str, platform: str) -> None\\n  - summarize_section(section_name: str, data: DiagnosticSectionSummary) -> str\\n- IMPORTS:\\n  - DiagnosticSectionSummary z data_models.py\\n  - safe_write_text z io_safety.py\\n  - redact_secrets z redaction.py\\n  - get_logger z logging_setup.py\\n  - os (standardní knihovna)\\n- language: python\\n- generated_in_phase: A3\\n\\n10) README.md\\n- purpose: Stručný popis projektu, návod ke spuštění CLI diagnostiky a vysvětlení struktury výstupů. Slouží čistě jako dokumentace.\\n- EXPORTS: žádné programové symboly.\\n- IMPORTS: žádné programové importy.\\n- language: markdown\\n- generated_in_phase: A3\\n\\n11) MANIFEST_PROJECT.md (začátek položky)\\n- Chunk končí u klíče \\\"path\\\": \\\"MANIFEST_PROJECT.md\\\" bez dalšího popisu. Je zřejmé, že v následujícím chunku bude pokračovat specifikace tohoto souboru (účel, jazyk, fáze generování). Pravděpodobně půjde o projektový manifest / metadokument popisující strukturu repozitáře a kontrakty.\\n\\nCelkový význam chunku:\\n- Dokončuje definici A2_STRUCTURE pro infrastrukturní moduly (manifest_writer, data_models, redaction, io_safety, logging_setup, error_reporting, path_layout, summary_report) a dokumentační soubor README.md.\\n- Potvrzuje, že všechny tyto moduly budou implementovány v Pythonu (kromě README.md v markdownu) ve fázi A3 a že jejich rozhraní (EXPORTS/IMPORTS) jsou závazná.\\n- Udržuje konzistenci s dříve popsanými verifikačními pravidly: manifest_writer a path_layout jsou klíčové pro deterministickou strukturu výstupu a MANIFEST.md; redaction a io_safety podporují bezpečnost a absenci tajemství; error_reporting a logging_setup podporují sledování chyb a auditovatelnost.\\n- Připravuje půdu pro další chunk, kde bude dokončena definice MANIFEST_PROJECT.md a případně dalších souborů v A2_STRUCTURE.\",\"chunk_index\":5,\"chunk_count\":6,\"notes\":[\"Zachovat přesné názvy funkcí, datových tříd a modulů, protože na ně navazují ostatní části návrhu (orchestrátory, collectors, verifikační logika).\",\"windows_collectors.py musí pokrývat všechny oblasti Windows FULL Diagnostics uvedené v exportech a používat datové modely z data_models.py.\",\"manifest_writer.py a path_layout.py jsou klíčové pro deterministickou strukturu výstupu a generování MANIFEST.md, což je zásadní pro verifikační kroky popsané v předchozích chuncích.\",\"redaction.py musí implementovat konzervativní heuristiky pro detekci a redakci tajemství; všechny ostatní moduly mají používat redact_secrets/redact_path před zápisem potenciálně citlivých dat.\",\"io_safety.py musí zajistit bezpečné vytváření adresářů a zápis souborů (včetně ensure_empty_dir) tak, aby opakované běhy byly deterministické a aby se minimalizovalo riziko poškození existujících dat.\",\"error_reporting.py musí centralizovat sběr chyb a umožnit jejich zápis do errors.log i zpětné získání seznamu chyb pro rozhodování o návratovém kódu.\",\"summary_report.py generuje lidsky čitelný souhrn na základě DiagnosticSectionSummary a musí respektovat redakci tajemství.\",\"README.md je čistě dokumentační; MANIFEST_PROJECT.md bude specifikován v dalším chunku a pravděpodobně popíše projektovou strukturu a kontrakty.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4570,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2528,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 7098
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767886381,
+    "store": true
+  }
+}

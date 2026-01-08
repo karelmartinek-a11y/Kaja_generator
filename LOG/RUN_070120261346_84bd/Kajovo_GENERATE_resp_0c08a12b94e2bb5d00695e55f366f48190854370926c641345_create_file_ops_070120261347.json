@@ -1,0 +1,16 @@
+{
+  "action": "create",
+  "path": "src\\ui_main.py",
+  "absolute_path": "C:\\KAJOVO\\src\\ui_main.py",
+  "source_path": null,
+  "target_path": "C:\\KAJOVO\\src\\ui_main.py",
+  "size_before": null,
+  "size_after": 414,
+  "hash_before": null,
+  "hash_after": "a1a8e89d6819358c104fc5b30274ffb2d658d11ae557e57f5df44f8707717755",
+  "project": "Kajovo",
+  "response_id": "resp_0c08a12b94e2bb5d00695e55f366f48190854370926c641345",
+  "stage": "GENERATE",
+  "timestamp": "2026-01-07T12:47:52.169216",
+  "run_id": "RUN_070120261346_84bd"
+}

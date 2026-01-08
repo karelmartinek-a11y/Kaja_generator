@@ -238,7 +238,7 @@ def log_hook_execution(run: RunArtifacts, payload: Dict[str, Any]) -> Path:
     return path
 
 
-def log_timeline(run: RunArtifacts, timeline: List[Dict[str, Any]]) -> Path:
+def log_timeline(run: RunArtifacts, timeline: List[Dict[str, Any]]) -> Path:    
     name = _build_log_filename(run, "timeline")
     path = Path(run.log_dir) / name
     payload = {
@@ -246,6 +246,50 @@ def log_timeline(run: RunArtifacts, timeline: List[Dict[str, Any]]) -> Path:
         "timeline": timeline,
     }
     write_json(path, payload)
+    return path
+
+
+def log_audit_event(
+    run: RunArtifacts,
+    payload: Dict[str, Any],
+    *,
+    stage: str = "",
+    project_name: str = "",
+    response_id: str = "",
+    event: str = "",
+    sequence: int | None = None,
+    suffix: str = "",
+) -> Path:
+    metadata = {
+        "run_id": run.run_id,
+        "project": project_name,
+        "stage": stage,
+        "response_id": response_id,
+        "event": event,
+        "sequence": sequence,
+        "logged_at": datetime.utcnow().isoformat(),
+    }
+    payload_with_meta = {
+        "metadata": metadata,
+        "details": _to_json(payload),
+    }
+    suffix_parts = []
+    if sequence is not None:
+        suffix_parts.append(f"seq_{sequence:06d}")
+    if event:
+        suffix_parts.append(event)
+    if suffix:
+        suffix_parts.append(suffix)
+    name = _build_log_filename(
+        run,
+        "audit",
+        stage=stage,
+        project_name=project_name,
+        response_id=response_id or run.run_id,
+        suffix="_".join(suffix_parts),
+    )
+    path = Path(run.log_dir) / name
+    write_json(path, payload_with_meta)
     return path
 
 
@@ -325,15 +369,21 @@ def log_vector_store_entry(run: RunArtifacts, payload: Dict[str, Any]) -> Path:
 
 
 
-def _to_json(payload: Dict[str, Any]) -> Dict[str, Any]:
+def _to_json(payload: Any) -> Any:
     def convert(value: Any) -> Any:
-        if hasattr(value, "__dict__"):
-            return {key: convert(val) for key, val in value.__dict__.items()}
-        if isinstance(value, list):
+        if value is None or isinstance(value, (str, int, float, bool)):
+            return value
+        if isinstance(value, Path):
+            return str(value)
+        if isinstance(value, bytes):
+            return base64.b64encode(value).decode("ascii")
+        if isinstance(value, (list, tuple, set)):
             return [convert(item) for item in value]
         if isinstance(value, dict):
             return {key: convert(val) for key, val in value.items()}
-        return value
+        if hasattr(value, "__dict__"):
+            return {key: convert(val) for key, val in value.__dict__.items()}
+        return repr(value)
 
     return convert(payload)
 

@@ -1,0 +1,300 @@
+{
+  "receipt": {
+    "run_id": "RUN_070120261935_09e1",
+    "project": "KAJOVO",
+    "model": "gpt-5.1-codex-max",
+    "mode": "GENERATE",
+    "response_id": "resp_0a9d3b88a4a4fa3700695ea7b774348191a36e945885a55934",
+    "total_cost": 0.056368,
+    "details": {
+      "mode": "GENERATE",
+      "model": "gpt-5.1-codex-max",
+      "summary_steps": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "usage": {
+        "input_tokens": 51,
+        "output_tokens": 4796,
+        "storage_bytes": 19067,
+        "storage_gb": 1.775752753019333e-05,
+        "storage_days": 1.775752753019333e-05,
+        "vector_store_files": 0,
+        "attachments_bytes": 0,
+        "attachments": [],
+        "files": [
+          {
+            "path": "C:\\KAJOVO\\main.py",
+            "size": 61
+          },
+          {
+            "path": "C:\\KAJOVO\\cli.py",
+            "size": 5193
+          },
+          {
+            "path": "C:\\KAJOVO\\service.py",
+            "size": 5842
+          },
+          {
+            "path": "C:\\KAJOVO\\repository.py",
+            "size": 2967
+          },
+          {
+            "path": "C:\\KAJOVO\\models.py",
+            "size": 1842
+          },
+          {
+            "path": "C:\\KAJOVO\\utils.py",
+            "size": 3162
+          }
+        ]
+      },
+      "vector_store_ids": [],
+      "cost_breakdown": {
+        "input_cost": 0.000102,
+        "output_cost": 0.01199,
+        "vector_store_cost": 0.0,
+        "storage_cost": 1.775752753019333e-10,
+        "file_api_cost": 0.00030000000000000003,
+        "tool_cost": 0.0,
+        "discount_factor": 1.0
+      },
+      "total_cost": 0.012392,
+      "pricing_summary": {
+        "source": "https://openai.com/pricing",
+        "last_refreshed": null,
+        "verified": false,
+        "status": "Ceník offline / odhad",
+        "error": "Client error '403 Forbidden' for url 'https://openai.com/pricing'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403"
+      },
+      "status": "Ceník offline / odhad",
+      "verified": false,
+      "computed_at": "2026-01-07T18:36:47.884497",
+      "per_call_pricing": {
+        "steps": [
+          {
+            "index": 1,
+            "stage": "A1",
+            "model": "gpt-5.1-codex-max",
+            "response_id": "resp_0a9d3b88a4a4fa3700695ea75ec1b08191909e39344ef31089",
+            "request_chars": 2268,
+            "response_chars": 3444,
+            "estimated": {
+              "input_tokens": 567,
+              "output_tokens": 861,
+              "input_cost": 0.001134,
+              "output_cost": 0.0021525000000000003,
+              "discount_factor": 1.0,
+              "total_cost": 0.003287
+            },
+            "actual": {
+              "input_tokens": 678,
+              "output_tokens": 1217,
+              "input_cost": 0.001356,
+              "output_cost": 0.0030425,
+              "discount_factor": 1.0,
+              "total_cost": 0.004398
+            },
+            "pricing_status": "Ceník offline / odhad"
+          },
+          {
+            "index": 2,
+            "stage": "A2",
+            "model": "gpt-5.1-codex-max",
+            "response_id": "resp_0a9d3b88a4a4fa3700695ea76a966c8191847693465fc78190",
+            "request_chars": 490,
+            "response_chars": 820,
+            "estimated": {
+              "input_tokens": 122,
+              "output_tokens": 205,
+              "input_cost": 0.000244,
+              "output_cost": 0.0005125,
+              "discount_factor": 1.0,
+              "total_cost": 0.000757
+            },
+            "actual": {
+              "input_tokens": 1581,
+              "output_tokens": 347,
+              "input_cost": 0.003162,
+              "output_cost": 0.0008675000000000001,
+              "discount_factor": 1.0,
+              "total_cost": 0.00403
+            },
+            "pricing_status": "Ceník offline / odhad"
+          },
+          {
+            "index": 3,
+            "stage": "A3",
+            "model": "gpt-5.1-codex-max",
+            "response_id": "resp_0a9d3b88a4a4fa3700695ea7712cb88191af68a8ae8f3f8976",
+            "request_chars": 753,
+            "response_chars": 222,
+            "estimated": {
+              "input_tokens": 188,
+              "output_tokens": 55,
+              "input_cost": 0.000376,
+              "output_cost": 0.0001375,
+              "discount_factor": 1.0,
+              "total_cost": 0.000513
+            },
+            "actual": {
+              "input_tokens": 1942,
+              "output_tokens": 73,
+              "input_cost": 0.003884,
+              "output_cost": 0.00018250000000000002,
+              "discount_factor": 1.0,
+              "total_cost": 0.004066
+            },
+            "pricing_status": "Ceník offline / odhad"
+          },
+          {
+            "index": 4,
+            "stage": "A3",
+            "model": "gpt-5.1-codex-max",
+            "response_id": "resp_0a9d3b88a4a4fa3700695ea772e49c819180a2a3fbdf6c05fb",
+            "request_chars": 752,
+            "response_chars": 5636,
+            "estimated": {
+              "input_tokens": 188,
+              "output_tokens": 1409,
+              "input_cost": 0.000376,
+              "output_cost": 0.0035225000000000005,
+              "discount_factor": 1.0,
+              "total_cost": 0.003899
+            },
+            "actual": {
+              "input_tokens": 1942,
+              "output_tokens": 2036,
+              "input_cost": 0.003884,
+              "output_cost": 0.005090000000000001,
+              "discount_factor": 1.0,
+              "total_cost": 0.008974
+            },
+            "pricing_status": "Ceník offline / odhad"
+          },
+          {
+            "index": 5,
+            "stage": "A3",
+            "model": "gpt-5.1-codex-max",
+            "response_id": "resp_0a9d3b88a4a4fa3700695ea77fd1508191acd0b7c5340494c2",
+            "request_chars": 756,
+            "response_chars": 6257,
+            "estimated": {
+              "input_tokens": 189,
+              "output_tokens": 1564,
+              "input_cost": 0.00037799999999999997,
+              "output_cost": 0.00391,
+              "discount_factor": 1.0,
+              "total_cost": 0.004288
+            },
+            "actual": {
+              "input_tokens": 1942,
+              "output_tokens": 4459,
+              "input_cost": 0.003884,
+              "output_cost": 0.011147500000000001,
+              "discount_factor": 1.0,
+              "total_cost": 0.015032
+            },
+            "pricing_status": "Ceník offline / odhad"
+          },
+          {
+            "index": 6,
+            "stage": "A3",
+            "model": "gpt-5.1-codex-max",
+            "response_id": "resp_0a9d3b88a4a4fa3700695ea7a39ab48191ba77df86a1da0bc5",
+            "request_chars": 759,
+            "response_chars": 3236,
+            "estimated": {
+              "input_tokens": 189,
+              "output_tokens": 809,
+              "input_cost": 0.00037799999999999997,
+              "output_cost": 0.0020225,
+              "discount_factor": 1.0,
+              "total_cost": 0.0024
+            },
+            "actual": {
+              "input_tokens": 1942,
+              "output_tokens": 1268,
+              "input_cost": 0.003884,
+              "output_cost": 0.00317,
+              "discount_factor": 1.0,
+              "total_cost": 0.007054
+            },
+            "pricing_status": "Ceník offline / odhad"
+          },
+          {
+            "index": 7,
+            "stage": "A3",
+            "model": "gpt-5.1-codex-max",
+            "response_id": "resp_0a9d3b88a4a4fa3700695ea7ad76bc81919b9b586bca6f9b8c",
+            "request_chars": 755,
+            "response_chars": 2117,
+            "estimated": {
+              "input_tokens": 188,
+              "output_tokens": 529,
+              "input_cost": 0.000376,
+              "output_cost": 0.0013225,
+              "discount_factor": 1.0,
+              "total_cost": 0.001699
+            },
+            "actual": {
+              "input_tokens": 1941,
+              "output_tokens": 799,
+              "input_cost": 0.003882,
+              "output_cost": 0.0019975,
+              "discount_factor": 1.0,
+              "total_cost": 0.00588
+            },
+            "pricing_status": "Ceník offline / odhad"
+          },
+          {
+            "index": 8,
+            "stage": "A3",
+            "model": "gpt-5.1-codex-max",
+            "response_id": "resp_0a9d3b88a4a4fa3700695ea7b774348191a36e945885a55934",
+            "request_chars": 754,
+            "response_chars": 3471,
+            "estimated": {
+              "input_tokens": 188,
+              "output_tokens": 867,
+              "input_cost": 0.000376,
+              "output_cost": 0.0021675,
+              "discount_factor": 1.0,
+              "total_cost": 0.002544
+            },
+            "actual": {
+              "input_tokens": 1942,
+              "output_tokens": 1220,
+              "input_cost": 0.003884,
+              "output_cost": 0.00305,
+              "discount_factor": 1.0,
+              "total_cost": 0.006934
+            },
+            "pricing_status": "Ceník offline / odhad"
+          }
+        ],
+        "totals": {
+          "estimated": {
+            "input_tokens": 1819,
+            "output_tokens": 6299,
+            "total_cost": 0.019387
+          },
+          "actual": {
+            "input_tokens": 13910,
+            "output_tokens": 11419,
+            "total_cost": 0.056368,
+            "steps_with_usage": 8
+          },
+          "coverage": 1.0
+        },
+        "notes": "Odhad pouziva char/4; realne ceny z response.usage."
+      },
+      "run_estimated_total_cost": 0.012392,
+      "run_actual_total_cost": 0.056368
+    },
+    "created_at": "2026-01-07T18:36:47.884655",
+    "verified_pricing": false
+  },
+  "logged_at": "2026-01-07T18:36:47.892402"
+}

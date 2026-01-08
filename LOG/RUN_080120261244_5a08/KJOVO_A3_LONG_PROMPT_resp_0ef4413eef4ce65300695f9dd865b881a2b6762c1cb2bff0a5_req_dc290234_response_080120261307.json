@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261244_5a08",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "resp_0ef4413eef4ce65300695f9dd865b881a2b6762c1cb2bff0a5",
+    "logged_at": "2026-01-08T12:07:17.926416",
+    "request_id": "dc290234"
+  },
+  "payload": {
+    "id": "resp_0ef4413eef4ce65300695f9dd865b881a2b6762c1cb2bff0a5",
+    "created_at": 1767874008.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0ef4413eef4ce65300695f9dd8fa7481a2a2d6915f58b040c3",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Instrukce: Vrať obsah souboru PATH=pyproject.toml. Pokud je dlouhý, použij chunking, volitelně s parametrem CHUNK_INDEX=<N>. Redundantní kontrakt: výstup musí být pouze JSON dle schématu A3_FILE. Kritické: žádné DIFF/patch, jen čistý obsah souboru (nebo jeho chunk).\\n\\nA1_PLAN popisuje projekt \\\"DiagMaster\\\":\\n- Konzolový nástroj v Pythonu 3.12 pro FULL diagnostiku Linux a Windows.\\n- Deterministická adresářová struktura výstupů, MANIFESTy, bez ZIP archivace.\\n- Předchozí chunky (zde nedostupné) definovaly detailní technické požadavky na diagnostické příkazy, formáty MANIFESTů a přesnou adresářovou strukturu.\\n\\nPředpoklady:\\n- Nástroj běží s dostatečnými oprávněními (Linux: sudo, Windows: Administrator) pro čtení systémových informací.\\n- Výstupní diagnostické adresáře se ukládají na lokální disk.\\n- Uživatel spouští nástroj z CLI a umí pracovat s příkazovou řádkou.\\n- Kájovo UI Design Standard se primárně týká budoucí GUI nadstavby; aktuálně jde o CLI nástroj, ale musí být zachován determinismus a rekonstruovatelnost.\\n- Nástroj sám neprovádí ZIP archivaci; pouze vytváří adresářovou strukturu a soubory vhodné pro externí archivaci.\\n- Pro Linux i Windows existují ekvivalentní diagnostické příkazy nebo API volatelné z Pythonu.\\n- Časová razítka a generování unikátních ID běhu jsou povolena, pokud jsou deterministicky zaznamenána v MANIFESTu.\\n\\nFunkční požadavky (výběr, ale zachován význam všech):\\n1) Podpora režimu FULL diagnostiky pro Linux.\\n2) Podpora režimu FULL diagnostiky pro Windows.\\n3) Pro každý běh diagnostiky se vytvoří deterministická adresářová struktura s jasně definovanými podsložkami pro oblasti diagnostiky (např. system_info, network, storage, processes, services, logs).\\n4) Pro každý běh vznikne kořenový MANIFEST (např. MANIFEST_ROOT.json) popisující strukturu výstupu, verzi nástroje, čas běhu, cílový OS a stav jednotlivých kroků.\\n5) Pro každou hlavní podsložku diagnostiky vznikne lokální MANIFEST (např. MANIFEST_system_info.json) s popisem obsažených souborů, použitých příkazů a návratových kódů.\\n6) Nástroj nesmí vytvářet ZIP ani jiné archivní formáty; výstupem je vždy čistá adresářová struktura.\\n7) Musí existovat neinteraktivní režim vhodný pro skriptování (např. parametry --full-linux, --full-windows).\\n8) Podpora parametru pro explicitní určení výstupního kořenového adresáře (např. --output-dir).\\n9) Logování průběhu běhu do textového log souboru v kořenovém adresáři diagnostiky (např. run.log) a zároveň na standardní výstup.\\n10) Zaznamenání verze nástroje a verze runtime (Python) do kořenového MANIFESTu.\\n11) Pro každý dílčí diagnostický krok se zaznamená použitý příkaz nebo API, návratový kód, případný stderr a cesta k výstupnímu souboru.\\n12) Možnost přeskočit vybrané diagnostické oblasti pomocí CLI parametrů (např. --skip-logs, --skip-network).\\n13) Proces má vracet nenulový návratový kód, pokud některý kritický diagnostický krok selže; definice kritičnosti bude konfigurovatelná.\\n14) Podpora parametru --dry-run, který pouze vypíše plánované kroky a neprovádí je.\\n15) Podpora parametru --config <soubor> pro načtení konfigurace diagnostiky (povolené/zakázané kroky, časové limity, cesty).\\n16) Nástroj musí být schopen běžet opakovaně a vytvářet unikátní adresáře pro jednotlivé běhy (např. s časovým razítkem nebo inkrementálním indexem); způsob generování identifikátoru běhu je zaznamenán v MANIFESTu.\\n17) Příkaz --version vypíše verzi nástroje a základní informace o build konfiguraci.\\n18) Příkaz --help popíše všechny parametry a režimy.\\n19) Podpora úrovní verbóznosti logování (např. --quiet, --verbose, --debug).\\n20) Pro Linux se používají standardní systémové příkazy a soubory (/proc, /sys, systemd, ip, ss, df, journalctl atd.) v rozsahu definovaném v jiných chuncích.\\n21) Pro Windows se používají dostupná API a nástroje (PowerShell cmdlety, WMI, systeminfo, ipconfig, Get-EventLog/Get-WinEvent atd.) v definovaném rozsahu.\\n22) Nástroj musí fungovat i bez přístupu k internetu a nesmí vyžadovat online závislosti během běhu.\\n23) Výstupy musí být v textových formátech (.txt, .json, .log) a snadno čitelné i parsovatelné dalšími nástroji.\\n24) Musí být možné nastavit maximální dobu běhu jednotlivých kroků (timeout) a tuto informaci zaznamenat do MANIFESTu.\\n25) V MANIFESTech musí být jednoznačně označeno, které kroky byly úspěšné, selhaly nebo byly přeskočeny.\\n26) Architektura musí umožnit pozdější doplnění GUI nadstavby respektující Kájovo UI Design Standard bez změny základní doménové logiky a datových modelů.\\n\\nNefunkční požadavky (výběr, ale význam zachován):\\n- Determinismus: při stejném vstupním prostředí a stejné konfiguraci musí nástroj generovat stejnou adresářovou strukturu a stejné názvy souborů (s výjimkou časových razítek, která jsou explicitně zaznamenána).\\n- Multiplatformnost pro Linux a Windows s minimálními rozdíly v kódu; OS-specifické kroky mají být abstrahovány.\\n- Snadná rozšiřitelnost o nové diagnostické kroky bez zásahu do existujících modulů mimo definovaná rozhraní.\\n- Jasně definované datové modely pro reprezentaci běhu diagnostiky, kroků, výsledků a MANIFESTů.\\n- Možnost spouštění v CI/CD pipelinech.\\n- Minimální externí závislosti; nesmí vyžadovat instalaci neobvyklých knihoven mimo standardní Python ekosystém.\\n- Konzistentní struktura logování napříč OS a běhy.\\n\\nTento chunk končí u poslední věty o konzistentní struktuře logování; další nefunkční požadavky mohou pokračovat v následujících chuncích.\",\"chunk_index\":1,\"chunk_count\":9,\"notes\":[\"Zachovat kontrakt A3_FILE pro budoucí krok, který bude vracet obsah pyproject.toml po chuncích.\",\"A1_PLAN definuje kontext projektu DiagMaster, jeho cíle, funkční a nefunkční požadavky; další chunky pravděpodobně doplní zbytek nefunkčních požadavků a další detaily.\",\"Při navazování dalších chunků je nutné udržet determinismus, strukturu MANIFESTů a CLI rozhraní jako klíčové vlastnosti.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 2088,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1836,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 3924
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767874037,
+    "store": true
+  }
+}

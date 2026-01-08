@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261617_314b",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_02e953",
+    "event": "ui_log_message",
+    "sequence": 5,
+    "logged_at": "2026-01-08T15:48:33.943074"
+  },
+  "details": {
+    "message": "Chyba běhu: A2X_FILE_MAP.root musí být string.",
+    "timestamp_local": "16:48:33",
+    "source": "ui_log"
+  }
+}

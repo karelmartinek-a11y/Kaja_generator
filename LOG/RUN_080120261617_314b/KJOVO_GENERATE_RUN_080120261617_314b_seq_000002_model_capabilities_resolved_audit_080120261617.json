@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261617_314b",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "",
+    "event": "model_capabilities_resolved",
+    "sequence": 2,
+    "logged_at": "2026-01-08T15:17:32.556713"
+  },
+  "details": {
+    "event": "model_capabilities_resolved",
+    "level": "info",
+    "details": {
+      "model": "gpt-5.1",
+      "supports_vector_store": true,
+      "supports_file_search": true,
+      "supports_temperature": true,
+      "resolved": true,
+      "source": "gpt-5.1",
+      "supported_tools": [],
+      "supported_parameters": []
+    },
+    "timestamp": "2026-01-08T15:17:32.556701"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "receipt": {
+    "run_id": "RUN_070120260113_b3ae",
+    "project": "Kajovo",
+    "model": "gpt-5.1",
+    "mode": "GENERATE",
+    "response_id": "GENERATE_d3b011",
+    "total_cost": 0.471005,
+    "details": {
+      "mode": "GENERATE",
+      "model": "gpt-5.1",
+      "summary_steps": [
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "usage": {
+        "input_tokens": 47500,
+        "output_tokens": 150342,
+        "storage_bytes": 601310,
+        "storage_gb": 0.0005600135773420334,
+        "storage_days": 0.0005600135773420334,
+        "vector_store_files": 0,
+        "attachments_bytes": 0,
+        "attachments": [],
+        "files": [
+          {
+            "path": "C:\\Kaja_generator\\OUT\\project\\core\\runtime.py",
+            "size": 200472
+          },
+          {
+            "path": "C:\\Kaja_generator\\OUT\\project\\core\\pipeline.py",
+            "size": 200465
+          },
+          {
+            "path": "C:\\Kaja_generator\\OUT\\project\\docs\\README.md",
+            "size": 200373
+          }
+        ]
+      },
+      "vector_store_ids": [],
+      "cost_breakdown": {
+        "input_cost": 0.095,
+        "output_cost": 0.37585500000000005,
+        "vector_store_cost": 0.0,
+        "storage_cost": 5.600135773420334e-09,
+        "file_api_cost": 0.00015000000000000001,
+        "tool_cost": 0.0,
+        "discount_factor": 1.0
+      },
+      "total_cost": 0.471005,
+      "pricing_summary": {
+        "source": "https://openai.com/pricing",
+        "last_refreshed": null,
+        "verified": false,
+        "status": "Ceník offline / odhad",
+        "error": "Client error '403 Forbidden' for url 'https://openai.com/pricing'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403"
+      },
+      "status": "Ceník offline / odhad",
+      "verified": false,
+      "computed_at": "2026-01-07T00:16:10.100996"
+    },
+    "created_at": "2026-01-07T00:16:10.101051",
+    "verified_pricing": false
+  },
+  "logged_at": "2026-01-07T00:16:10.119937"
+}

@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261124_80c8",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_05d9c99b84cdaf5d00695f895099d08191ab3c175a3ecdf23e",
+    "event": "run_failed",
+    "sequence": 229,
+    "logged_at": "2026-01-08T10:40:25.293403"
+  },
+  "details": {
+    "event": "run_failed",
+    "level": "error",
+    "details": {
+      "error": "A1: shrnutí je stále příliš dlouhé (4731 tokenů).",
+      "type": "ValueError",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2913, in execute\n    files = self._run_generate(user_spec, assets, ui_state, progress_callback, stop_check)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3116, in _run_generate\n    a1_payload = self._build_request_payload(\n        \"A1\",\n    ...<7 lines>...\n        dialog_content=dialog_content,\n    )\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2115, in _build_request_payload\n    instructions, input_text = self._maybe_trim_prompt_texts(\n                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        template_key,\n        ^^^^^^^^^^^^^\n    ...<2 lines>...\n        ui_state,\n        ^^^^^^^^^\n    )\n    ^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 1829, in _maybe_trim_prompt_texts\n    instructions, input_text = self._compress_prompt_texts_by_chunks(\n                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        stage,\n        ^^^^^^\n    ...<3 lines>...\n        max_tokens,\n        ^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 1362, in _compress_prompt_texts_by_chunks\n    self._compress_text_by_chunks(\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        stage,\n        ^^^^^^\n    ...<3 lines>...\n        per_field_tokens,\n        ^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 1314, in _compress_text_by_chunks\n    return self._compress_text_by_chunks(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        stage,\n        ^^^^^^\n    ...<4 lines>...\n        depth=depth + 1,\n        ^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 1334, in _compress_text_by_chunks\n    raise ValueError(\n        f\"{stage}: shrnutí je stále příliš dlouhé ({self._estimate_tokens(summary)} tokenů).\"\n    )\nValueError: A1: shrnutí je stále příliš dlouhé (4731 tokenů).\n"
+    },
+    "timestamp": "2026-01-08T10:40:25.293396"
+  }
+}

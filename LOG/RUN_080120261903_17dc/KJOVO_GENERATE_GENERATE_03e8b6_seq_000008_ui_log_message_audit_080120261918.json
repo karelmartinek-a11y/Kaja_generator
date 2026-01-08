@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261903_17dc",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_03e8b6",
+    "event": "ui_log_message",
+    "sequence": 8,
+    "logged_at": "2026-01-08T18:18:54.474984"
+  },
+  "details": {
+    "message": "A3 validace spec/master_spec_closure_marker.json: chybí exporty ['const MASTER_SPEC_COMPLETE_FLAG: boolean = true;', 'const MASTER_SPEC_VERSION_META: string = \"v1.0\";', 'const MASTER_SPEC_STATUS_META: string = \"complete\";'].",
+    "timestamp_local": "19:18:54",
+    "source": "ui_log"
+  }
+}

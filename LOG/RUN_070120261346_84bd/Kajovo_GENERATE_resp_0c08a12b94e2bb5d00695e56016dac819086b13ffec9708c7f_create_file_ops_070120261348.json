@@ -1,0 +1,16 @@
+{
+  "action": "create",
+  "path": "resources\\montserrat_bold.ttf",
+  "absolute_path": "C:\\KAJOVO\\resources\\montserrat_bold.ttf",
+  "source_path": null,
+  "target_path": "C:\\KAJOVO\\resources\\montserrat_bold.ttf",
+  "size_before": null,
+  "size_after": 24,
+  "hash_before": null,
+  "hash_after": "752f5ce9aa9061e2ed9f015ee941b28ba41636f96db71be533086f1b98baf5a6",
+  "project": "Kajovo",
+  "response_id": "resp_0c08a12b94e2bb5d00695e56016dac819086b13ffec9708c7f",
+  "stage": "GENERATE",
+  "timestamp": "2026-01-07T12:48:03.598467",
+  "run_id": "RUN_070120261346_84bd"
+}

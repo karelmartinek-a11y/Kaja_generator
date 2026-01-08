@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261823_0885",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "resp_0c4b163b5c20566400695fe81b0ffc81a3b5a6b886c2c523ac",
+    "event": "run_failed",
+    "sequence": 40,
+    "logged_at": "2026-01-08T17:27:11.331820"
+  },
+  "details": {
+    "event": "run_failed",
+    "level": "error",
+    "details": {
+      "error": "A1_PLAN: chybí requirements.",
+      "type": "ValueError",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3422, in execute\n    manifest_context[\"diagnostics_snapshot\"] = {\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3637, in _run_generate\n    progress_callback(\"A1: plán projektu\", 0.1)\n              ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2858, in _parse_json_response\n    and payload.get(\"contract\") != expected_contract\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2899, in _validate_contract\n    )\n    \n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2920, in _validate_a1_plan\n    self._validate_a3_file(payload)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: A1_PLAN: chybí requirements.\n"
+    },
+    "timestamp": "2026-01-08T17:27:11.331814"
+  }
+}
