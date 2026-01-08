@@ -477,23 +477,21 @@ class MainWindow(QMainWindow):
         self._controls_initialized = True
         self.project_name_edit = QLineEdit()
         self.prompt_edit = QPlainTextEdit()
+        self.prompt_edit.setStyleSheet("color:#FFFFFF; background:#000000; border:1px solid #FFFFFF;")
         self.mode_combo = QComboBox()
         self.mode_combo.addItems(["GENERATE", "MODIFY", "QA"])
         self.mode_combo.setCurrentText("GENERATE")
-        self.send_as_c_checkbox = QCheckBox("SEND AS C (BATCH)")
+        self.send_as_c_checkbox = QCheckBox("SEND AS BATCH")
         self.in_dir_edit = QLineEdit()
+        self.in_dir_edit.setReadOnly(True)
+        self.in_dir_edit.setStyleSheet("color:#FFFFFF; background:#000000; border:1px solid #FFFFFF;")
         self.out_dir_edit = QLineEdit()
+        self.out_dir_edit.setReadOnly(True)
+        self.out_dir_edit.setStyleSheet("color:#FFFFFF; background:#000000; border:1px solid #FFFFFF;")
         self.response_id_edit = QLineEdit()
-        self.api_key_edit = QLineEdit()
-        self.api_key_edit.setPlaceholderText("API Key")
-        self.api_key_edit.editingFinished.connect(self._on_api_key_changed)
         self.model_combo = QComboBox()
         self.model_combo.addItems(["gpt-4o", "gpt-4o-mini", "gpt-4o-mini-transcribe"])
         self.model_combo.currentTextChanged.connect(self._on_model_changed)
-        self.temperature_spin = QSpinBox()
-        self.temperature_spin.setRange(0, 20)
-        self.temperature_spin.setValue(2)
-        self.temperature_spin.setSuffix(" ×0.1")
         self.get_models_button = QPushButton("GET MODELS")
         self._register_button(self.get_models_button)
         self.go_button = QPushButton("KÁJA GO")
@@ -635,7 +633,7 @@ class MainWindow(QMainWindow):
         self.mode_combo = QComboBox()
         self.mode_combo.addItems(["GENERATE", "MODIFY", "QA"])
         self.mode_combo.setCurrentText("GENERATE")
-        self.send_as_c_checkbox = QCheckBox("SEND AS C (BATCH)")
+        self.send_as_c_checkbox = QCheckBox("SEND AS BATCH")
         self.in_dir_edit = QLineEdit()
         self.out_dir_edit = QLineEdit()
         self.response_id_edit = QLineEdit()
@@ -643,10 +641,6 @@ class MainWindow(QMainWindow):
         self.api_key_edit.setPlaceholderText("API Key")
         self.model_combo = QComboBox()
         self.model_combo.addItems(["gpt-4o", "gpt-4o-mini", "gpt-4o-mini-transcribe"])
-        self.temperature_spin = QSpinBox()
-        self.temperature_spin.setRange(0, 20)
-        self.temperature_spin.setValue(2)
-        self.temperature_spin.setSuffix(" ×0.1")
         self.get_models_button = QPushButton("GET MODELS")
         self.go_button = QPushButton("KÁJA GO")
         self.log_edit = QPlainTextEdit()
@@ -713,8 +707,6 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.model_combo, 4, 3)
         layout.addWidget(QLabel("API Key"), 5, 0)
         layout.addWidget(self.api_key_edit, 5, 1)
-        layout.addWidget(QLabel("Temperature"), 5, 2)
-        layout.addWidget(self.temperature_spin, 5, 3)
         self._pricing_status_label = QLabel()
         self._pricing_status_label.setWordWrap(True)
         self._pricing_status_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
@@ -984,7 +976,6 @@ class MainWindow(QMainWindow):
 
     def _default_model_capabilities(self) -> Dict[str, Any]:
         return {
-            "supports_temperature": False,
             "supports_file_search": False,
             "supports_vector_store": False,
             "supported_tools": [],
@@ -1038,15 +1029,9 @@ class MainWindow(QMainWindow):
 
     def _apply_model_capabilities(self) -> None:
         capabilities = self._model_capabilities or self._default_model_capabilities()
-        supports_temperature = bool(capabilities.get("supports_temperature", False))
         supports_file_search = bool(capabilities.get("supports_file_search", False))
         supports_vector_store = bool(capabilities.get("supports_vector_store", False))
         source = capabilities.get("source", "unknown")
-
-        self.temperature_spin.setEnabled(supports_temperature)
-        self.temperature_spin.setToolTip(
-            "" if supports_temperature else "Model nepodporuje temperature."
-        )
 
         vector_enabled = supports_file_search and supports_vector_store
         for control in self._vector_store_controls:
@@ -1067,12 +1052,10 @@ class MainWindow(QMainWindow):
             self._vector_store_status_label.setText(status_text)
 
         if self._model_capabilities_label:
-            temp_text = "ANO" if supports_temperature else "NE"
             fs_text = "ANO" if supports_file_search else "NE"
             vs_text = "ANO" if supports_vector_store else "NE"
             self._model_capabilities_label.setText(
-                f"Podpora modelu ({source}): temperature={temp_text}, "
-                f"file_search={fs_text}, vector_store={vs_text}"
+                f"Podpora modelu ({source}): file_search={fs_text}, vector_store={vs_text}"
             )
 
     def _on_model_changed(self, model: str) -> None:
@@ -2469,6 +2452,7 @@ class MainWindow(QMainWindow):
             in_dir=self.in_dir_edit.text().strip(),
             out_dir=self.out_dir_edit.text().strip(),
             mode=mode,
+            send_as_c=self.send_as_c_checkbox.isChecked(),
             model=self.model_combo.currentText(),
             response_id=self.response_id_edit.text().strip(),
             diagnostics=diagnostics,

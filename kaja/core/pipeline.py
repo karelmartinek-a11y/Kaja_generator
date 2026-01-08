@@ -249,6 +249,7 @@ class PipelineExecutor:
         self._security_policy = security_policy
         self._in_security_policy = security.policy_from_settings(self._settings, "in")
         self._dry_run_confirmation = dry_run_confirmation
+        self._last_user_spec: str = ""
         self._dry_run_summary: Dict[str, Any] | None = None
         self._dry_run_summary_log_path: Path | None = None
         for log_path, category in (initial_logs or []):
@@ -393,7 +394,7 @@ class PipelineExecutor:
         attachments: Sequence[FileRecord],
     ) -> RequestAssets:
         assets = RequestAssets()
-        if mode in {"GENERATE", "MODIFY", "QA"}:
+        if mode in {"GENERATE", "MODIFY", "QA", "C"}:
             assets.attachments = self._prepare_attachments(attachments)
         supports_file_search = bool(
             self._model_capabilities.get("supports_vector_store")
@@ -423,7 +424,9 @@ class PipelineExecutor:
                     )
                 assets.file_search_enabled = True
                 assets.attachments_in_vector_store = True
-                assets.attachments_as_input_files = False
+                # i) vždy drž input_file pro modely, které to podporují
+                # ii) zároveň deklaruj vector_store, aby měla AI oba přístupy
+                assets.attachments_as_input_files = True
         if mode != "MODIFY":
             self._audit_event(
                 "request_assets_prepared",
@@ -1088,21 +1091,31 @@ class PipelineExecutor:
         )
         use_input_files = bool(assets and assets.attachments_as_input_files)
         store_id = assets.vector_store_id if assets else None
+        file_ids: List[str] = []
         lines = ["PŘIPOJENÉ SOUBORY (informational):"]
         for attachment in attachments:
             file_id = attachment.file_id or "MISSING"
+            if attachment.file_id:
+                file_ids.append(attachment.file_id)
             if not attachment.file_id or attachment.file_id.startswith("ATT_"):
                 availability = "files_api (soubor není nahrán)"
             elif use_vector_store and store_id:
-                availability = f"vector_store (store_id={store_id})"
+                availability = (
+                    f"files_api + vector_store (store_id={store_id}; file_id={file_id})"
+                )
             elif use_input_files:
-                availability = "input_file"
+                availability = f"files_api + input_file (file_id={file_id})"
             else:
-                availability = "files_api (soubor je ve Files API)"
+                availability = f"files_api (file_id={file_id})"
             lines.append(
                 f"- {attachment.name} | file_id={file_id} | purpose={attachment.purpose} | "
                 f"size={attachment.size_bytes} B | dostupnost={availability}"
             )
+        if file_ids:
+            unique_ids = ", ".join(sorted(set(file_ids)))
+            lines.append(f"FILES API: soubory dostupné pod file_id: {unique_ids}")
+        if use_vector_store and store_id:
+            lines.append(f"VECTOR STORE: soubory nahrány do store_id={store_id} a jsou relevantní pro tento request.")
         return "\n".join(lines)
 
     def _format_mirror_entries(self, assets: RequestAssets) -> str:
@@ -2526,6 +2539,7 @@ class PipelineExecutor:
         template = dict(self._request_templates[template_key])
         model = ui_state.model or "gpt-4o"
         template["model"] = model
+        stage_temperature = self._temperature_for_stage(template_key)
         instructions = self._render_template_text(
             template.get("instructions", ""),
             replacements,
@@ -2620,7 +2634,9 @@ class PipelineExecutor:
                 ]
             else:
                 template.pop("tools", None)
-        if not self._model_capabilities.get("supports_temperature", False):
+        if self._model_capabilities.get("supports_temperature", False) and stage_temperature is not None:
+            template["temperature"] = stage_temperature
+        else:
             template.pop("temperature", None)
         self._ensure_payload_within_limits(template_key, template, ui_state)
         self._audit_event(
@@ -2641,6 +2657,15 @@ class PipelineExecutor:
             stage=template_key,
         )
         return template
+
+    def _temperature_for_stage(self, template_key: str) -> float | None:
+        low_temp_stages = {"A3", "B3"}
+        default = 0.2
+        if template_key in low_temp_stages:
+            return 0.0
+        if template_key in {"A1", "A2", "A2X", "B1", "B2", "QA", "C"}:
+            return default
+        return default
 
     def _send_request(
         self,
@@ -2936,7 +2961,69 @@ class PipelineExecutor:
         else:
             raise ValueError(f"Neznámý kontrakt: {expected_contract}")
 
+    def _build_default_project_block(self) -> Dict[str, str]:
+        name = (self._ui_state.project_name if self._ui_state else "") or "Kája"
+        spec = (self._last_user_spec or "").strip()
+        first_line = next((line.strip() for line in spec.splitlines() if line.strip()), "")
+        one_liner = first_line[:200] if first_line else f"Automatizace OpenAI requestů pro {name}"
+        return {
+            "name": name,
+            "one_liner": one_liner,
+            "target_os": "Windows 10/11",
+            "language": "Python",
+            "runtime": "Python 3.11 + PySide6",
+        }
+
     def _validate_a1_plan(self, payload: Dict[str, Any]) -> None:
+        filled: Dict[str, Any] = {}
+        defaults = self._build_default_project_block()
+        project = payload.get("project")
+        if not isinstance(project, dict):
+            project = {}
+            payload["project"] = project
+        for key, value in defaults.items():
+            current = project.get(key)
+            if not isinstance(current, str) or not current.strip():
+                project[key] = value
+                filled[f"project.{key}"] = value
+        requirements = payload.get("requirements")
+        if not isinstance(requirements, dict):
+            requirements = {}
+            payload["requirements"] = requirements
+        default_requirements = {
+            "functional": [
+                "Dodrž kompletní zadání z instructions a input_text.",
+            ],
+            "non_functional": [
+                "Robustní logování, fallbacky a determinismus dle zadání.",
+            ],
+            "constraints": [
+                "Použij Python 3.11 a PySide6, bez neověřených knihoven.",
+            ],
+        }
+        for key, value in default_requirements.items():
+            current = requirements.get(key)
+            if not current:
+                requirements[key] = value
+                filled[f"requirements.{key}"] = value
+        defaults_simple = {
+            "assumptions": "Vyjdi pouze z poskytnutého zadání a přiložených souborů.",
+            "architecture": "Navrhni architekturu desktopové aplikace dle zadání a design standardu.",
+            "build_run": "Popiš build/run kroky pro Python 3.11 + PySide6 dle zadání.",
+            "deliverable_policy": "Výstup musí splnit kontrakty A2/A3 a design standard.",
+        }
+        for key, value in defaults_simple.items():
+            current = payload.get(key)
+            if not current:
+                payload[key] = value
+                filled[key] = value
+        if filled:
+            self._audit_event(
+                "a1_plan_missing_fields_filled",
+                {"filled": filled},
+                stage="A1_PLAN",
+                level="warning",
+            )
         for key in ("project", "assumptions", "requirements", "architecture", "build_run", "deliverable_policy"):
             if key not in payload:
                 raise ValueError(f"A1_PLAN: chybí {key}.")
@@ -3338,6 +3425,7 @@ class PipelineExecutor:
     ) -> PipelineResult:
         stop_check = stop_check or (lambda: False)
         start_time = time.time()
+        self._last_user_spec = user_spec or ""
         refreshed = self._price_catalog.refresh_if_needed(force=self._settings.pricing_auto_refresh)
         if refreshed:
             self._log("Ceník byl aktualizován před během.")
@@ -4144,35 +4232,52 @@ class PipelineExecutor:
             "OUTPUT: VRAŤ POUZE validní JSON. ŽÁDNÝ markdown, žádné komentáře, žádný další text.\n"
             f"KONTRAKT C_FILES_ALL:\n{self._c_contract_block}"
         )
-        instructions = f"{dialog_block}\n{core_instructions}"
-        input_text = (
+        base_instructions = f"{dialog_block}\n{core_instructions}"
+        base_input = (
             "Vrať všechny soubory najednou podle kontraktu C_FILES_ALL. "
             "REDUNDANTNÍ KONTRAKT: vrať pouze JSON dle C_FILES_ALL.\n"
             f"{dialog_block}\n\nPRAVIDLA A KONTRAKT:\n{core_instructions}"
         )
         script_notice = self._format_script_expectation(ui_state)
         if script_notice:
-            instructions += f"\n\n{script_notice}"
-            input_text += f"\n{script_notice}"
+            base_instructions += f"\n\n{script_notice}"
+            base_input += f"\n{script_notice}"
+        instructions = self._build_instructions_text(
+            base_instructions,
+            assets,
+            ui_state,
+            include_mirror=False,
+            include_diagnostics=False,
+            include_design_standard=True,
+        )
+        input_text = self._build_input_text_with_assets(
+            base_input,
+            assets,
+            ui_state,
+            include_mirror=False,
+            include_diagnostics=False,
+        )
         instructions, input_text = self._maybe_trim_prompt_texts(
             "C",
             instructions,
             input_text,
             ui_state,
         )
+        stage_temperature = self._temperature_for_stage("C")
         request_payload: Dict[str, Any] = {
             "model": ui_state.model or "gpt-4o",
-            "temperature": 0.2,
             "instructions": instructions,
             "input": self._build_input_parts(
                 input_text,
                 assets,
-                include_attachments=False,
+                include_attachments=True,
                 include_mirror=False,
                 include_diagnostics=False,
             ),
         }
-        if not self._model_capabilities.get("supports_temperature", False):
+        if self._model_capabilities.get("supports_temperature", False) and stage_temperature is not None:
+            request_payload["temperature"] = stage_temperature
+        else:
             request_payload.pop("temperature", None)
         self._ensure_payload_within_limits("C", request_payload, ui_state)
         batch_dir = Path(self._run.log_dir) / "batch"
