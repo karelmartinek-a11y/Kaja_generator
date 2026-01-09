@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "A3",
+    "response_id": "GENERATE_628874",
+    "logged_at": "2026-01-08T22:37:28.395329",
+    "request_id": "02dd94b1"
+  },
+  "payload": {
+    "id": "resp_0f9be7b8ba82c92900696030a86d2c8196a580623dd4a13f55",
+    "created_at": 1767911592.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Role: generátor obsahu jednoho konkrétního souboru dle A2_STRUCTURE. Výstup vždy pouze validní JSON bez markdownu/dalšího textu; pole content je celý čistý obsah souboru (ne diff/patch). Pro dlouhé soubory používej chunking: max 500 řádků na chunk; posílej po částech, které se spojí do kompletního souboru. Povinný kontrakt výstupu souboru: {\"contract\":\"A3_FILE\",\"path\":string,\"chunking\":{\"max_lines\":500,\"chunk_index\":integer,\"chunk_count\":integer,\"has_more\":boolean,\"next_chunk_index\":integer|null},\"content\":string}.\n\nDeterminismus: implementuj pouze to definované v A1/A2/A2X; A2X_FILE_MAP je jediný zdroj pravdy pro importy/exporty; exporty musí přesně odpovídat A2X_FILE_MAP (name/kind/signature) a být doslovně přítomné v contentu; nezaváděj nové symboly ani nové soubory; zachovej shodný datový model napříč soubory; výsledek musí být spustitelný bez ručních úprav.\n\nKÁJOVO UI DESIGN STANDARD (normativní; precedence: (1) tokens+kontrakty stavů, (2) specifikace komponent, (3) layout, (4) obecná pravidla). Jednotky px; round(x) matematicky (0.5 nahoru). Nesmí vznikat překryv prvků mimo overlay (tooltip/roletka/dialog/overlay scrollbar).\n\nTOKENS: barvy HEX: bílá #FFFFFF, černá #000000, červená #FF0000, šedivá #808080. Vrstvy prvku (zvenku dovnitř): LEM 2px, OKRAJ 1px, POZADÍ, OBSAH; „obsahová plocha“ = uvnitř okraje (po odečtu lemu+okraje). UI_scale: min(W/1280,H/720); škáluje typografie/paddingy/výšky řádků/ikony/rozměry času/datu/tloušťky ikon čar; neškáluje lem 2px, okraj 1px, a GAP_MIN 2px.\n\nTypografie: pouze Montserrat Regular/Bold; fonty musí být bundlované a registrované při startu; žádný systémový font ani fallback; při nenačtení fontu zobrazit chybový dialog ve stylu Kájovo a ukončit; build by měl kontrolovat hash fontů. FS_base=16 při UI_scale=1; FS=round(FS_base*UI_scale); LH=round(1.25*FS). Nadpisy/sekce/hlavičky tabulek: Bold a VŠE VELKÝMI PÍSMENY; běžný obsah: Regular.\n\nRadius: R=max(1, round(0.35*FS)); ostré rohy zakázány.\n\nRozestupy/rozměry: GAP_MIN=2; PAD_X=round(0.8*FS); PAD_Y=round(0.4*FS); ROW_H=round(1.4*LH); STATUS_H=round(1.6*LH).\n\nIkony: ICON=round(1.5*FS) čtverec; primárně outline (bez výplně) pokud komponenta neurčí jinak; STROKE=max(1, round(0.12*FS)); barva jen z token barev.\n\nObecný vzhled: striktně černobílé; šedivá jen pro neaktivní text/symboly; červená jen pro ukončení/kritické akce a stavy nebezpečí/nedostupné dle standardu. Zakázány stíny/gradienty/textury/průhlednosti (mimo overlay). Vše musí používat LEM/OKRAJ/POZADÍ/OBSAH. Překryv zakázán mimo definované overlay. Změny stavu nesmí měnit layout/rozměry (jen barvy, u textu případně fit/scale dle pravidel).\n\nInterakce: hover běžně žádný; tooltip výjimky: tabulky a dropdown/combobox jen při overflow textu a po setrvání 2 s. Focus: TAB/SHIFT+TAB cyklus; ENTER nebo mezerník aktivuje prvek (ne textová pole). Focus je overlay: LEM bílý 2px, ostatní vrstvy dle stavu; focus nesmí měnit rozměry/layout. ESC globálně zavírá overlay v pořadí: tooltip, roletka dropdown/combobox, dialog; ESC odpovídá CLOSE v dialogu.\n\nLayout aplikace:\n- Záhlaví programu MUSÍ obsahovat: název+verzi, ovládací prvky, a ukončovací prvek vpravo. Ukončovací prvek je vždy kritický (červený kontrakt).\n- Sekce: rámovaná oblast (LEM/OKRAJ/POZADÍ) pro logickou skupinu; název sekce je součást horního lemu (přeruší horní lem), typografie Bold a VŠE VELKÝMI PÍSMENY; sekce sama není interaktivní (barvy dle stavových kontraktů).\n- Stavový řádek (STATUS): výška STATUS_H; vlevo text aktuálního kroku (Regular) + volitelně progress „teploměr“; vpravo čas a datum.\n  - Čas (PRAGOTRON / flap): HH:MM:SS (8 znaků); každý znak samostatný modul s R: lem bílý 2px, okraj černý 1px, pozadí černé, znak bílý Montserrat Bold; uvnitř vodorovná bílá linka 1px („spára“); TIME_H=round(1.2*LH).\n  - Datum (kalendář): modul s R, lem/okraj jako ostatní; uvnitř horní lišta oddělená bílou linkou 1px; text DD.MM.YYYY (Bold, bílý) vycentrovaný; proporce dle PŘÍLOHY A.\n  - Progress „teploměr“: rám lem bílý 2px + okraj černý 1px; pozadí černé; výplň bílá; odhadnutelný 0–100 %; neodhadnutelný: bílý segment jezdí tam a zpět.\n\nKontrakty barevných stavů (globální):\n- Nečervené interaktivní prvky: NORMAL (lem bílý, okraj černý, pozadí černé, obsah bílý), ACTIVE (lem bílý, okraj černý, pozadí bílé, obsah černý), DISABLED (lem šedivý, okraj černý, pozadí černé, obsah šedivý).\n- Červené (kritické) prvky: NORMAL (lem červený, okraj černý, pozadí červené, obsah černý), ACTIVE (lem červený, okraj černý, pozadí černé, obsah červený). Focus overlay nastaví lem na bílý i u červeného prvku.\n\nKomponenty:\n- Button: dle stavového kontraktu (nečervený/červený); padding PAD_X/PAD_Y; radius R; text Bold pro primární, Regular pro sekundární (pokud nejasné, Bold). Aktivace klikem; klávesnice: focus + ENTER/MEZERNÍK. Preferovaná šířka deterministicky: W_pref = textWidth(FS)+2*PAD_X+2*(LEM+OKRAJ); skupina tlačítek může být roztažena proporčně dle W_pref; pokud není místo, použij text fit/scale.\n- Toggle/Radio/Checkbox/Klikatelná ikona: stejné vrstvy a stavový kontrakt; nesmí měnit layout mezi stavy; fokusovatelné a ovladatelné klávesnicí. Ikony outline, velikost ICON, tloušťka STROKE, barva dle stavu.\n- Tabulka/seznam: sloupce měnitelná šířka; řádky fixní ROW_H; výběr řádku vždy invert (ACTIVE kontrakt na celý řádek); CTRL+C kopíruje vybraný text/buňku/řádek. Tooltip v tabulce: po 2 s nečinnosti kurzoru jen při overflow; tooltip styl: lem černý 2px, okraj bílý 1px, pozadí bílé, text černý Regular; tooltip je overlay.\n- Dialog: obdélník s R, lem bílý 2px, okraj černý 1px, pozadí černé. Název vlevo nahoře přerušuje horní lem jako sekce; Bold a VŠE VELKÝMI PÍSMENY. Obsah standardně 5*LH; více obsahu => vertikální overlay scrollbar (dle scrollbar spec). Akce vždy přítomné: OK/CANCEL/CLOSE. V dialogu vždy vycentrovaný text (Regular) bez dalšího rámu. Význam: OK potvrdit; CANCEL zahodit změny; CLOSE zavřít bez akce; pokud nejsou změny, CANCEL a CLOSE se chovají stejně (ale oba jsou). Klávesy: ENTER=OK (pokud focus není v editable poli); ESC=CLOSE; TAB/SHIFT+TAB cyklus v dialogu.\n- Textové pole (v dialogu): editable a read-only (select+CTRL+C). Vzhled: lem bílý 2px, okraj černý 1px, pozadí černé, text bílý Regular, placeholder šedivý Regular. Placeholder pevné: editable „Zde pište...“, read-only „Zde se zobrazí text...“. Caret jen v editable s focusem; blikající svislá čára střídající bílou a černou. Selection inverzní: text černý, pozadí bílé.\n- Text fit / scale-to-fit / fallback scroll (globální): text se MUSÍ vejít; scroll jen fallback při selhání měření/renderu. Overflow= přesah obsahové plochy >1px. Postup: (1) aplikuj UI_scale; (2) jednoprvkový text může zvětšit šířku dle W_pref, pokud layout dovolí; (3) pokud overflow, scale-to-fit obsah (text/ikony) bez limitů; (4) znovu přeměř; pokud stále overflow (framework/rounding), povol overlay scrollbar jen na ose overflow; (5) scroll se nezapíná preventivně.\n- Scrollbar (posuvný válec): overlay (neubírá místo). Vzhled: track černý, track okraj bílý, thumb bílý; šířka max(6, round(0.8*FS)). Pokud overlay scrollbar nelze, výjimkou standardní scrollbar, ale barvy musí odpovídat paletě.\n- Dropdown (needitovatelný): pole needitovatelný box dle nečerveného kontraktu; vpravo šipka dolů (referenční ikona) barva dle stavu. Roletka se otevře dolů jako overlay; zobrazuje 5 položek; více položek => overlay scrollbar. Vzhled roletky: pozadí černé, okraj bílý, oddělovače řádků bílá linka 1px; text položek bílý Regular. Hover uvnitř roletky: řádek invertuje (bílá plocha, černý text) jen uvnitř roletky. Klávesnice: ŠIPKA DOLŮ otevře roletku a posouvá výběr; MEZERNÍK potvrdí položku a zavře; ESC zavře bez změny. Tooltip na položce po 2 s jen při overflow (ukáže celý text u kurzoru).\n- Combobox (editovatelný): textové pole (viz text pole) + roletka; pole má navíc šipku dolů vpravo. Filtrování: během psaní se roletka otevře a filtruje položky deterministicky case-insensitive prefix match; diakritika se porovnává přesně (bez „chytrých“ přepisů). Klávesnice: ŠIPKA DOLŮ otevře roletku a posouvá; ENTER vloží aktuální položku (je-li roletka otevřená) a zavře; MEZERNÍK v editaci vkládá znak mezery (pokud roletka není v režimu výběru); ESC zavře roletku. Tooltip na položce po 2 s jen při overflow.\n\nPŘÍLOHA A – IKONY (referenční tvary): všechny SVG viewBox=\"0 0 24 24\", fill=\"none\", stroke-width=STROKE, stroke-linecap=\"round\", stroke-linejoin=\"round\"; barvu určuje komponenta dle stavu; tvar fixní.\n- A.1 Šipka dolů (dropdown): path \"M6 9 L12 15 L18 9\".\n- A.2 CLOSE (X): path \"M7 7 L17 17\" a \"M17 7 L7 17\".\n- A.3 Kalendář (datum ve status): rect x=5 y=6 w=14 h=14 rx=2 ry=2; path \"M5 10 H19\", \"M8 4 V8\", \"M16 4 V8\". Text DD.MM.YYYY je UI text uvnitř kalendáře (pod horní lištou), není součást SVG.\n- A.4 INFO (volitelně): path \"M12 10 V17\" a \"M12 7 H12.01\".\n\nPŘÍLOHA B – PÍSMO (Montserrat) distribuce (determinismus): (1) přibalit Montserrat-Regular a Montserrat-Bold (TTF/OTF), (2) při startu registrovat a použít pro celé UI, (3) zakázat fallback; selhání registrace => chybový dialog + ukončení, (4) pinovat soubory a kontrolovat hash v build pipeline (konkrétní API dle platformy; důležitý je výsledek).\n\nPŘÍLOHA C – KONTROLA SHODY (doporučené testy): golden screenshoty (hlavní obrazovky + dialog + tabulka + dropdown + combobox) ve 3 velikostech okna (např. 800×600, 1280×720, 1920×1080); kontrola hash fontů v CI; statická kontrola tokenů (barvy, tloušťky, radius, paddingy).",
+    "metadata": {},
+    "model": "gpt-5.2-pro-2025-12-11",
+    "object": "response",
+    "output": [
+      {
+        "id": "rs_0f9be7b8ba82c92900696031a6b5388196be2be511c61a630b",
+        "summary": [],
+        "type": "reasoning",
+        "content": null,
+        "encrypted_content": null,
+        "status": null
+      },
+      {
+        "id": "msg_0f9be7b8ba82c92900696031a6b648819690bfef5ac3089fb6",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\n  \"contract\": \"A3_FILE\",\n  \"path\": \"src/Kaja.Diagnostics/DomainModels/DiagnosticsDomainModels.cs\",\n  \"chunking\": {\n    \"max_lines\": 500,\n    \"chunk_index\": 1,\n    \"chunk_count\": 1,\n    \"has_more\": false,\n    \"next_chunk_index\": null\n  },\n  \"content\": \"namespace Kaja.Diagnostics.DomainModels;\\n\\npublic sealed record DiagnosticsRunSpec(string RunId, string Scope, System.DateTimeOffset CapturedAt, string OutputRoot, bool IncludeChecksums, bool UploadToFilesApi, bool TryIndexToVectorStore);\\n\\npublic sealed record ArtifactSpec(string RelativePath, string Description, ArtifactKind Kind, ArtifactPresencePolicy PresencePolicy);\\n\\npublic enum ArtifactKind { Text, Csv, Json, Html, Reg, Binary }\\n\\npublic enum ArtifactPresencePolicy { MustExistWithNotPresentFallback, BestEffort }\\n\\npublic sealed record CommandResult(int ExitCode, System.TimeSpan Duration, string StdoutPath, string StderrPath, string CombinedPath, string Notes);\\n\\npublic sealed record ManifestFileEntry(string File, string Description, long SizeBytes);\\n\\npublic sealed record FilesApiUploadRecord(string RelativePath, string OpenAiFileId, long SizeBytes, string Sha256);\\n\\npublic sealed record VectorIndexRecord(string RelativePath, string VectorStoreFileId, System.Collections.Generic.Dictionary<string,string> Attributes);\\n\\npublic sealed record DiagnosticsRunResult(string LocalOutputRoot, bool Success, System.Collections.Generic.IReadOnlyList<string> Warnings, System.Collections.Generic.IReadOnlyList<FilesApiUploadRecord> Uploads, Kaja.Diagnostics.Indexing.VectorStore.VectorIndexOutcome? VectorIndexing);\\n\"\n}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 0.98,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": "resp_0f9be7b8ba82c9290069602a6f85788196942951539ef6b0c7",
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "medium",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 34439,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1093,
+      "output_tokens_details": {
+        "reasoning_tokens": 726
+      },
+      "total_tokens": 35532
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767911847,
+    "store": true
+  }
+}

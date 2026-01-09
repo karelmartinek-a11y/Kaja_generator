@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "GENERATE_628874",
+    "logged_at": "2026-01-08T20:48:34.461406",
+    "request_id": "5db86691"
+  },
+  "payload": {
+    "id": "resp_08d6acac1d06981b00696017de2334819ea9fb7c76dcb8f14a",
+    "created_at": 1767905246.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.2-pro-2025-12-11",
+    "object": "response",
+    "output": [
+      {
+        "id": "rs_08d6acac1d06981b006960182161a8819ea7b8c5fab58861fd",
+        "summary": [],
+        "type": "reasoning",
+        "content": null,
+        "encrypted_content": null,
+        "status": null
+      },
+      {
+        "id": "msg_08d6acac1d06981b006960182162d4819e8cdb656b4060224c",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Cíl: vytvořit desktopový program pro Windows (10/11) s názvem „Kája“ jako ovládací panel pro automatizaci requestů na OpenAI (Responses API) a následné zpracování odpovědí dle voleb v UI. Zadání je záměrně redundantní a nesmí se vynechat žádný detail.\\n\\nPožadavky na kvalitu: seniorní implementace, plně provozuschopná, robustní; program NESMÍ spadnout nebo zamrznout. Všechny nebezpečné/neplatné kombinace vstupů musí být znemožněny (UI validace) a při chybě musí být uživatel jasně informován včetně návrhu opravy. Pokud operace trvá >3–5 s, musí se zobrazit pop-up dialog informující o průběhu tak, aby aplikace nepůsobila zamrzle. UI se NESMÍ blokovat: síť, uploady, polling, kopírování stromu, zipování apod. běží na pozadí.\\n\\nPrecedence a determinismus:\\n1) Vše označené „MUSÍ“/„NESMÍ“ je závazné.\\n2) Při konfliktu platí pořadí precedence (od nejsilnějšího): a) TOKENS a KONTRAKTY stavů (sekce 20 a 24) b) Specifikace komponent (sekce 25) c) Layout aplikace (sekce 23) d) Obecná pravidla (sekce 21–22) e) ostatní části zadání (funkční logika, pipeline, logování, robustnost, pricing, batch, diagnostika).\\n3) Odvozené hodnoty (vzorce) použít přesně včetně zaokrouhlení.\\n4) Jednotky: logické px.\\n5) round(x) = matematické zaokrouhlení na nejbližší celé (0.5 nahoru).\\n6) Nesmí vzniknout překryv UI prvků (výjimky jen pro overlay: tooltip/roletka/dialog/scrollbar).\\n\\nLogování (velmi detailní, per run):\\n- Vytvořit LOG/ v adresáři spuštění (pokud neexistuje).\\n- Každý běh má Run ID např. RUN_<DDMMRRRRHHMM>_<random4>.\\n- Každý request i response ukládat jako samostatný soubor do LOG/.\\n- Název log souboru MUSÍ obsahovat: název projektu (pokud vyplněn), ResponseID (nebo BatchID / C_RUN_ID / RUN_ID), a časový kód DDMMRRRHHMM (přesně v názvu).\\n- Povinné artefakty v LOG pro každý run:\\n  * kompletní odeslaný request JSON (samostatně),\\n  * kompletní přijatý response JSON (samostatně),\\n  * kompletní UI state (samostatně) a zároveň embedded do request logu kvůli „LOAD REQUEST“,\\n  * manifesty: mirror manifest (IN mirror), diagnostické manifesty (Windows/SSH snapshot), výstupní mapa uložených souborů (co kam), stavové logy kroků (uploady, pollingy, validace, retry, backoff, cancel).\\n- Navíc logovat změny souborů: seznam všech souborů, které byly přidány/přepsány/smazány (lokálně nebo na File API)/přesunuty-zkopírovány/vytvořen adresář; u každé změny timestamp, původní+cílová cesta, velikost před/po (pokud existuje), hash (např. SHA256) před/po pokud rozumné (u velkých volitelně).\\n- Uploady na Files API logovat: lokální path, file_id, purpose, velikost, timestamp uploadu.\\n- Mazání na Files API logovat: file_id, původní jméno (pokud dostupné), timestamp.\\n- Batch logování: vstupní JSONL, výstupní JSONL, error JSONL, mapování custom_id→path (pokud použito), průběh jobu (polling snapshots).\\n- Diagnostické skripty: pouze pokud je vyžádá diagnostika OUT a skripty přijdou v response; uložit readmerepair.txt, skripty, log spuštění (stdout/stderr), návratové kódy a záznam o potvrzení uživatele před spuštěním.\\n\\nPrůběhový pop-up (robustnost): všechny procesy průběžně zobrazovat v dialogu: log kroků, ETA, procenta 0–100 % pro celý krok i subkroky.\\n\\nCeny/pricing (důraz na přesnost):\\n- Program MUSÍ přesně sledovat ceny za jednotlivé requesty i batch joby; evidovat náklady na input tokens, output tokens, Batch (s ohledem na batch pricing), file_search a Vector store (tool + storage). Ceník musí být aktuální a přesný.\\n- V UI musí být samostatná obrazovka pro ceny pod tlačítkem „$“ v záhlaví vedle API-KEY; na hlavní ploše se ceny nezobrazují a neovlivňují workflow.\\n- Elektronická účtenka pro každý běh: detailní rozpad položek, ukládat do SQLite + exportovatelný JSON v LOG; filtrování podle data, projektu, modelu, režimu, typu (A/B/QA/C), fulltext obsahu zadání, ResponseID/BatchID; možnost mazat, exportovat, sumarizovat za období.\\n- Aktualizace ceníku: lokální cache price table + ruční refresh z oficiálních podkladů (nastavitelné v SETTINGS) + volitelný automatický refresh při startu. Pokud ceny nejsou aktuální: jasně upozornit (banner/popup), umožnit pokračovat, ale účtenka musí být explicitně označena jako „odhad/neověřeno“.\\n\\nTechnologie/runtime: aplikace pouze pro Windows, lokální PC; UI stabilní pro dlouhé běhy a background operace. Použít standardní OpenAI SDK (Python nebo JS), implementace musí být plně funkční. (Následující část „Komunikace s OpenAI:“ pokračuje v dalším chunku.)\",\"chunk_index\":1,\"chunk_count\":15,\"notes\":[\"Shrnutí pokrývá chunk 1: cíle aplikace, precedence/determinismus, robustnost (neblokující UI + pop-up s průběhem), extrémně detailní logování (LOG/ artefakty, manifesty, Files API, batch, diagnostické skripty) a pricing/účtenky (SQLite, $ obrazovka, ceník refresh, označení odhadů), plus požadavek na Windows-only a použití standardního OpenAI SDK.\",\"Sekce 'Komunikace s OpenAI:' je v chunku pouze načatá; detaily budou až v dalších částech zadání.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 0.98,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "medium",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 2262,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1664,
+      "output_tokens_details": {
+        "reasoning_tokens": 55
+      },
+      "total_tokens": 3926
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767905313,
+    "store": true
+  }
+}

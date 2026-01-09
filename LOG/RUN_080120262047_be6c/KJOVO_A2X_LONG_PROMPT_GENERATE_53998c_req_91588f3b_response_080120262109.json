@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_53998c",
+    "logged_at": "2026-01-08T20:09:02.023998",
+    "request_id": "91588f3b"
+  },
+  "payload": {
+    "id": "resp_05d5de6525c11b4e0069600ed440ec819db0b7a373488f4f11",
+    "created_at": 1767902932.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_05d5de6525c11b4e0069600ed4cc18819d973dc429d0da5bf7",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento závěrečný chunk pouze oznamuje, že MASTER zadání je kompletní a dále nepřidává žádné nové technické informace, pravidla ani výjimky. Slouží jen jako explicitní ukončení celého zadání větou „Konec MASTER zadání.“.\\n\\nV kontextu předchozích chunků to znamená:\\n- Návrh FULL diagnostiky pro Linux (Ubuntu web server) je již kompletně definován, včetně struktury adresářů, souboru MANIFEST.md, indexu klíčových souborů a poznámek k bezpečnosti a integritě.\\n- Návrh FULL diagnostiky pro Windows je také kompletně definován, včetně kořenové struktury adresáře `Diag_YYYYMMDD-HHMMSS/`, souboru MANIFEST.md a detailního obsahu všech podsložek: system, registry, filesystem, hardware, storage, drivers, processes_services, network, security, python, devtools, virtualization, wsl, logs.\\n- Nejsou přidána žádná další pravidla, výjimky ani doplňující instrukce; nadále platí všechna dříve popsaná pravidla, kontrakty a významy beze změny.\\n\\nChunk pouze potvrzuje, že předchozí shrnutí a specifikace pokrývají celé MASTER zadání a že žádný další obsah už nenásleduje. Současně znovu připomíná, že asistent má fungovat jako deterministický mapovač API mezi soubory a že výstup má být pouze validní JSON dle kontraktu A2X_FILE_MAP, bez markdownu a bez dalšího textu. A2_STRUCTURE zůstává jediným zdrojem seznamu souborů; každý path z A2_STRUCTURE musí být v A2X_FILE_MAP přesně jednou. exports v A2X_FILE_MAP reprezentují veřejné symboly se signaturami v cílovém jazyce, imports.path musí odkazovat na existující path z A2_STRUCTURE (nebo na externí zdroje s prefixem external:), a imports.symbols musí odpovídat exportům cílového souboru. Nesmí se používat duplicitní názvy exportů napříč soubory. Tento chunk nic z toho nemění, pouze uzavírá MASTER zadání.\",\"chunk_index\":1,\"chunk_count\":1,\"notes\":[\"Žádné nové technické požadavky ani struktury; pouze potvrzení úplnosti předchozí specifikace.\",\"Všechny dříve definované kontrakty (zejména A2X_FILE_MAP) a pravidla zůstávají v platnosti beze změny.\",\"A2_STRUCTURE je nadále jediným zdrojem seznamu souborů; žádné nové soubory se nepřidávají.\",\"Výstupy musí být deterministické, čistý JSON bez markdownu, vhodný jako vstup pro další kroky.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 744,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 668,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1412
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767902941,
+    "store": true
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A1_PLAN",
+    "response_id": "GENERATE_94f2ac",
+    "event": "a1_plan_missing_fields_filled",
+    "sequence": 67,
+    "logged_at": "2026-01-09T17:52:38.606891"
+  },
+  "details": {
+    "event": "a1_plan_missing_fields_filled",
+    "level": "warning",
+    "details": {
+      "filled": {
+        "project.name": "KAJOVO",
+        "project.one_liner": "# MASTER ZADÁNÍ: Desktopový program „Kája“ (Windows) pro automatizaci requestů na OpenAI (Responses API) + automatické zpracování odpovědí",
+        "project.target_os": "Windows 10/11",
+        "project.language": "Python",
+        "project.runtime": "Python 3.11 + PySide6",
+        "requirements.functional": [
+          "Dodrž kompletní zadání z instructions a input_text."
+        ],
+        "requirements.non_functional": [
+          "Robustní logování, fallbacky a determinismus dle zadání."
+        ],
+        "requirements.constraints": [
+          "Použij Python 3.11 a PySide6, bez neověřených knihoven."
+        ],
+        "assumptions": "Vyjdi pouze z poskytnutého zadání a přiložených souborů.",
+        "architecture": "Navrhni architekturu desktopové aplikace dle zadání a design standardu.",
+        "build_run": "Popiš build/run kroky pro Python 3.11 + PySide6 dle zadání.",
+        "deliverable_policy": "Výstup musí splnit kontrakty A2/A3 a design standard."
+      }
+    },
+    "timestamp": "2026-01-09T17:52:38.606883"
+  }
+}

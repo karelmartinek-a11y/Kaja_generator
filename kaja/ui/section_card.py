@@ -32,50 +32,6 @@ class SectionCard(QFrame):
 
     def paintEvent(self, event) -> None:
         super().paintEvent(event)
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        top_line = self._title_band // 2
-        rect = QRect(0, top_line, self.width() - 1, self.height() - top_line - 1)
-        pen = QPen(QColor(PALETTE_WHITE))
-        pen.setWidth(KJA_BORDER_PX)
-        painter.setPen(pen)
-        painter.setBrush(Qt.NoBrush)
-        painter.drawRoundedRect(rect, self._border_radius, self._border_radius)
-        inner_rect = rect.adjusted(1, 1, -1, -1)
-        inner_radius = max(0, self._border_radius - 1)
-        inner_pen = QPen(QColor(PALETTE_BLACK))
-        inner_pen.setWidth(KJA_BORDER_PX)
-        painter.setPen(inner_pen)
-        painter.drawRoundedRect(inner_rect, inner_radius, inner_radius)
-
-        if not self._header_label:
-            return
-        gap = self._gap_width()
-        label_pos = self._header_label.pos()
-        label_left = label_pos.x()
-        label_right = label_left + self._header_label.width()
-        gap_start = max(rect.left() + self._border_radius, label_left - gap)
-        gap_end = min(rect.right() - self._border_radius, label_right + gap)
-
-        if gap_end > gap_start:
-            fill_rect = QRect(
-                gap_start,
-                rect.top(),
-                max(1, gap_end - gap_start),
-                self._border_radius,
-            )
-            painter.fillRect(fill_rect, QColor(PALETTE_BLACK))
-        left_end = gap_start
-        right_start = gap_end
-        if left_end > rect.left() + self._border_radius:
-            painter.drawLine(rect.left() + self._border_radius, rect.top(), left_end, rect.top())
-        if right_start < rect.right() - self._border_radius:
-            painter.drawLine(
-                right_start,
-                rect.top(),
-                rect.right() - self._border_radius,
-                rect.top(),
-            )
 
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)

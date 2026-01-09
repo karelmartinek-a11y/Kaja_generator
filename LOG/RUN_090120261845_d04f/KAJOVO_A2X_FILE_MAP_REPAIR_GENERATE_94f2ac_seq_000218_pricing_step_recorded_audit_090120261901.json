@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A2X_FILE_MAP_REPAIR",
+    "response_id": "GENERATE_94f2ac",
+    "event": "pricing_step_recorded",
+    "sequence": 218,
+    "logged_at": "2026-01-09T18:01:27.750726"
+  },
+  "details": {
+    "event": "pricing_step_recorded",
+    "level": "info",
+    "details": {
+      "stage": "A2X_FILE_MAP_REPAIR",
+      "model": "gpt-5.1",
+      "response_id": "resp_0110536caa69d854006961422a49a88193ade1bd65eb3c0117",
+      "estimated_tokens": {
+        "input": 5419,
+        "output": 5340
+      },
+      "actual_tokens": {
+        "input": 6695,
+        "output": 6563
+      },
+      "estimated_total": 0.024188,
+      "actual_total": 0.029798
+    },
+    "timestamp": "2026-01-09T18:01:27.750722"
+  }
+}

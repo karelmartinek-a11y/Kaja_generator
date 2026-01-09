@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262024_31ec",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_94a897",
+    "logged_at": "2026-01-08T19:38:31.151992",
+    "request_id": "a570c054"
+  },
+  "payload": {
+    "id": "resp_0dec3c62b0ce94a8006960079ffa5c81a0a586d777a94afbdb",
+    "created_at": 1767901088.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0dec3c62b0ce94a800696007a070f481a0b1a590ceb5a5c0bd",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"A1_PLAN definuje architekturu a další požadavky pro nástroj CrossDiag, navazující na předchozí specifikace. Nástroj musí používat jednotné názvosloví doménových entit v celém kódu (např. PythonInstallation, PathEntry, RegistrySnapshot, LogEntry, DiagnosticIssue), aby byla konzistence mezi moduly, datovým modelem a výstupy.\\n\\nArchitektura musí být modulární: jednotlivé diagnostické oblasti (python, PATH, registry, logs, system) mají být implementovány jako oddělené moduly s jasně definovanými API. To podporuje čitelnost, údržbu a rozšiřitelnost.\\n\\nTestování a výkon: nástroj by měl mít unit testy pro klíčové části logiky (parsování PATH, detekce Python instalací, parsování logů) s cílem alespoň 60 % coverage. Při práci s velkými logy má minimalizovat paměťovou stopu pomocí streamovaného čtení (iterativní zpracování, ne načítání celých souborů do paměti).\\n\\nOprávnění a bezpečnost: nástroj nesmí vyžadovat administrátorská/root oprávnění pro základní diagnostiku; rozšířená diagnostika může vyšší oprávnění potřebovat, ale musí to být jasně indikováno (např. v CLI nápovědě nebo v reportu). Nástroj nesmí měnit globální stav Python prostředí (např. neinstaluje balíčky, nemění sys.path) mimo dočasné interní struktury, čímž se zajišťuje, že diagnostika je čistě read-only vůči systému i Pythonu.\\n\\nRozšiřitelnost: nástroj by měl být snadno rozšiřitelný o nové diagnostické moduly bez nutnosti zásahu do stávajících modulů. Preferována je architektura s registrem modulů nebo plugin-like přístup v rámci jednoho balíčku (např. centrální registr diagnostických providerů, které runner volá podle konfigurace/CLI).\\n\\nDalší omezení (constraints):\\n- Nesmí se používat externí soubory jako zdroj konfigurace při generování plánu; vše musí být odvozeno pouze ze zadání a tohoto plánu.\\n- Nesmí se používat externí Python balíčky mimo standardní knihovnu.\\n- Struktura adresářů, obsah MANIFEST.md a další dokumentace byly definovány v předchozích částech; tento plán je nesmí měnit, pouze s nimi musí být kompatibilní.\\n- Nástroj musí být distribuovatelný jako jeden Python balíček (adresář s __init__.py) a případně jako jediný spustitelný skript (entrypoint).\\n- Všechny názvy modulů, tříd a funkcí musí být explicitně definovány v architektuře; ad-hoc globální funkce bez jasného modulu jsou zakázány.\\n- Veřejné API modulů musí být stabilní a dokumentované; interní funkce a třídy se označují podtržítkem (např. _helper_func) pro odlišení interního API.\\n- Nesmí být přidávány nové složky, soubory ani příkazy nad rámec toho, co bylo definováno v předchozích částech; nejasnosti se řeší v assumptions.\\n- GUI vrstva (případně budoucí) musí respektovat Kájovo UI Design Standard, ale tento plán nyní definuje pouze core logiku a CLI.\\n- Maximální velikost jednoho chunku generovaného obsahu při následné implementaci je 500 řádků, v souladu s deliverable_policy.\\n- Všechna časová razítka v JSON reportu musí být v UTC a ve formátu ISO 8601.\\n\\nArchitektura – moduly:\\n\\n1) crossdiag.__main__\\n- Hlavní vstupní bod CLI aplikace.\\n- Odpovědnost: parsování argumentů (přes crossdiag.cli), spuštění diagnostiky (přes crossdiag.runner), výběr formátu výstupu, nastavení návratových kódů.\\n- Export: main(argv: list[str] | None = None) -> int.\\n- Vazby: používá crossdiag.cli a crossdiag.runner.\\n\\n2) crossdiag.cli\\n- Odpovědnost: definice a parsování CLI argumentů, generování nápovědy, validace vstupu.\\n- Exporty: build_arg_parser() -> argparse.ArgumentParser, parse_args(argv: list[str] | None = None) -> CliOptions, třída CliOptions.\\n- Vazby: používá standardní modul argparse; předává objekt CliOptions do crossdiag.runner.\\n\\n3) crossdiag.runner\\n- Odpovědnost: orchestrace běhu diagnostiky podle CliOptions; volání jednotlivých diagnostických modulů; skládání výsledků do centrálního DiagnosticReport; řízení úrovně detailu (DetailLevel) a anonymizace.\\n- Exporty: run_diagnostics(options: CliOptions) -> DiagnosticReport, map_exit_code(report: DiagnosticReport) -> int.\\n- Vazby: používá crossdiag.model, crossdiag.diag_python, crossdiag.diag_path, crossdiag.diag_registry, crossdiag.diag_logs, crossdiag.diag_system, crossdiag.logging_utils.\\n\\n4) crossdiag.model\\n- Odpovědnost: sdílené datové modely pro celý nástroj.\\n- Exporty (datové třídy a enumy):\\n  - DiagnosticReport\\n  - PythonInstallation\\n  - PathEntry\\n  - RegistrySnapshot\\n  - RegistryKeyInfo\\n  - LogSource\\n  - LogEntry\\n  - SystemInfo\\n  - DiagnosticIssue\\n  - Enum DiagnosticSeverity\\n  - Enum DetailLevel\\n- Vazby: používají všechny diagnostické moduly, runner a modul output_formatters.\\n\\n5) crossdiag.diag_python\\n- Odpovědnost: diagnostika Python prostředí – aktuální interpreter, další instalace, nainstalované balíčky, základní funkční testy runtime.\\n- Exporty: collect_python_info(detail: DetailLevel) -> tuple[list[PythonInstallation], list[DiagnosticIssue]], run_python_selftest() -> list[DiagnosticIssue].\\n- Vazby: používá crossdiag.model a standardní moduly sys, os, subprocess, importlib.metadata.\\n\\n6) crossdiag.diag_path\\n- Odpovědnost: analýza proměnné PATH a souvisejících cest – parsování, validace existujících cest, detekce konfliktů Python instalací.\\n- Exporty: collect_path_info(detail: DetailLevel) -> tuple[list[PathEntry], list[DiagnosticIssue]].\\n- Vazby: používá crossdiag.model a standardní moduly os, shutil, platform.\\n\\n7) crossdiag.diag_registry\\n- Odpovědnost: Windows-specifická diagnostika registru související s Pythonem a asociacemi souborů (.py, .pyw). Na ne-Windows platformách vrací prázdná data a případně informativní DiagnosticIssue.\\n- Exporty: collect_registry_info(detail: DetailLevel) -> tuple[RegistrySnapshot | None, list[DiagnosticIssue]].\\n- Vazby: používá crossdiag.model, standardní modul winreg (podmíněně podle platformy), platform.\\n\\n8) crossdiag.diag_logs\\n- Odpovědnost: diagnostika systémových a aplikačních logů souvisejících s Pythonem nebo nástrojem; čtení logů, filtrování relevantních záznamů, agregace.\\n- Exporty: collect_logs(detail: DetailLevel) -> tuple[list[LogSource], list[LogEntry], list[DiagnosticIssue]].\\n- Vazby: používá crossdiag.model a standardní moduly os, pathlib, subprocess, datetime, platform.\\n\\n9) crossdiag.diag_system\\n- Odpovědnost: sběr základních systémových informací (OS, verze, architektura, shell, uživatel) a prostředí.\\n- Exporty: collect_system_info(detail: DetailLevel) -> tuple[SystemInfo, list[DiagnosticIssue]].\\n- Vazby: používá crossdiag.model a standardní moduly platform, os, getpass, socket.\\n\\n10) crossdiag.output_formatters (začátek definice v dalším chunku)\\n- Bude zodpovědný za převod DiagnosticReport do human-readable textu a JSON, včetně správného formátu časových razítek (UTC, ISO 8601) a respektování anonymizace a úrovně detailu.\\n\\nTento chunk doplňuje předchozí shrnutí o architektonické moduly, jednotné názvosloví, omezení ohledně rozšiřování struktury projektu, požadavky na testování, paměťovou efektivitu a přesnou podobu API a distribuce balíčku.\",\"chunk_index\":2,\"chunk_count\":5,\"notes\":[\"Pokračovat v dalším chunku v popisu modulu crossdiag.output_formatters a případných dalších modulů (logging_utils, config apod.), pokud jsou definovány.\",\"Při slučování s EXISTING_SUMMARY zachovat seznam modulů a jejich odpovědnosti, sjednotit názvosloví entit (PythonInstallation, PathEntry atd.) a respektovat omezení o struktuře balíčku a API.\",\"Dohlédnout, aby budoucí plán implementace respektoval požadavek na nevyžadování admin/root práv pro basic diagnostiku a na read-only chování vůči systému a Python prostředí.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 3670,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2209,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 5879
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767901110,
+    "store": true
+  }
+}

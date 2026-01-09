@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260017_939d",
+    "project": "Kajovo",
+    "stage": "A1",
+    "response_id": "resp_0c08a12b94e2bb5d00695e55b91f0c8190bc901c344ddab58c",
+    "event": "prompt_tokens_over_context",
+    "sequence": 9,
+    "logged_at": "2026-01-08T23:17:26.289121"
+  },
+  "details": {
+    "event": "prompt_tokens_over_context",
+    "level": "warning",
+    "details": {
+      "stage": "A1",
+      "estimated_tokens": 146906,
+      "context_limit": 128000
+    },
+    "timestamp": "2026-01-08T23:17:26.289111"
+  }
+}

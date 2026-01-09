@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "B1",
+    "response_id": "MODIFY_c683ad",
+    "event": "payload_token_estimate",
+    "sequence": 21,
+    "logged_at": "2026-01-08T23:06:45.756652"
+  },
+  "details": {
+    "event": "payload_token_estimate",
+    "level": "info",
+    "details": {
+      "stage": "B1",
+      "estimated_tokens": 4464,
+      "max_tokens": 102400
+    },
+    "timestamp": "2026-01-08T23:06:45.756645"
+  }
+}

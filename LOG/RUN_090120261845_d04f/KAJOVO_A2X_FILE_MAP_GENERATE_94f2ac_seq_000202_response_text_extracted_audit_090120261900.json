@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A2X_FILE_MAP",
+    "response_id": "GENERATE_94f2ac",
+    "event": "response_text_extracted",
+    "sequence": 202,
+    "logged_at": "2026-01-09T18:00:10.130225"
+  },
+  "details": {
+    "event": "response_text_extracted",
+    "level": "info",
+    "details": {
+      "expected_contract": "A2X_FILE_MAP",
+      "text_chars": 21371
+    },
+    "timestamp": "2026-01-09T18:00:10.130193"
+  }
+}

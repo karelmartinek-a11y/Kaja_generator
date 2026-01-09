@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "B1",
+    "response_id": "MODIFY_c683ad",
+    "event": "pricing_step_recorded",
+    "sequence": 32,
+    "logged_at": "2026-01-08T23:06:50.393915"
+  },
+  "details": {
+    "event": "pricing_step_recorded",
+    "level": "info",
+    "details": {
+      "stage": "B1",
+      "model": "gpt-4o",
+      "response_id": "resp_0a6f03a5ecd8ee6d0069603885426c81a2ba0679d97cbfa565",
+      "estimated_tokens": {
+        "input": 4464,
+        "output": 112
+      },
+      "actual_tokens": {
+        "input": 7326,
+        "output": 125
+      },
+      "estimated_total": 0.011496,
+      "actual_total": 0.01869
+    },
+    "timestamp": "2026-01-08T23:06:50.393909"
+  }
+}

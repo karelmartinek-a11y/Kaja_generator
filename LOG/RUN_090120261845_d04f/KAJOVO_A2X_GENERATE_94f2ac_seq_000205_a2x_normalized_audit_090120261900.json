@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A2X",
+    "response_id": "GENERATE_94f2ac",
+    "event": "a2x_normalized",
+    "sequence": 205,
+    "logged_at": "2026-01-09T18:00:10.134465"
+  },
+  "details": {
+    "event": "a2x_normalized",
+    "level": "warning",
+    "details": {
+      "root_set": true,
+      "files_total": 0,
+      "files_kept": 0,
+      "files_skipped": 1,
+      "imports_converted": 0,
+      "exports_fixed": 0,
+      "purpose_filled": 0,
+      "language_filled": 0,
+      "invariants_set": true
+    },
+    "timestamp": "2026-01-09T18:00:10.134459"
+  }
+}

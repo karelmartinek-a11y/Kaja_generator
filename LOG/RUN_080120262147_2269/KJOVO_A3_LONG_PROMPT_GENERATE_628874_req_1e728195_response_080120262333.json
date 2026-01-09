@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "GENERATE_628874",
+    "logged_at": "2026-01-08T22:33:12.855458",
+    "request_id": "1e728195"
+  },
+  "payload": {
+    "id": "resp_068e55bcb278ba64006960307d6994819c92c167c907eb9681",
+    "created_at": 1767911549.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.2-pro-2025-12-11",
+    "object": "response",
+    "output": [
+      {
+        "id": "rs_068e55bcb278ba6400696030a7e680819ca8ff281bd0141929",
+        "summary": [],
+        "type": "reasoning",
+        "content": null,
+        "encrypted_content": null,
+        "status": null
+      },
+      {
+        "id": "msg_068e55bcb278ba6400696030a7e78c819ca4e6759ca7218fa4",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Souhrn dosud: návrh diagnostické/orchestrační aplikace (Ubuntu přes SSH 28.x, Windows FULL 29) s deterministickými výstupy do pevně definované stromové struktury (DirectoryLayout). Běh je best-effort (selže jen když nejde vytvořit output root); u chyb používá markery jako NOT PRESENT/TIMEOUT. Bezpečnost: redakce tajemství, žádné plošné dumpy env, žádná hesla/tokeny v logu. Volitelná integrace OpenAI: upload do Files API a volitelné indexování do vector store; šablony MANIFEST/README embedded. Definované doménové kontrakty (RunSpec/DiagnosticsRunSpec, ArtifactSpec, CommandResult, ManifestFileEntry, FilesApiUploadRecord, VectorIndexRecord, DiagnosticsRunResult aj.).\\n\\nGlobální pravidla pro generování kódu:\\n- Exporty musí odpovídat A2X_FILE_MAP (name/kind/signature) a být v contentu doslovně přítomné.\\n- Nezavádět nové symboly ani nové soubory; zachovat shodný datový model napříč soubory.\\n- Výsledek musí být spustitelný bez ručních úprav.\\n\\nA3 moduly (dosud):\\n- Execution: IProcessRunner.RunAsync(ProcessRunSpec, ct) -> CommandResult; DefaultProcessRunner(ILog, IRedactionPolicy); ProcessRunnerFactory.CreateDefault; ProcessRunSpec: FileName, Arguments, WorkingDirectory, Environment(Dictionary), StdoutFile/StderrFile/CombinedFile, Timeout, CreateNoWindow.\\n- IO: DirectoryLayout.EnsureUbuntuTree(outputRoot), EnsureWindowsFullTree(outputRoot); PathPolicies.EnsureRelativeUnderRoot(root, relativePath), ToSafeFileName(input).\\n- Indexing/VectorStore: IVectorIndexer.TryIndexAsync(VectorIndexSpec, ct) -> VectorIndexOutcome; OpenAIVectorIndexer(IOpenAIClient, ILog); VectorIndexSpec(VectorStoreId, Files(upload records), BaseAttributes); VectorIndexOutcome(Supported, Records, Note).\\n- Integrity: IIntegrityService.ComputeAsync(outputRoot, includeChecksums, ct) -> IntegrityComputationResult; FileSystemIntegrityService; result: FileCount, TotalSizeBytes, TotalSizeHuman, ChecksumsFilePath?.\\n- Manifest: IntegritySummarySpec(FileCount, TotalSizeHuman, IncludeChecksums, ChecksumsRelativePath?); ManifestSpec plně definován: OutputRoot, Title, HeaderFields(Dictionary<string,string>), FolderOverview(list), FileEntries(list ManifestFileEntry), Notes(list), Integrity(IntegritySummarySpec), UploadRecords(list FilesApiUploadRecord), VectorRecords(list VectorIndexRecord). Implementace MarkdownManifestGenerator : IManifestGenerator (ctor IRedactionPolicy; GenerateAsync(ManifestSpec, ct)).\\n- Orchestrator: IDiagnosticsOrchestrator + DiagnosticsOrchestrator (Ubuntu collector + Windows collector + ILog) s metodami RunUbuntuSshAsync(UbuntuSshRunSpec, IProgress<DiagnosticsProgress>, ct) a RunWindowsFullAsync(WindowsFullRunSpec, IProgress<DiagnosticsProgress>, ct). Kontrakt DiagnosticsProgress(Phase, Percent?, Message).\\n- Security: IRedactionPolicy(RedactLogText, IsSensitivePath); DefaultRedactionPolicy; NotPresentWriter.WriteNotPresent(filePath, reason); SensitiveContentGuards.ShouldOnlyListMetadata(filePath).\\n- OpenAI klient: sealed OpenAIClient : IOpenAIClient (OpenAIClientImplementation.cs).\\n- Logging projekt: ILog/LogLevel/LogEvent, ConsoleLog.\\n- Projekt/zdroje: Kaja.Diagnostics.csproj; embedded resource šablony: Ubuntu/MANIFEST_28_23_template.md, Ubuntu/README_template.md, Windows/MANIFEST_template.md.\\n\\nUbuntu SSH:\\n- UbuntuRemoteScriptBuilder : IUbuntuRemoteScriptBuilder { string Build(UbuntuScriptSpec spec); }\\n- UbuntuScriptSpec: record (RemoteRootPrefix, RunId, IncludeChecksums).\\n- UbuntuSshRunSpec: record (Host, Port, User, Password, LocalOutputRoot, RemoteRootPrefix, UseSudoIfAvailable, UploadToFilesApi, TryIndexToVectorStore, VectorStoreId?).\\n- UbuntuSshDiagnosticsCollector : IUbuntuSshDiagnosticsCollector; ctor: IProcessRunner, IUbuntuRemoteScriptBuilder, IManifestGenerator, IIntegrityService, IFilesUploader, IVectorIndexer, IRedactionPolicy, ILog; RunAsync(UbuntuSshRunSpec, ct) -> DiagnosticsRunResult.\\n\\nUpload/OpenAI Files:\\n- IFilesUploader.UploadDirectoryAsync(outputRoot, UploadSpec, ct) -> IReadOnlyList<FilesApiUploadRecord>.\\n- OpenAIFilesUploader : IFilesUploader; ctor: IOpenAIClient, IRedactionPolicy, ILog.\\n- UploadSpec: record (Purpose, IncludeChecksumsFile, ExcludeGlobs).\\n\\nWindows FULL:\\n- IWindowsFullDiagnosticsCollector.RunAsync(WindowsFullRunSpec, ct) -> DiagnosticsRunResult.\\n- WindowsFullDiagnosticsCollector : IWindowsFullDiagnosticsCollector; ctor: IProcessRunner, IManifestGenerator, IIntegrityService, IFilesUploader, IVectorIndexer, IPythonInventoryService, IRedactionPolicy, ILog.\\n- WindowsFullRunSpec: record (LocalOutputRoot, UploadToFilesApi, TryIndexToVectorStore, VectorStoreId?, IncludeAdminOnlySections, IncludeChecksums).\\n\\nWindows Python inventory:\\n- IPythonInventoryService.CollectAsync(PythonInventorySpec, ct) -> PythonInventoryResult.\\n- PythonInventoryResult: record (InterpreterPaths, VenvRoots, Warnings).\\n- PythonInventoryService (sealed class) implementuje IPythonInventoryService; ctor: (Kaja.Diagnostics.Execution.IProcessRunner runner, Kaja.Diagnostics.Security.IRedactionPolicy redaction, Kaja.Logging.ILog log); metoda CollectAsync(PythonInventorySpec spec, CancellationToken ct) -> Task<PythonInventoryResult>.\\n- PythonInventorySpec: sealed record (string OutputRootPythonFolder, bool IncludeVenvReports, TimeSpan PerInterpreterTimeout).\\n\\nLogging kontrakty (src/Kaja.Logging/LoggingContracts.cs):\\n- ILog: void Write(LogEvent e); void Write(LogLevel level, string message, string? detail=null).\\n- LogEvent: record (DateTimeOffset Timestamp, LogLevel Level, string Message, string? Detail).\\n- LogLevel: enum { Trace, Debug, Info, Warn, Error, Critical }.\\n- ConsoleLog : ILog implementuje obě Write overloady.\\n\\nOpenAI kontrakty (src/Kaja.OpenAI/OpenAIClientContracts.cs + implementation):\\n- IOpenAIClient: OpenAICapabilities GetCapabilities(); Task<OpenAIUploadedFile> UploadFileAsync(string filePath, string purpose, ct); Task<OpenAIVectorStoreFile> AddFileToVectorStoreAsync(string vectorStoreId, string openAiFileId, Dictionary<string,string> attributes, ct).\\n- OpenAICapabilities: record (bool SupportsVectorStores).\\n- OpenAIUploadedFile: record (string FileId, long SizeBytes, string FileName).\\n- OpenAIVectorStoreFile: record (string VectorStoreFileId, string FileId).\\n- OpenAIClient : IOpenAIClient (ctor: ILog log) poskytuje výše uvedené metody.\\n\\nSolution wiring:\\n- Kaja.sln exportuje symbol Kaja.Solution; importuje project soubory: src/Kaja.App/Kaja.App.csproj (Kaja.App.ProjectFile), src/Kaja.Diagnostics/Kaja.Diagnostics.csproj (Kaja.Diagnostics.ProjectFile), src/Kaja.OpenAI/Kaja.OpenAI.csproj (Kaja.OpenAI.ProjectFile), src/Kaja.Logging/Kaja.Logging.csproj (Kaja.Logging.ProjectFile).\",\"chunk_index\":14,\"chunk_count\":14,\"notes\":[\"Přidána globální pravidla: striktní shoda exportů s A2X_FILE_MAP, zákaz nových symbolů/souborů, a požadavek na spustitelnost bez ručních úprav.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 0.98,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "medium",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 1810,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1778,
+      "output_tokens_details": {
+        "reasoning_tokens": 19
+      },
+      "total_tokens": 3588
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767911592,
+    "store": true
+  }
+}

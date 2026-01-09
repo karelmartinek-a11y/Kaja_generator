@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "GENERATE_53998c",
+    "logged_at": "2026-01-08T20:31:23.996112",
+    "request_id": "777a4626"
+  },
+  "payload": {
+    "id": "resp_01bb2ef7f925c74d00696013d79174819db76498aa3f6a6814",
+    "created_at": 1767904215.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_01bb2ef7f925c74d00696013d81308819d8d409d39c2e95da9",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk doplňuje předchozí popis orchestrátoru runner.main a celkového běhu nástroje o detaily datového toku, chybového a bezpečnostního modelu a o instrukce pro spuštění a ověření.\\n\\n1) Dokončení datového toku (orchestrace běhu)\\n- Navazuje na předchozí body 1–7 o tom, jak runner.main připraví konfiguraci, cesty, logger, manifest, SectionContext a seznam sekcí.\\n- 8) sections.base.run_sections():\\n  - Přijímá seznam instancí sekcí a SectionContext.\\n  - Iteruje přes seznam sekcí v deterministickém pořadí.\\n  - Pro každou sekci volá metodu `run(ctx)`.\\n  - Každá sekce v rámci `run()` používá `core.exec.run_command()` pro spouštění systémových příkazů a `core.exec.write_command_result()` pro zápis výstupů do souborů v příslušném sekčním adresáři.\\n- 9) Registrace souborů do manifestu:\\n  - Po vytvoření každého významného souboru (výstup příkazu, zkopírovaný log, export konfigurace atd.) sekce zavolá `core.manifest.add_file()`.\\n  - Tím se do Manifestu přidá `ManifestEntry` obsahující minimálně:\\n    - relativní cestu k souboru vůči kořenovému diagnostickému adresáři,\\n    - stručný popis obsahu souboru,\\n    - volitelný SHA-256 hash (pokud je výpočet povolen a úspěšný),\\n    - velikost souboru.\\n- 10) Logování chyb během běhu sekcí:\\n  - Během běhu sekcí se chyby zachytávají a logují pomocí `core.logging.DiagLogger`.\\n  - Nekritické chyby (např. chybějící systémový příkaz, nedostupný soubor logu, nedostatečná oprávnění k některým informacím) se:\\n    - zalogují jako WARN nebo ERROR podle závažnosti,\\n    - zaznamenají do Manifestu jako poznámky nebo speciální položky (např. v metadatech sekce nebo u konkrétního souboru),\\n    - nemají ukončit celý běh, pokud MASTER výslovně neříká jinak.\\n- 11) Závěrečný zápis manifestu a indexu:\\n  - Po dokončení všech sekcí `runner.main` zavolá:\\n    - `core.manifest.write_manifest()` pro zápis souboru `MANIFEST.md` (nebo ekvivalentu) do kořenového adresáře diagnostiky.\\n    - `core.manifest.write_key_files_index()` pro zápis indexu klíčových souborů (např. `KEY_FILES_INDEX.md`), který shrnuje nejdůležitější výstupy.\\n- 12) Návratový kód `runner.main`:\\n  - `main()` vrací 0 při úspěšném dokončení všech kroků (včetně zápisu manifestu a indexu), i když došlo k nekritickým chybám v jednotlivých sekcích.\\n  - Vrací nenulový kód při výskytu `CriticalDiagError` nebo jiné neobsloužené výjimky, které znemožní korektní dokončení běhu (např. nemožnost vytvořit kořenový adresář, selhání zápisu manifestu, fatální chyba v inicializaci loggeru apod.).\\n\\n2) Chybový model (error_handling)\\n- Obecná zásada: nástroj preferuje robustnost a pokračování běhu, pokud to neohrozí integritu výstupu. Kritické chyby jsou explicitně odlišeny od nekritických.\\n\\n- Povinné chování sekcí:\\n  - Všechny sekce MUSÍ zachytávat výjimky z:\\n    - `core.exec.run_command()` (např. problémy se spuštěním procesu),\\n    - IO operací (čtení/zápis souborů, práce s cestami),\\n    - dalších operací, které mohou selhat (např. parsování výstupů, přístup k registru na Windows).\\n  - Tyto výjimky MUSÍ být převedeny na `SectionError` (nebo ekvivalentní typ definovaný v `sections.base`), který obsahuje informaci o:\\n    - názvu sekce,\\n    - kontextu operace (jaký příkaz/soubor),\\n    - původní výjimce.\\n  - `SectionError` se loguje jako WARN nebo ERROR podle závažnosti.\\n  - Pokud nejde o kritickou část definovanou v MASTER (tj. chyba neznemožní splnění základního účelu nástroje), běh pokračuje k dalším krokům/sekcím.\\n\\n- `CriticalDiagError`:\\n  - Používá se pro chyby, které znemožní pokračování běhu nebo by vedly k nekonzistentnímu výstupu.\\n  - Příklady:\\n    - nemožnost vytvořit kořenový diagnostický adresář,\\n    - selhání zápisu manifestu nebo klíčového log souboru,\\n    - fatální chyba v inicializaci loggeru,\\n    - zásadní chyba v konfiguraci (např. nevalidní výstupní cesta, kterou nelze opravit).\\n  - `runner.main` tyto chyby zachytí, zaloguje jako kritické (CRITICAL) a vrátí nenulový návratový kód.\\n\\n- Chování `core.exec.run_command()`:\\n  - MUSÍ vracet `CommandResult` i v případě nenulového návratového kódu procesu.\\n  - Nenulový návratový kód se NEpovažuje automaticky za výjimku.\\n  - Sekce MUSÍ tento kód vyhodnotit:\\n    - pokud je nenulový, zalogovat jako varování nebo chybu (podle kontextu),\\n    - případně zapsat informaci o neúspěchu do manifestu (např. jako poznámku k souboru nebo sekci).\\n\\n- `core.errors.format_exception()`:\\n  - Poskytuje jednotný textový formát pro logování neočekávaných výjimek (včetně stack trace).\\n  - Používá se v místech, kde se zachytávají generické `Exception` (např. v `runner.main` nebo v obalujících vrstvách sekcí), aby byl log konzistentní a čitelný.\\n\\n- Globální ošetření výjimek v `runner.main`:\\n  - `runner.main` MUSÍ obalit hlavní běh (od parsování argumentů po zápis manifestu) `try/except` blokem.\\n  - Tento blok zachytí všechny neočekávané výjimky (včetně těch, které nejsou `CriticalDiagError`).\\n  - Výjimka se zaloguje jako kritická (CRITICAL) pomocí loggeru, ideálně s použitím `format_exception()`.\\n  - `main()` v takovém případě vrátí nenulový návratový kód.\\n\\n- Režim dry-run:\\n  - V režimu `dry-run` (přepínač CLI) sekce NESMÍ:\\n    - vytvářet soubory,\\n    - vytvářet adresáře,\\n    - spouštět systémové příkazy.\\n  - Místo toho:\\n    - logují plánované akce (např. „[DRY-RUN] Spustil bych příkaz X a výstup uložil do Y“),\\n    - mohou simulovat strukturu výstupu pouze v paměti, pokud je to potřeba pro testování.\\n  - Chyby v dry-run režimu se považují za logické chyby konfigurace nebo implementace (např. nevalidní cesty, neznámé sekce) a MUSÍ být zalogovány.\\n  - Dry-run nesmí mít vedlejší efekty na systém ani na souborový systém mimo případné minimální logování (pokud je to výslovně povoleno návrhem).\\n\\n- Výpočet hashů v manifestu:\\n  - Pokud výpočet hashů selže (např. soubor byl mezitím smazán, nedostatečná oprávnění, IO chyba):\\n    - `core.manifest.add_file()` MUSÍ chybu zalogovat (WARN/ERROR),\\n    - pokračuje bez hash hodnoty (`sha256=None`),\\n    - nesmí způsobit selhání celého běhu.\\n\\n3) Bezpečnostní zásady (security_notes)\\n- Respektování oprávnění:\\n  - Nástroj MUSÍ respektovat omezení přístupových práv OS.\\n  - NESMÍ se pokoušet obcházet oprávnění (např. ruční manipulace s ACL, spouštění příkazů s vyššími právy bez explicitního povolení) ani eskalovat privilegia.\\n  - Pokud přístup k určitému souboru nebo příkazu selže kvůli oprávněním, chyba se pouze zaloguje a běh pokračuje, pokud to nebrání základní funkci.\\n\\n- Nemodifikování systému:\\n  - Nástroj NESMÍ zapisovat do systémových konfiguračních souborů ani měnit nastavení OS.\\n  - Veškerý zápis je omezen na výstupní diagnostickou strukturu (kořenový adresář diagnostiky a jeho podadresáře).\\n\\n- Ochrana citlivých dat:\\n  - Při exportu registru na Windows a logů na Linuxu MUSÍ nástroj dbát na to, aby neexportoval citlivé údaje nad rámec MASTER zadání.\\n  - Pokud MASTER zadání vyžaduje maskování (např. hesla, tokeny, klíče, některé identifikátory), sekce MUSÍ implementovat jednoduché maskovací filtry, např.:\\n    - nahrazení detekovaných vzorů (regexy pro „password=...“, „Authorization: Bearer ...“ apod.) hvězdičkami nebo placeholderem,\\n    - odstranění celých řádků obsahujících extrémně citlivé informace, pokud je to v MASTER povoleno.\\n\\n- Žádný odchozí přenos dat:\\n  - Nástroj NESMÍ odesílat žádná data mimo lokální stroj.\\n  - Veškerá komunikace je lokální: spouštění příkazů, čtení souborů, zápis do lokálního souborového systému.\\n\\n- Integrita výstupů:\\n  - `MANIFEST.md` a index klíčových souborů MUSÍ obsahovat informace o integritě (SHA-256 hash), pokud není hashování vypnuto.\\n  - Cílem je umožnit ověření, že diagnostické soubory nebyly po vytvoření změněny.\\n\\n- Ochrana logu:\\n  - Log soubor `diag_run.log` NESMÍ obsahovat citlivé hodnoty, jako jsou:\\n    - plné příkazy s hesly nebo tokeny v argumentech,\\n    - celé řádky konfigurací obsahující tajné údaje.\\n  - Pokud by se takové hodnoty vyskytly (např. v CLI argumentech nebo výstupech), MUSÍ být před zápisem do logu maskovány.\\n\\n- Omezení na předem definované cesty:\\n  - Pokud některá sekce pracuje s potenciálně citlivými cestami nebo soubory, tyto cesty MUSÍ být explicitně definovány v MASTER zadání.\\n  - Tento plán NESMÍ přidávat nové cesty mimo tento seznam.\\n\\n- Běh v omezeném prostředí:\\n  - Nástroj by měl být schopen běžet i v prostředí s omezeným přístupem (např. bez přístupu k některým logům nebo systémovým nástrojům).\\n  - V takovém případě MUSÍ chyby přístupu pouze zalogovat a pokračovat, pokud to nebrání základní funkci (tj. vytvoření aspoň částečné diagnostiky).\\n\\n4) Build & Run (build_run)\\n- Předpoklady (prerequisites):\\n  - Nainstalovaný Python 3.10+ na cílovém systému (Linux Ubuntu server nebo Windows 10/11).\\n  - Přístup k systémovým nástrojům definovaným v MASTER zadání, např.:\\n    - Linux: `uname`, `lsb_release`, `df`, `lsblk`, `ip`, `ss`, `systemctl`, `journalctl`, atd.\\n    - Windows: `systeminfo`, `wmic` (pokud je dostupné), `wevtutil`, `netsh`, `sc`, `driverquery`, atd.\\n  - Dostatečná oprávnění pro čtení systémových informací a logů:\\n    - na Linuxu typicky `sudo`/root,\\n    - na Windows administrátorský účet.\\n  - Dostatek volného místa na disku pro uložení diagnostických výstupů (velikost závisí na rozsahu logů a detailu sběru).\\n\\n- Příklady příkazů ke spuštění (commands):\\n  - Auto-detekční režim (doporučený):\\n    - `python -m runner.main --mode auto --detail full`\\n    - `--mode auto` nechá nástroj detekovat OS a zvolit odpovídající sadu sekcí.\\n    - `--detail full` zapne plný rozsah sběru dle MASTER.\\n  - Pouze Linux (Ubuntu) s výstupem do konkrétního adresáře:\\n    - `python -m runner.main --mode linux --output-dir /path/to/output --detail full`\\n    - `--output-dir` určuje kořenový adresář, do kterého bude vytvořen časově označený podadresář (např. `Diag_YYYYMMDD-HHMMSS`).\\n  - Pouze Windows s omezením na vybrané sekce (např. system,network,logs):\\n    - `python -m runner.main --mode windows --sections system,network,logs --detail full`\\n    - `--sections` je seznam identifikátorů sekcí (např. odpovídajících `SectionName`), které se mají spustit.\\n  - Suchý běh (dry-run) bez vytváření souborů:\\n    - `python -m runner.main --mode auto --dry-run`\\n    - Slouží k ověření konfigurace a plánovaného průběhu bez reálného sběru dat.\\n  - Zakázání výpočtu hashů (rychlejší běh, ale bez integrity):\\n    - `python -m runner.main --mode auto --no-hash`\\n    - Vypne výpočet SHA-256 hashů v manifestu, čímž zrychlí běh na úkor možnosti ověřit integritu.\\n\\n- Ověření funkčnosti (verification):\\n  - Struktura výstupu:\\n    - Po spuštění by měl vzniknout kořenový adresář `Diag_YYYYMMDD-HHMMSS` v očekávaném umístění (implicitně v aktuálním adresáři nebo v `--output-dir`).\\n    - Tento adresář by měl obsahovat všechny podsložky definované v MASTER zadání pro daný OS (např. `system`, `network`, `logs`, `hardware`, atd.).\\n  - Manifest:\\n    - V kořenovém adresáři musí existovat soubor `MANIFEST.md`.\\n    - Manifest musí obsahovat seznam všech vytvořených souborů s relativními cestami a popisy.\\n  - Index klíčových souborů:\\n    - Musí existovat soubor typu `KEY_FILES_INDEX.md` (název dle MASTER), který odkazuje na nejdůležitější diagnostické soubory (např. shrnutí systému, hlavní logy, konfigurace sítě).\\n  - Integrita hashů:\\n    - Pro vybrané soubory v manifestu musí být uveden SHA-256 hash.\\n    - Hash by měl odpovídat skutečnému obsahu souboru (ověřitelné externím nástrojem, např. `sha256sum`).\\n  - Log běhu:\\n    - V podsložce `logs` (nebo ekvivalentu) musí existovat soubor `diag_run.log`.\\n    - Log by měl obsahovat záznamy o:\\n      - spuštěných sekcích,\\n      - případných chybách a varováních,\\n      - závěrečném stavu (úspěch/neúspěch, návratový kód).\\n  - Filtrování sekcí:\\n    - Při spuštění s přepínačem `--sections` se musí vytvořit pouze podsložky a soubory odpovídající vybraným sekcím (plus společné soubory jako manifest, logy, index).\\n  - Dry-run režim:\\n    - Při spuštění v režimu `--dry-run` se nesmí vytvořit žádné diagnostické soubory ani adresáře (kromě případného minimálního logu, pokud to návrh dovoluje).\\n    - Na stdout a/nebo v logu musí být vidět plánovaný průběh (jaké sekce by se spustily, jaké příkazy by se volaly, kam by se ukládaly výstupy).\\n  - Chování při chybě:\\n    - Při záměrné chybě (např. neexistující nebo nepřístupný výstupní adresář bez oprávnění) musí nástroj skončit s nenulovým návratovým kódem.\\n    - Musí vypsat srozumitelnou chybovou zprávu (na stderr a/nebo do logu), která vysvětlí příčinu (např. „Permission denied při vytváření výstupního adresáře“).\\n\\n5) Deliverable policy\\n- `file_generation_strategy`: \\\"PLAN->STRUCTURE->FILE_CONTENT\\\"\\n  - Nejprve se vytvoří detailní plán (seznam sekcí, příkazů, souborů),\\n  - poté se navrhne adresářová a souborová struktura,\\n  - nakonec se generuje konkrétní obsah souborů.\\n- `max_lines_per_chunk`: 500\\n  - Při generování výstupních souborů (v dalších fázích) je třeba respektovat limit maximálně 500 řádků na chunk, což ovlivňuje rozdělení generovaného obsahu.\\n\\nTento chunk tak doplňuje předchozí návrh o přesný popis chování `run_sections`, registraci souborů do manifestu, globální a lokální error-handling, bezpečnostní omezení (žádná eskalace práv, žádný odchozí přenos dat, maskování citlivých údajů) a praktické instrukce pro spuštění a ověření nástroje. Vše je v souladu s MASTER zadáním a předchozími definicemi core.* a sections.* modulů.\",\"chunk_index\":5,\"chunk_count\":10,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4802,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 4485,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 9287
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767904283,
+    "store": true
+  }
+}

@@ -42,47 +42,23 @@
     "columns": [
       {
         "sections": [
-          "zadani",
-          "go"
+          "zadani"
         ],
         "sizes": [
-          396,
-          395
+          693
         ]
       },
       {
-        "sections": [
-          "model_openai"
-        ],
-        "sizes": [
-          792
-        ]
+        "sections": [],
+        "sizes": []
       },
       {
-        "sections": [
-          "vector_stores",
-          "file_api",
-          "attached_files"
-        ],
-        "sizes": [
-          264,
-          263,
-          263
-        ]
+        "sections": [],
+        "sizes": []
       },
       {
-        "sections": [
-          "out_dir",
-          "answer",
-          "timeline",
-          "local_files"
-        ],
-        "sizes": [
-          198,
-          197,
-          197,
-          197
-        ]
+        "sections": [],
+        "sizes": []
       }
     ],
     "column_sizes": [
@@ -92,9 +68,18 @@
       436
     ],
     "park": [
+      "attached_files",
       "in_dir",
+      "out_dir",
       "diagnostics",
+      "model_openai",
       "batch_monitor",
+      "go",
+      "answer",
+      "local_files",
+      "file_api",
+      "vector_stores",
+      "timeline",
       "diff_viewer"
     ]
   }

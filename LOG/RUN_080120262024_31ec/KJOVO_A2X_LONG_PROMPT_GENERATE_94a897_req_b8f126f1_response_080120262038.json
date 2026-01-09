@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262024_31ec",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_94a897",
+    "logged_at": "2026-01-08T19:38:07.876602",
+    "request_id": "b8f126f1"
+  },
+  "payload": {
+    "id": "resp_0389bacdb3aa187a00696007846df4819eb637659433fb8d25",
+    "created_at": 1767901060.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0389bacdb3aa187a0069600784d860819e9dcf9def8ee9bc59",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"A1_PLAN popisuje projekt CrossDiag – konzolový, multiplatformní diagnostický nástroj v Pythonu 3.10+ (CPython), bez externích závislostí, cílený na Windows 10+ (x64) a moderní Linux distribuce se systemd. Nástroj běží z CLI bez instalace a pouze čte systémové informace (žádné změny konfigurace, registrů ani systémových logů). Výstup je textový (human-readable) a JSON, na stdout a volitelně do souboru.\\n\\nPředpoklady:\\n- Detailní technické požadavky (konkrétní registry, log cesty, struktura MANIFEST.md, adresářová struktura) byly definovány dříve a zde nejsou k dispozici; plán na ně navazuje implicitně.\\n- Nástroj je CLI, ale návrh má umožnit budoucí GUI vrstvu podle „Kájovo UI Design Standard“ bez zásahu do core logiky.\\n- Na Windows se používá standardní knihovna (winreg, volání systémových nástrojů typu wevtutil) pro čtení registrů a logů, bez dalších knihoven.\\n- Na Linuxu je k dispozici systemd-journald (journalctl) nebo standardní logy v /var/log, s dostatečnými oprávněními pro čtení.\\n- Aplikace neprovádí žádné zápisy do systému, pouze čte a generuje diagnostické výstupy; jedinou výjimkou je vlastní diagnostický log v uživatelském prostoru.\\n- Uživatel má dostatečná oprávnění (admin/root) pro čtení požadovaných informací.\\n- V systému může být více instalací Pythonu; nástroj je má detekovat a reportovat včetně jejich vztahu k PATH.\\n- Výstup diagnostiky je deterministický (při stejném stavu systému a stejných CLI parametrech stejný JSON, kromě časových razítek).\\n\\nFunkční požadavky (výběr a strukturované shrnutí):\\n1) Detekce Pythonu a prostředí:\\n- Musí detekovat aktuálně běžící verzi Pythonu (sys.version, sys.executable) a zobrazit ji ve výstupu.\\n- Musí vyhledat další instalace Pythonu v typických umístěních:\\n  - Windows: Program Files, Microsoft Store, cesty v PATH.\\n  - Linux: /usr/bin, /usr/local/bin, cesty v PATH.\\n- Musí zkontrolovat proměnnou PATH a identifikovat konflikty/nekonzistence související s Pythonem (duplicitní cesty, neexistující cesty, různé verze Pythonu v PATH).\\n\\n2) Windows-specifická diagnostika:\\n- Musí číst vybrané klíče registru související s instalací Pythonu (např. HKLM/HKCU Software\\\\\\\\Python a další dříve definované klíče) a zahrnout je do reportu.\\n- Musí detekovat asociace souborů .py a .pyw v registru a reportovat je.\\n\\n3) Linux-specifická diagnostika:\\n- Musí zkontrolovat symlinky python, python3 a jejich cíle; reportovat nesrovnalosti (např. python → python2, neexistující cíle apod.).\\n\\n4) Systémové informace a runtime kontrola:\\n- Musí shromáždit základní systémové informace: typ OS, verze, architektura, informace o shellu.\\n- Musí shromáždit informace o nainstalovaných Python modulech v aktuálním prostředí (minimálně seznam balíků a verzí přes pip nebo importlib.metadata).\\n- Musí provést základní kontrolu funkčnosti Python runtime (např. vytvoření dočasného souboru, jednoduché importy standardních modulů) a výsledek reportovat.\\n\\n5) Logy a systémové události:\\n- Musí umět číst vybrané systémové logy související s Pythonem nebo aplikací (podle předem definovaných patternů cest a názvů služeb) a shrnout relevantní chybové/varovné záznamy za poslední definované období.\\n\\n6) Výstupní formáty a ovládání přes CLI:\\n- Musí poskytovat dva formáty výstupu: human-readable textový report a strukturovaný JSON report.\\n- Musí umožnit volbu výstupního formátu (text/JSON/oboje) přes CLI argumenty.\\n- Musí umožnit uložení kompletního JSON reportu do souboru (cesta zadána argumentem CLI).\\n- Musí implementovat návratové kódy: 0 = úspěšné dokončení diagnostiky (i při nalezených problémech), nenulové kódy = fatální chyby běhu nástroje.\\n- Musí logovat vlastní běh (start, verze nástroje, hlavní kroky, chyby) do interního logu (např. dočasný soubor nebo uživatelský konfigurační adresář) s možností vypnutí logování přes CLI.\\n- Musí mít centrální datový model diagnostického reportu (např. třída DiagnosticReport nebo ekvivalentní struktura), sdílený mezi moduly.\\n- Musí podporovat volbu úrovně detailu diagnostiky (např. basic, full) přes CLI argumenty.\\n- Musí validovat vstupní argumenty CLI; při chybě zobrazit nápovědu a ukončit se s nenulovým kódem.\\n- Musí poskytovat příkaz --help a -h s přehledem voleb a stručným popisem.\\n\\n7) Volitelné (MĚL BY) funkce:\\n- Měl by umožnit anonymizaci citlivých dat ve výstupu (např. uživatelská jména v cestách, hostname) přes volitelný přepínač.\\n- Měl by umožnit filtrování sekcí reportu (např. pouze python, pouze logs, pouze registry) přes CLI argumenty.\\n- Měl by být navržen tak, aby bylo možné později přidat GUI vrstvu (Kájovo UI Design Standard) bez změny core logiky.\\n\\n8) Zakázané chování (NESMÍ):\\n- Nesmí provádět žádné zápisy do registru, systémových konfiguračních souborů ani systémových logů; výjimkou je vlastní diagnostický log v uživatelském prostoru.\\n- Nesmí vyžadovat internetové připojení; veškerá diagnostika probíhá lokálně.\\n\\nNefunkční požadavky:\\n- Musí běžet na Windows 10+ (x64) a běžných Linux distribucích se systemd (Ubuntu, Debian, Fedora, atd.) s Pythonem 3.10+.\\n- Musí být implementován pouze se standardní knihovnou Pythonu (žádné třetí strany).\\n- Musí být schopen dokončit základní diagnostiku (basic level) do 10 sekund na běžném desktopu, pokud nejsou extrémně velké logy.\\n- Musí být robustní vůči chybám při čtení registrů, logů nebo souborů; jednotlivé chyby nesmí ukončit celý proces diagnostiky (chyby se mají logovat a promítnout do reportu, ale běh pokračuje, pokud je to možné).\\n- Musí mít jasně definované logovací úrovně (INFO, WARNING, ERROR, DEBUG nebo ekvivalent) a možnost nastavení úrovně přes CLI.\\n- Musí být deterministický: při stejném stavu systému a stejných CLI parametrech generuje stejný JSON report (kromě časových razítek).\",\"chunk_index\":1,\"chunk_count\":5,\"notes\":[\"Detailní technické specifikace (konkrétní registry, log cesty, struktura MANIFEST.md) jsou v jiných chuncích a zde chybí; další kroky musí s touto neúplností počítat.\",\"Je nutné zachovat striktní oddělení core logiky od případné budoucí GUI vrstvy (Kájovo UI Design Standard).\",\"Determinističnost výstupu musí být respektována v návrhu datového modelu i logování (časová razítka jsou jediná povolená nedeterministická složka).\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 2149,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1972,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 4121
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767901087,
+    "store": true
+  }
+}

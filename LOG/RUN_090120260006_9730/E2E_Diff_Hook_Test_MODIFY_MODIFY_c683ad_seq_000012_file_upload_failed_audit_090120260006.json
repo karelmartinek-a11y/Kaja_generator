@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "MODIFY",
+    "response_id": "MODIFY_c683ad",
+    "event": "file_upload_failed",
+    "sequence": 12,
+    "logged_at": "2026-01-08T23:06:45.527107"
+  },
+  "details": {
+    "event": "file_upload_failed",
+    "level": "error",
+    "details": {
+      "error": "Error code: 400 - {'error': {'message': \"'in mirror' is not one of ['fine-tune', 'assistants', 'batch', 'user_data', 'vision', 'evals'] - 'purpose'\", 'type': 'invalid_request_error', 'param': 'purpose', 'code': None}}",
+      "type": "BadRequestError",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 851, in _upload_file\n    upload_result = self._client.upload_file(path, purpose=purpose)\n  File \"C:\\kaja_generator\\kaja\\core\\openai_client.py\", line 62, in upload_file\n    response = self._client.files.create(file=handle, purpose=purpose)\n  File \"C:\\Users\\provo\\AppData\\Roaming\\Python\\Python314\\site-packages\\openai\\resources\\files.py\", line 122, in create\n    return self._post(\n           ~~~~~~~~~~^\n        \"/files\",\n        ^^^^^^^^^\n    ...<5 lines>...\n        cast_to=FileObject,\n        ^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\Users\\provo\\AppData\\Roaming\\Python\\Python314\\site-packages\\openai\\_base_client.py\", line 1259, in post\n    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))\n                           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\provo\\AppData\\Roaming\\Python\\Python314\\site-packages\\openai\\_base_client.py\", line 1047, in request\n    raise self._make_status_error_from_response(err.response) from None\nopenai.BadRequestError: Error code: 400 - {'error': {'message': \"'in mirror' is not one of ['fine-tune', 'assistants', 'batch', 'user_data', 'vision', 'evals'] - 'purpose'\", 'type': 'invalid_request_error', 'param': 'purpose', 'code': None}}\n"
+    },
+    "timestamp": "2026-01-08T23:06:45.527101"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260017_939d",
+    "project": "Kajovo",
+    "stage": "A1",
+    "response_id": "resp_0c08a12b94e2bb5d00695e55b91f0c8190bc901c344ddab58c",
+    "event": "dialog_tokens_estimate",
+    "sequence": 7,
+    "logged_at": "2026-01-08T23:17:26.285369"
+  },
+  "details": {
+    "event": "dialog_tokens_estimate",
+    "level": "info",
+    "details": {
+      "stage": "A1",
+      "estimated_tokens": 47500,
+      "max_tokens": 51200
+    },
+    "timestamp": "2026-01-08T23:17:26.285358"
+  }
+}

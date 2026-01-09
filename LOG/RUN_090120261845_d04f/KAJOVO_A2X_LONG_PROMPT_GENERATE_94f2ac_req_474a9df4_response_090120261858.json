@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_94f2ac",
+    "logged_at": "2026-01-09T17:58:36.850013",
+    "request_id": "474a9df4"
+  },
+  "payload": {
+    "id": "resp_00c021dd53cc0db400696141a5510481939daa0e657f177aa6",
+    "created_at": 1767981477.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_00c021dd53cc0db400696141a644348193bf1c32d429f08c39",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Specifikace v tomto chunku dokončuje popis souboru `src/kaja/models/domain_models.py` a dvou binárních fontových souborů v adresáři `resources`. Navazuje na předchozí části A2/A2X, které již popsaly většinu services, diagnostics, persistence a models vrstev, a doplňuje poslední chybějící položky A2_STRUCTURE.\\n\\n1) `src/kaja/models/domain_models.py`\\n- Účel: Definice doménových datových modelů používaných napříč aplikací KÁJA GO'. Jde o centrální místo pro dataclasses, které reprezentují konfigurace, nastavení, metadata souborů, informace o vektorstoru, dávkových úlohách, modelech, SSH konfiguraci a další doménové entity.\\n- Hlavní datové modely (vše dataclasses):\\n  - `Settings`: Hlavní konfigurační objekt aplikace. Obsahuje podsekce pro logování, retry politiku, zdroj ceníku, bezpečnostní nastavení, polling batch jobů, výchozí modely, hooky, allow/deny konfiguraci a další globální volby. Je používán zejména v `SettingsManager`, `LoggingManager`, `OpenAIClient`, `PricingManager`, `SecretScanner`, `AllowDenyFilter`, `EncryptionManager`, `RunOrchestrator` a dalších services.\\n  - `LogRotationPolicy`: Nastavení rotace logů (maximální velikost, počet souborů, případně časové omezení). Používá se v `LoggingManager` pro správu logovacích souborů.\\n  - `RetryPolicy`: Definuje chování při opakování neúspěšných volání (max pokusy, základní delay, backoff faktor, maximální delay, seznam chyb, které retry spouští). Používá se v `OpenAIClient` a dalších komponentech, které volají vzdálená API.\\n  - `PricingSourceConfig`: Konfigurace zdroje ceníku (lokální soubor, vzdálená URL, interval aktualizace, fallback chování). Používá ji `PricingManager` při načítání a aktualizaci ceníku.\\n  - `SecuritySettings`: Bezpečnostní nastavení aplikace (povolení/zakázání skenování tajemství, pravidla pro citlivé soubory, omezení příkazů pro `ScriptExecutor`, nastavení šifrování logů/cache, případně další bezpečnostní volby). Používají je `SecretScanner`, `AllowDenyFilter`, `EncryptionManager`, `ScriptExecutor` a další bezpečnostně citlivé moduly.\\n  - `BatchPollingSettings`: Nastavení pro polling batch jobů (interval, timeout, maximální doba čekání, strategie ukončení). Používá se v `RunOrchestrator` a `OpenAIClient` při práci s batch API.\\n  - `DefaultModelSettings`: Výchozí nastavení modelů (např. defaultní model pro chat, pro batch, pro embeddings, výchozí parametry jako teplota, max_tokens, top_p, atd.). Používá se v request builderech, `RunOrchestrator` a UI vrstvách pro předvyplnění hodnot.\\n  - `HooksConfig`: Konfigurace hooků (před/po běhu, před/po requestu, integrace s externími nástroji). Používá se v `RunOrchestrator` a případných hook manager modulech.\\n  - `AllowDenyConfig`: Konfigurace allow/deny pravidel pro soubory a cesty (přípony, glob patterny, explicitní seznamy). Používá ji `AllowDenyFilter` a nepřímo `FileApiManager`, `VectorStoreManager` a `FS_Mirror` logika.\\n  - `SSHConfig`: Konfigurace SSH připojení (host, port, uživatel, cesta k privátnímu klíči nebo heslo, volitelné další parametry). Používají ji `ScriptExecutor` a `UbuntuSSHDiagnosticsManager` pro vzdálené příkazy.\\n  - `AttachedFile`: Obecný model pro soubor připojený k běhu nebo requestu (lokální cesta, název, typ, metadata, příznaky). Používá se v `RunOrchestrator`, request builderech a UI pro správu souborů připojených k dotazu.\\n  - `LocalFile`: Reprezentace lokálního souboru (cesta, velikost, hash, časové údaje, typ). Používá se v `FS_Mirror` a souvisejících komponentech pro porovnávání a synchronizaci.\\n  - `FileApiFileInfo`: Metadata souboru v OpenAI Files API (id, název, velikost, typ, stav, čas vytvoření, případně další metadata). Používají je `FileApiManager`, `VectorStoreManager`, `RunOrchestrator` a další části, které pracují s nahranými soubory.\\n  - `VectorStoreInfo`: Informace o jednom vector store (id, název, popis, počet souborů, stav, metadata). Používá ji `VectorStoreManager` a UI pro zobrazení a správu vector stores.\\n  - `VectorStoreFileInfo`: Vazba mezi vector store a konkrétním souborem (id vazby, id vector store, id souboru, stav indexace, časové údaje). Používá ji `VectorStoreManager` a UI pro detailní přehled souborů ve vector store.\\n  - `BatchJobInfo`: Informace o batch jobu (id, stav, typ, související soubory, statistiky, časové údaje). Používají je `RunOrchestrator`, `OpenAIClient`, `PricingManager` a `ReceiptsRepository` pro sledování a účtování batch běhů.\\n  - `OpenAIModelInfo`: Metadata o modelech OpenAI (id, název, typ, schopnosti, limity, ceny nebo odkazy na ceník). Používá je `OpenAIClient`, `PricingManager` a UI pro výběr modelu.\\n  - Další datové modely: V předchozích chuncích je zmíněno, že `DiagnosticsResult` je definován v diagnostických modulech, ale zde je explicitně uvedeno, že doménové modely zahrnují i diagnostické výsledky (např. `DiagnosticsResult` pro obecné shrnutí diagnostiky). Tyto modely jsou používány v `WindowsDiagnosticsManager`, `UbuntuSSHDiagnosticsManager`, `ReceiptsRepository`, `RunOrchestrator` a dalších částech systému.\\n- Exporty: Všechny výše uvedené dataclasses jsou exportovány z tohoto modulu a používány napříč projektem. Jména tříd musí být přesně taková, jak jsou uvedena v ostatních modulech (Settings, LogRotationPolicy, RetryPolicy, PricingSourceConfig, SecuritySettings, BatchPollingSettings, DefaultModelSettings, HooksConfig, AllowDenyConfig, SSHConfig, AttachedFile, LocalFile, FileApiFileInfo, VectorStoreInfo, VectorStoreFileInfo, BatchJobInfo, OpenAIModelInfo a případné další doménové dataclasses, které jsou již referencovány v jiných souborech).\\n- Importy: Modul importuje standardní knihovny pro datové třídy a typování:\\n  - `from dataclasses import dataclass`\\n  - `from datetime import datetime, date`\\n  - `from typing import Optional, Literal, List, Dict`\\n- Všechny dataclasses jsou čistě datové (bez složité logiky) a slouží jako kontrakty mezi vrstvami (core, services, diagnostics, persistence, UI). Musí být stabilní, protože na ně spoléhají ostatní moduly (např. `SettingsManager`, `OpenAIClient`, `RequestBuilders`, `ResponseParsers`, `ScriptExecutor`, `Diagnostics`, `ReceiptsRepository`, `PricingManager`).\\n\\n2) `resources/montserrat_regular.ttf`\\n- Účel: Binární soubor s fontem Montserrat Regular, používaný pro základní text v UI aplikace KÁJA GO'.\\n- Jazyk: `binary` (nejde o zdrojový kód, ale o fontový soubor).\\n- Exporty: Žádné kódové symboly; soubor slouží pouze jako zdroj fontu.\\n- Importy / použití: Font je načítán funkcí `init_fonts()` v `src/kaja/app_main.py`, která registruje fonty pro Qt UI. Cesta k souboru musí být stabilní, protože je na ni odkazováno z kódu.\\n\\n3) `resources/montserrat_bold.ttf`\\n- Účel: Binární soubor s fontem Montserrat Bold, používaný pro nadpisy a zvýrazněný text v UI.\\n- Jazyk: `binary`.\\n- Exporty: Žádné kódové symboly.\\n- Importy / použití: Stejně jako regular varianta je tento font načítán v `init_fonts()` v `src/kaja/app_main.py` a používán v Qt UI pro zvýrazněné texty a nadpisy.\\n\\nCelkový kontext a vazby:\\n- Tento chunk uzavírá A2_STRUCTURE tím, že doplňuje poslední soubor s doménovými modely a dva zdrojové fontové soubory. Doménové modely v `domain_models.py` jsou již intenzivně referencovány v předchozích chuncích (SettingsManager, OpenAIClient, RequestBuilders, ResponseParsers, ScriptExecutor, Diagnostics, ReceiptsRepository, PricingManager, VectorStoreManager, FileApiManager, RunOrchestrator atd.). Je nutné zachovat přesné názvy tříd a importů, protože ostatní moduly na ně spoléhají.\\n- Fontové soubory v `resources/` nejsou kód, ale jsou součástí distribuovatelného balíčku a musí být dostupné na přesně daných cestách, aby je `app_main.py` mohl načíst v `init_fonts()`.\\n- Všechny tyto položky byly v A2 definovány jako součást jednoho společného seznamu souborů (A2_STRUCTURE) a v dalších fázích (A3) se z nich bude generovat konkrétní implementace (u Python souborů) nebo se budou pouze kopírovat/zahrnovat (u binárních fontů).\",\"chunk_index\":6,\"chunk_count\":6,\"notes\":[\"Zachovat přesné názvy dataclasses v src/kaja/models/domain_models.py: Settings, LogRotationPolicy, RetryPolicy, PricingSourceConfig, SecuritySettings, BatchPollingSettings, DefaultModelSettings, HooksConfig, AllowDenyConfig, SSHConfig, AttachedFile, LocalFile, FileApiFileInfo, VectorStoreInfo, VectorStoreFileInfo, BatchJobInfo, OpenAIModelInfo a další již referencované modely.\",\"Importy v domain_models.py musí být přesně: from dataclasses import dataclass; from datetime import datetime, date; from typing import Optional, Literal, List, Dict.\",\"resources/montserrat_regular.ttf a resources/montserrat_bold.ttf jsou binární fontové soubory bez exportů; jsou načítány funkcí init_fonts() v src/kaja/app_main.py a jejich cesty nesmí být měněny.\",\"Tento chunk pouze doplňuje A2_STRUCTURE; při tvorbě A2X_FILE_MAP je nutné zahrnout domain_models.py jako Python modul s výše uvedenými exporty a oba fontové soubory jako language=binary bez exports/imports.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 3469,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2658,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 6127
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767981516,
+    "store": true
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "GENERATE_53998c",
+    "logged_at": "2026-01-08T20:34:15.737831",
+    "request_id": "1e0d6d20"
+  },
+  "payload": {
+    "id": "resp_0a2cd9d2660eb14f00696014b8813081979784c045350cd5d7",
+    "created_at": 1767904440.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0a2cd9d2660eb14f00696014b8f1f08197a2f74049c226df89",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento závěrečný chunk doplňuje A2X kontrakty a file mapu a uzavírá definici neměnné architektury projektu.\\n\\n1) Globální A2X invariants pro EXPORT_INDEX a importy\\n- Každý exportovaný symbol (třída/funkce/typ) je definován právě v jednom souboru a může být importován odkudkoli v projektu.\\n- Všechny cesty souborů v mapování A2X_FILE_MAP přesně odpovídají seznamu souborů z A2_STRUCTURE – žádný soubor nechybí ani nepřebývá.\\n- Pro každý záznam v A2X_FILE_MAP platí:\\n  - `path` je jednoznačná relativní cesta k souboru v repozitáři.\\n  - `exports` obsahuje kompletní seznam veřejných symbolů daného souboru (jméno, druh – class/func/alias/enum/dataclass atd., a signaturu, pokud je definovaná).\\n  - `imports` popisuje všechny závislosti na jiných souborech nebo externích modulech.\\n- Specifický invariant pro importy:\\n  - `Imports.path` vždy odkazuje na existující soubor v tomto projektu nebo na externí modul s prefixem `external:`.\\n  - `imports.symbols` odpovídají exportovaným symbolům cílového souboru nebo veřejným symbolům externího modulu.\\n- Architektura `core/sections/runner` je deklarována jako neměnná:\\n  - Moduly v `core/` poskytují sdílené služby (konfigurace, cesty, manifest, logování, spouštění příkazů, chybový model atd.).\\n  - Moduly v `sections/` implementují doménové diagnostické sekce pro Linux a Windows. Každá sekce je třída dědící z `BaseSection` a implementuje jednotný kontrakt `name()` a `run(ctx)`.\\n  - `runner/main.py` je jediný vstupní bod CLI nástroje. Zajišťuje parsování argumentů, detekci OS, sestavení `RunConfig`, `DiagPaths`, `Manifest`, inicializaci loggeru, výběr a spuštění sekcí a zápis manifestu a indexu klíčových souborů.\\n- STRIKTNÍ PRAVIDLA (determinismus) platná pro implementaci A3:\\n  - Implementovat pouze to, co je definováno v A1/A2/A2X; A2X_FILE_MAP je jediný zdroj pravdy pro exporty/importy.\\n  - Exporty musí odpovídat A2X_FILE_MAP (jméno, druh, signatura) a být v kódu doslovně přítomné.\\n  - Nesmí se zavádět nové symboly ani nové soubory; datový model (typy, struktury, enumy) musí být konzistentní napříč všemi soubory.\\n  - Výsledek implementace musí být spustitelný bez ručních úprav.\\n\\n2) A2X_FILE_MAP pro core/__init__.py\\nChunk obsahuje konkrétní záznam A2X_FILE_MAP pro soubor `core/__init__.py`:\\n- `path`: `core/__init__.py`\\n- `purpose`: \\\"Inicializace balíčku core. Neobsahuje veřejné API; pouze označuje adresář jako Python balíček.\\\"\\n- `language`: `python`\\n- `exports`: prázdný seznam – tento soubor neexportuje žádné veřejné symboly.\\n- `imports`: prázdný seznam – tento soubor nic neimportuje.\\n\\nZ toho plyne:\\n- `core/__init__.py` slouží čistě k označení adresáře `core` jako Python balíčku.\\n- V rámci veřejného API projektu se z `core/__init__.py` nesmí nic importovat; všechny veřejné symboly pocházejí z konkrétních modulů v `core/` (např. `core/config.py`, `core/paths.py`, `core/manifest.py`, `core/logging.py`, `core/exec.py`, `core/errors.py`).\\n- Při implementaci A3 se do `core/__init__.py` nesmí přidávat žádné nové exporty ani importy, aby zůstal v souladu s A2X_FILE_MAP.\\n\\n3) Konsolidace s předchozími chunky\\nV kombinaci s předchozími chunk summary je nyní kompletně popsáno:\\n- Veřejné API všech core modulů (konfigurace, cesty, manifest, logování, spouštění příkazů, chybový model).\\n- Veřejné API všech sekcí pro Linux i Windows (třídy sekcí, jejich `name()` a `run(ctx)` kontrakt, použití `SectionContext`, `RunConfig`, `DiagPaths`, `DiagLogger`, `Manifest`, `DiagMode`).\\n- Hlavní běhová logika v `runner/main.py` (funkce `main`, orchestrace běhu, chybový model, zápis manifestu a indexu).\\n- Neměnná architektura `core/sections/runner` a striktní pravidla pro deterministickou implementaci podle A2X_FILE_MAP.\\n\\nTento chunk tedy uzavírá A2X kontrakt: definuje poslední chybějící file mapu (`core/__init__.py`), globální invariants pro importy/exporty a potvrzuje, že architektura a API popsané v A1/A2/A2X jsou finální a neměnné pro fázi A3 implementace.\",\"chunk_index\":10,\"chunk_count\":10,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 3701,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1321,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 5022
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767904455,
+    "store": true
+  }
+}

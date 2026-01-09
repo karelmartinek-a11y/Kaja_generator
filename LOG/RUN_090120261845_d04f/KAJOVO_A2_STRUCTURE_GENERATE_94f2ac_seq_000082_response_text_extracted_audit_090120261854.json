@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A2_STRUCTURE",
+    "response_id": "GENERATE_94f2ac",
+    "event": "response_text_extracted",
+    "sequence": 82,
+    "logged_at": "2026-01-09T17:54:01.946107"
+  },
+  "details": {
+    "event": "response_text_extracted",
+    "level": "info",
+    "details": {
+      "expected_contract": "A2_STRUCTURE",
+      "text_chars": 30802
+    },
+    "timestamp": "2026-01-09T17:54:01.946100"
+  }
+}

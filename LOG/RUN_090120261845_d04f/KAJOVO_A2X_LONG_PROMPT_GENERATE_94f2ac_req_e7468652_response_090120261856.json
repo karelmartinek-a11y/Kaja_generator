@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_94f2ac",
+    "logged_at": "2026-01-09T17:56:24.213405",
+    "request_id": "e7468652"
+  },
+  "payload": {
+    "id": "resp_02eb40d10c7aa1b300696141242d888190b1a2a608241a56b0",
+    "created_at": 1767981348.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_02eb40d10c7aa1b30069614124f020819097aa83fe6eb08b49",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk pokračuje ve specifikaci A2_STRUCTURE pro podbalík `src/kaja/ui`, kde definuje další UI sekce (widgety) aplikace Kája. Každý záznam obsahuje cestu k souboru, účel (purpose), exportované třídy a požadované importy. Všechny tyto soubory mají jazyk `python` a budou generovány ve fázi A3.\\n\\nDefinované soubory a jejich role:\\n\\n1) `src/kaja/ui/sections_files_attached.py`\\n- Purpose: Sekce „Připojené soubory“ – tabulka připojených souborů a jejich správa.\\n- EXPORTS: `class AttachedFilesSection(QWidget)`, `class AttachedFile`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QWidget, QTableView, QPushButton`\\n  - `from PySide6.QtCore import QAbstractTableModel`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_section_frame`\\n  - `from ..models.ui_models import AttachedFileModel`\\n  - `from ..models.domain_models import AttachedFile`\\n- Poznámka: V purpose je zmíněna třída `AttachedFile` jako export i jako doménový model v importech; je třeba zachovat přesně tento kontrakt (i když názvy mohou působit duplicitně), protože na něj navazují jiné části UI (např. FileApiSection).\\n\\n2) `src/kaja/ui/sections_in.py`\\n- Purpose: Sekce „IN“ – výběr vstupního adresáře a zobrazení cesty (PATH).\\n- EXPORTS: `class InSection(QWidget)`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QWidget, QLineEdit, QPushButton`\\n  - `from PySide6.QtWidgets import QFileDialog`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_section_frame`\\n\\n3) `src/kaja/ui/sections_out.py`\\n- Purpose: Sekce „OUT“ – výběr výstupního adresáře, možnost IN=OUT a funkce verzování (VERSING).\\n- EXPORTS: `class OutSection(QWidget)`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QWidget, QLineEdit, QPushButton`\\n  - `from PySide6.QtWidgets import QFileDialog`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_section_frame`\\n  - `from ..style.icons import Icons`\\n\\n4) `src/kaja/ui/sections_diagnostics.py`\\n- Purpose: Sekce „DIAGNOSTICS (WINDOWS/SSH)“ – checkboxy pro WINDOWS IN/OUT, SSH IN/OUT a konfiguraci SSH.\\n- EXPORTS: `class DiagnosticsSection(QWidget)`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QWidget, QCheckBox, QLineEdit, QLabel, QPushButton`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_section_frame`\\n  - `from ..models.domain_models import SSHConfig`\\n\\n5) `src/kaja/ui/sections_mode.py`\\n- Purpose: Sekce „MODE“ – tlačítka režimů GENERATE/MODIFY/QA a pole pro RESPONSE ID.\\n- EXPORTS: `class ModeSection(QWidget)`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QWidget, QPushButton, QLineEdit`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_section_frame`\\n  - `from ..style.button_group import ExclusiveButtonGroup`\\n\\n6) `src/kaja/ui/sections_model.py`\\n- Purpose: Sekce „Model OpenAI“ – tlačítko GET MODELS a rozbalovací seznam (dropdown) modelů.\\n- EXPORTS: `class ModelSection(QWidget)`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QWidget, QPushButton, QComboBox`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_section_frame`\\n  - `from ..models.domain_models import OpenAIModelInfo`\\n\\n7) `src/kaja/ui/sections_batch_monitor.py`\\n- Purpose: Sekce „BATCH MONITOR“ – seznam batch jobů a akce REFRESH, DOWNLOAD RESULT, OPEN LOG, CANCEL.\\n- EXPORTS: `class BatchMonitorSection(QWidget)`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QWidget, QTableView, QPushButton`\\n  - `from PySide6.QtCore import QAbstractTableModel`\\n  - `from ..models.ui_models import BatchJobsTableModel`\\n  - `from ..models.domain_models import BatchJobInfo`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_section_frame`\\n\\n8) `src/kaja/ui/sections_go.py`\\n- Purpose: Sekce „GO“ – tlačítko „KÁJO GO'“ a přepínač „SEND AS C (BATCH)“.\\n- EXPORTS: `class GoSection(QWidget)`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QWidget, QPushButton, QCheckBox`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_section_frame`\\n\\n9) `src/kaja/ui/sections_answare.py`\\n- Purpose: Sekce „ANSWARE“ – zobrazení Response ID a textu odpovědi, tlačítka CTRL+C, RESPONSE, SCRIPT.\\n- EXPORTS: `class AnswareSection(QWidget)`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QWidget, QTextEdit, QPushButton, QLabel`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_section_frame`\\n  - `from ..services.clipboard_manager import ClipboardManager`\\n- Poznámka: Název „Answare“ je zjevně záměrný (není to překlep k opravě) a musí být zachován v názvu souboru i třídy.\\n\\n10) `src/kaja/ui/sections_local_files.py`\\n- Purpose: Sekce „LOCAL FILES“ – tabulka lokálních souborů, tlačítka VLOŽ a UPLOAD.\\n- EXPORTS: `class LocalFilesSection(QWidget)`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QWidget, QTableView, QPushButton, QFileDialog`\\n  - `from PySide6.QtCore import QAbstractTableModel`\\n  - `from ..models.ui_models import LocalFilesTableModel`\\n  - `from ..models.domain_models import LocalFile`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_section_frame`\\n  - `from ..services.file_api_manager import FileApiManager`\\n\\n11) `src/kaja/ui/sections_file_api.py`\\n- Purpose: Sekce „FILE API“ – tabulka souborů na OpenAI Files API a akce PŘIPOJ, SMAŽ, DEL ALL.\\n- EXPORTS: `class FileApiSection(QWidget)`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QWidget, QTableView, QPushButton`\\n  - `from PySide6.QtCore import QAbstractTableModel`\\n  - `from ..models.ui_models import FileApiTableModel`\\n  - `from ..models.domain_models import FileApiFileInfo`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_section_frame`\\n  - `from ..services.file_api_manager import FileApiManager`\\n  - `from .sections_files_attached import AttachedFilesSection`\\n- Poznámka: Zde je explicitní závislost na `AttachedFilesSection`, což propojuje sekci FILE API se sekcí Připojené soubory.\\n\\n12) `src/kaja/ui/sections_vector_stores.py`\\n- Purpose: Sekce „VECTOR STORES“ – seznam a detail vector stores, správa expirace a souvisejících souborů.\\n- EXPORTS: `class VectorStoresSection(QWidget)`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QWidget, QTableView, QPushButton, QDateTimeEdit`\\n  - `from PySide6.QtCore import QAbstractTableModel`\\n  - `from ..models.ui_models import VectorStoresTableModel, VectorStoreFilesTableModel`\\n  - `from ..models.domain_models import VectorStoreInfo, VectorStoreFileInfo`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_section_frame`\\n  - `from ..services.vector_store_manager import VectorStoreManager`\\n  - `from ..services.file_api_manager import FileApiManager`\\n\\nNa konci chunku začíná další položka:\\n- `path\\\": \\\"src/kaja/ui/dialogs_api_key.py\\\",` – její purpose a detaily budou uvedeny v dalším chunku.\\n\\nTento chunk tak doplňuje A2_STRUCTURE o většinu sekcí hlavního UI (IN/OUT, MODE, MODEL, GO, ANSWARE, LOCAL FILES, FILE API, VECTOR STORES, BATCH MONITOR, DIAGNOSTICS, Připojené soubory). Všechny tyto moduly musí být v A3 implementovány přesně s uvedenými názvy souborů, tříd, importů a exportů, aby odpovídaly dříve definovaným závislostem (např. `MainWindow` tyto sekce importuje).\",\"chunk_index\":2,\"chunk_count\":6,\"notes\":[\"Zachovat přesné názvy souborů a tříd (včetně neobvyklého názvu `AnswareSection` a souboru `sections_answare.py`).\",\"`sections_file_api.py` musí importovat `AttachedFilesSection` ze `sections_files_attached.py`, což vytváří explicitní vazbu mezi sekcemi FILE API a Připojené soubory.\",\"`sections_files_attached.py` má exportovat jak `AttachedFilesSection`, tak `AttachedFile`, přestože `AttachedFile` je také doménový model importovaný z `..models.domain_models`; kontrakt je nutné zachovat beze změn.\",\"Všechny uvedené moduly jsou určeny k implementaci ve fázi A3 a musí používat PySide6 widgety a interní stylovací/utilitní moduly (`UiTokens`, `create_section_frame`, `ExclusiveButtonGroup`, `Icons`).\",\"Následující chunk bude pokračovat definicí dialogů, počínaje `src/kaja/ui/dialogs_api_key.py`.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 2954,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2452,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 5406
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767981383,
+    "store": true
+  }
+}

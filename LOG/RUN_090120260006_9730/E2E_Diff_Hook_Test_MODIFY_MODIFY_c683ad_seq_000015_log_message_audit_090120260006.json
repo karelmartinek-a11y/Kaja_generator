@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "MODIFY",
+    "response_id": "MODIFY_c683ad",
+    "event": "log_message",
+    "sequence": 15,
+    "logged_at": "2026-01-08T23:06:45.721188"
+  },
+  "details": {
+    "event": "log_message",
+    "level": "info",
+    "details": {
+      "message": "Upload C:\\Kaja_generator\\LOG\\RUN_090120260006_9730\\E2E_Diff_Hook_Test_MODIFY_c683ad_mirror_manifest_090120260006.json selhal: Error code: 400 - {'error': {'message': \"'mirror manifest' is not one of ['fine-tune', 'assistants', 'batch', 'user_data', 'vision', 'evals'] - 'purpose'\", 'type': 'invalid_request_error', 'param': 'purpose', 'code': None}}"
+    },
+    "timestamp": "2026-01-08T23:06:45.721181"
+  }
+}

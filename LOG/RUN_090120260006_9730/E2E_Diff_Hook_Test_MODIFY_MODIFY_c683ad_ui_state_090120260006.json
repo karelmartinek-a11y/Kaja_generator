@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "response_id": "MODIFY_c683ad",
+    "captured_at": "2026-01-08T23:06:41.519245",
+    "project": "E2E Diff/Hook Test",
+    "mode": "MODIFY"
+  },
+  "ui_state": {
+    "project_name": "E2E Diff/Hook Test",
+    "prompt_text": "Modify run for diff and hook logging",
+    "in_dir": "C:\\Kaja_generator\\IN",
+    "out_dir": "C:\\Kaja_generator\\OUT",
+    "versing_enabled": false,
+    "mode": "MODIFY",
+    "response_id": "MODIFY_c683ad",
+    "model": "gpt-4o",
+    "send_as_c": false,
+    "diagnostics": {
+      "windows_in": false,
+      "windows_out": false,
+      "ssh_in": false,
+      "ssh_out": false
+    },
+    "ssh": {
+      "host": "",
+      "user": "root",
+      "key_path": "",
+      "password": "",
+      "port": 22
+    },
+    "attached_file_ids": []
+  }
+}

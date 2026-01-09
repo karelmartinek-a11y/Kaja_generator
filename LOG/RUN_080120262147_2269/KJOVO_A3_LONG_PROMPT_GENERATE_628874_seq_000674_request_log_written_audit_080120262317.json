@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "GENERATE_628874",
+    "event": "request_log_written",
+    "sequence": 674,
+    "logged_at": "2026-01-08T22:17:16.134610"
+  },
+  "details": {
+    "event": "request_log_written",
+    "level": "info",
+    "details": {
+      "stage": "A3_LONG_PROMPT",
+      "request_id": "cae8eeb3",
+      "request_log": "KJOVO_A3_LONG_PROMPT_GENERATE_628874_req_cae8eeb3_request_080120262317.json",
+      "request_chars": 11495,
+      "estimated_tokens": 2873
+    },
+    "timestamp": "2026-01-08T22:17:16.134582"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260046_109e",
+    "project": "Kajovo",
+    "stage": "GENERATE",
+    "response_id": "",
+    "event": "model_capabilities_in_use",
+    "sequence": 3,
+    "logged_at": "2026-01-08T23:46:44.397596"
+  },
+  "details": {
+    "event": "model_capabilities_in_use",
+    "level": "info",
+    "details": {
+      "model": "gpt-4o",
+      "supports_vector_store": true,
+      "supports_file_search": true,
+      "supports_temperature": true,
+      "resolved": true,
+      "source": "gpt-4o",
+      "supported_tools": [],
+      "supported_parameters": []
+    },
+    "timestamp": "2026-01-08T23:46:44.397589"
+  }
+}

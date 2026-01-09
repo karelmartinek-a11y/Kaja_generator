@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "MODIFY",
+    "response_id": "MODIFY_c683ad",
+    "event": "ui_log_message",
+    "sequence": 5,
+    "logged_at": "2026-01-08T23:06:45.727783"
+  },
+  "details": {
+    "message": "Spouštím sekvenci B1 → B2 → B3",
+    "timestamp_local": "00:06:45",
+    "source": "ui_log"
+  }
+}

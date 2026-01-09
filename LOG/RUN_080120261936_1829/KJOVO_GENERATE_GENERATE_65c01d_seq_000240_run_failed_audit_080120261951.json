@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120261936_1829",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_65c01d",
+    "event": "run_failed",
+    "sequence": 240,
+    "logged_at": "2026-01-08T18:51:11.483372"
+  },
+  "details": {
+    "event": "run_failed",
+    "level": "error",
+    "details": {
+      "error": "A1_PLAN: chybí project.",
+      "type": "ValueError",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3445, in execute\n    files = self._run_generate(user_spec, assets, ui_state, progress_callback, stop_check)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3660, in _run_generate\n    a1_data = self._parse_json_response(a1_response, \"A1_PLAN\", assets=assets)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2880, in _parse_json_response\n    self._validate_contract(payload, expected_contract, assets)\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2921, in _validate_contract\n    self._validate_a1_plan(payload)\n    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2942, in _validate_a1_plan\n    raise ValueError(f\"A1_PLAN: chybí {key}.\")\nValueError: A1_PLAN: chybí project.\n"
+    },
+    "timestamp": "2026-01-08T18:51:11.483366"
+  }
+}

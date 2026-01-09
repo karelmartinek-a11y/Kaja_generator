@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "GENERATE_53998c",
+    "logged_at": "2026-01-08T20:27:48.155245",
+    "request_id": "ea5667d0"
+  },
+  "payload": {
+    "id": "resp_0e4b4707a42b3f7000696013284fbc819685758dd945f28750",
+    "created_at": 1767904040.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0e4b4707a42b3f700069601328f37c8196afc682fed304bd8c",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Uživatel chce obsah souboru core/__init__.py, případně po částech (chunking) s volitelným parametrem CHUNK_INDEX. Kritický požadavek: vrátit pouze čistý obsah souboru (nebo jeho chunk), žádné diffy/patch formátování. Redundantní kontrakt A3_FILE říká, že odpověď má být jen JSON dle A3_FILE.\\n\\nProjekt: CrossPlatformFullDiag – plně skriptovatelná diagnostika pro Linux (Ubuntu server) a Windows 10/11 v Pythonu 3 (CPython 3.10+, pouze standardní knihovna, žádné externí závislosti ani stahování z internetu). Diagnostika má deterministickou strukturu výstupu a MANIFEST.\\n\\nPředchozí MASTER zadání (není zde opsáno) definuje detailní obsah diagnostiky, strukturu adresářů, MANIFEST, indexy souborů, bezpečnostní poznámky atd. Tyto detaily jsou závazné, ale nejsou v tomto chunku zopakovány.\\n\\nAssumptions:\\n- Python 3.10+ je dostupný na cílových systémech.\\n- Na Linuxu (Ubuntu web server) je povoleno používat standardní systémové utility (uname, lsb_release, df, lsblk, ip, ss, systemctl, journalctl atd.) podle MASTER zadání.\\n- Na Windows je povoleno používat PowerShell (pwsh/powershell.exe) a vestavěné nástroje (wmic, systeminfo, wevtutil, netsh, sc, driverquery) podle MASTER zadání.\\n- Diagnostika běží s dostatečnými oprávněními (Linux: sudo/root, Windows: administrátor) pro čtení požadovaných informací.\\n- Výstupní adresář pro diagnostiku je zapisovatelný a má dost místa.\\n- UI standard „Kájovo UI DESIGN STANDARD MASTER v1.0“ je závazný jen pro případné budoucí GUI; aktuální návrh řeší primárně CLI, ale API a moduly mají být navrženy tak, aby šly snadno obalit GUI vrstvou.\\n- Nástroj nesmí stahovat žádné externí soubory ani závislosti z internetu.\\n- Kořenový adresář diagnostiky má název Diag_YYYYMMDD-HHMMSS (lokální čas stroje).\\n- Detailní seznam souborů a podsložek pro Linux a Windows je definován v MASTER zadání a je závazný.\\n\\nFunkční požadavky (výběr, vše závazné):\\n1) Nástroj musí vytvořit kořenový adresář diagnostiky Diag_YYYYMMDD-HHMMSS v aktuálním nebo explicitně zadaném cílovém adresáři.\\n2) Pro Linux (Ubuntu web server) musí vytvořit adresářovou strukturu a soubory přesně podle MASTER návrhu FULL diagnostiky (včetně MANIFEST.md, indexu klíčových souborů, bezpečnostních poznámek).\\n3) Pro Windows musí vytvořit strukturu Diag_YYYYMMDD-HHMMSS/ se všemi podsložkami: system, registry, filesystem, hardware, storage, drivers, processes_services, network, security, python, devtools, virtualization, wsl, logs atd., přesně dle MASTER návrhu.\\n4) Musí generovat MANIFEST.md v kořenovém adresáři s kompletním indexem všech souborů a podsložek, stručným popisem obsahu a informacemi o integritě (např. hash).\\n5) Musí generovat index klíčových souborů (např. KEY_FILES_INDEX.md) s rychlým přehledem nejdůležitějších diagnostických výstupů.\\n6) Pro každý významný výstupní soubor musí být v MANIFESTu a/nebo samostatném souboru uveden kryptografický hash (např. SHA-256) pro ověření integrity.\\n7) Musí podporovat režimy běhu: linux-only, windows-only a auto (detekce podle aktuálního OS).\\n8) Musí poskytovat CLI rozhraní s jasně definovanými přepínači, např.: --mode linux|windows|auto, --output-dir PATH, --no-hash, --no-logs, --section NAME.\\n9) Musí umožnit selektivní spuštění pouze vybraných sekcí diagnostiky (např. pouze network, pouze storage) podle doménových sekcí definovaných v MASTER zadání.\\n10) Musí logovat průběh běhu do interního log souboru v podsložce logs (např. diag_run.log) včetně časových razítek, úspěchů a chyb.\\n11) Pro každou sekci (system, registry, filesystem, hardware, storage, drivers, processes_services, network, security, python, devtools, virtualization, wsl, logs) musí vytvořit minimálně jeden souhrnný soubor (např. SUMMARY.txt nebo JSON) s agregovanými informacemi, pokud to MASTER zadání vyžaduje.\\n12) Musí respektovat bezpečnostní omezení z MASTER zadání (neexportovat citlivá data nad rámec definice, maskovat tajné hodnoty, pokud je to požadováno).\\n13) Musí vracet nenulový návratový kód procesu při kritické chybě, která znemožní dokončení diagnostiky (např. nelze vytvořit kořenový adresář).\\n14) Musí být deterministický v názvosloví souborů a adresářů (stejné vstupy → stejná struktura a názvy, liší se jen časové razítko).\\n15) Jádro nástroje (sběr dat a generování struktury) musí být oddělené od CLI vrstvy a volatelné z jiných programů (např. budoucí GUI dle Kájovo UI standardu).\\n16) Musí podporovat dry-run režim, který pouze vypíše plánované akce a strukturu bez skutečného vytváření souborů.\\n17) Musí umožnit konfiguraci úrovně detailu diagnostiky (např. basic vs. full), pokud je takový rozdíl definován; pokud ne, vždy provádí FULL diagnostiku.\\n18) Musí zaznamenat do MANIFESTu verzi nástroje, verzi Pythonu, OS, datum a čas běhu a aktivované přepínače.\\n19) Musí běžet bez přístupu k internetu a nesmí se pokoušet o žádnou síťovou komunikaci mimo diagnostiku samotnou (např. testy konektivity v network sekci jsou povolené, ale žádné stahování).\\n\\nNefunkční požadavky (výběr):\\n- Plná přenositelnost mezi podporovanými verzemi Ubuntu LTS a Windows 10/11 bez instalace dalších balíků.\\n- Minimalizace dopadu na výkon systému (neprovádět zbytečně náročné operace paralelně, pokud to není nutné).\\n- Čitelný a udržovatelný kód s jasně oddělenými moduly pro jednotlivé doménové sekce diagnostiky.\\n- Konzistentní logovací formát (text, časové razítko ISO 8601, úroveň INFO/WARN/ERROR).\\n- Snadná rozšiřitelnost o nové sekce diagnostiky nebo rozšíření existujících bez narušení stávajícího API.\\n\\nTento chunk neobsahuje samotný kód, ale popisuje globální požadavky a kontext pro implementaci nástroje a pro budoucí obsah souboru core/__init__.py. Je nutné zachovat kontrakt o čistém obsahu souboru a JSON formátu v dalších krocích.\",\"chunk_index\":1,\"chunk_count\":10,\"notes\":[\"Zachovat požadavek, že odpovědi mají být pouze JSON dle příslušného kontraktu (např. A3_FILE, LONG_PROMPT_COMPRESS) bez markdownu a bez diff/patch formátů.\",\"Při implementaci core/__init__.py musí být respektovány všechny funkční a nefunkční požadavky, zejména deterministická struktura výstupu, MANIFEST, hashování souborů, oddělení jádra od CLI a podpora režimů linux/windows/auto a dry-run.\",\"Nástroj nesmí používat žádné externí závislosti mimo standardní knihovnu Pythonu a nesmí stahovat soubory z internetu.\",\"Je nutné pamatovat na bezpečnostní omezení (maskování citlivých dat, neexportovat nad rámec MASTER definice).\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 2173,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1993,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 4166
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767904067,
+    "store": true
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A3_FILE_REPAIR",
+    "response_id": "GENERATE_53998c",
+    "event": "response_received",
+    "sequence": 659,
+    "logged_at": "2026-01-08T20:34:20.723236"
+  },
+  "details": {
+    "event": "response_received",
+    "level": "info",
+    "details": {
+      "stage": "A3_FILE_REPAIR",
+      "request_id": "d026dad2",
+      "response_id": "resp_0a0555d10c8e77e400696014cb56048195a7d577472eac8cb8",
+      "base_response_id": "GENERATE_53998c"
+    },
+    "timestamp": "2026-01-08T20:34:20.723208"
+  }
+}

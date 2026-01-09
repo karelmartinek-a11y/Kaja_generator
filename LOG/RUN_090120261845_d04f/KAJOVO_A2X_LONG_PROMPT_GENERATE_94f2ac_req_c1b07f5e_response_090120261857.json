@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_94f2ac",
+    "logged_at": "2026-01-09T17:57:56.074035",
+    "request_id": "c1b07f5e"
+  },
+  "payload": {
+    "id": "resp_0e15457e6da0c74c0069614188434481a3922a22cfeb20cb2a",
+    "created_at": 1767981448.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0e15457e6da0c74c0069614188b03881a3ae4e472609fee626",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk pokračuje ve specifikaci services, diagnostics, persistence a models vrstev KÁJO GO'. Všechny soubory jsou Python, generované v A3, a je nutné zachovat přesné názvy tříd, funkcí a importů.\\n\\n14) `src/kaja/services/file_api_manager.py`\\n- Purpose: Vyšší vrstva nad OpenAI Files API.\\n- EXPORTS: `class FileApiManager`.\\n- IMPORTS:\\n  - `from ..services.openai_client import OpenAIClient`\\n  - `from ..services.logging_manager import LoggingManager`\\n  - `from ..services.secret_scanner import SecretScanner`\\n  - `from ..services.allow_deny_filter import AllowDenyFilter`\\n  - `from ..models.domain_models import FileApiFileInfo`\\n- FileApiManager obaluje práci s OpenAI Files API (upload, list, delete, metadata). Integruje SecretScanner a AllowDenyFilter pro bezpečné nahrávání souborů (filtrování a skenování tajemství) a používá LoggingManager pro audit.\\n\\n15) `src/kaja/services/vector_store_manager.py`\\n- Purpose: Správa vector stores a jejich souborů.\\n- EXPORTS: `class VectorStoreManager`.\\n- IMPORTS:\\n  - `from ..services.openai_client import OpenAIClient`\\n  - `from ..services.logging_manager import LoggingManager`\\n  - `from ..core.fs_mirror_manager import MirrorResult`\\n  - `from ..models.domain_models import VectorStoreInfo, VectorStoreFileInfo, FileApiFileInfo`\\n- VectorStoreManager vytváří/spravuje vector stores, přidává/odebírá soubory (FileApiFileInfo), synchronizuje je s MirrorResult a vrací strukturované informace (VectorStoreInfo, VectorStoreFileInfo). Loguje operace.\\n\\n16) `src/kaja/services/pricing_manager.py`\\n- Purpose: Správa ceníku a výpočet nákladů.\\n- EXPORTS:\\n  - `class PricingManager`\\n  - `class PriceTable`\\n  - `class ModelPricing`\\n  - `class ToolPricing`\\n  - `class StoragePricing`\\n  - `class RunUsage`\\n  - `class BatchUsage`\\n  - `class ToolUsage`\\n  - `class StorageUsage`\\n  - `class ReceiptCostBreakdown`\\n- IMPORTS:\\n  - `import datetime, json, os`\\n  - `import requests`\\n  - `from ..services.logging_manager import LoggingManager`\\n  - `from ..services.settings_manager import SettingsManager`\\n- PricingManager načítá ceník (lokálně nebo z webu přes requests), mapuje ho do PriceTable/ModelPricing/ToolPricing/StoragePricing a počítá náklady za běh (RunUsage, BatchUsage, ToolUsage, StorageUsage). ReceiptCostBreakdown poskytuje detailní rozpad nákladů pro účtenky. Loguje změny a chyby, respektuje nastavení v Settings.\\n\\n17) `src/kaja/services/api_key_manager.py`\\n- Purpose: Správa OpenAI API klíče v systémových proměnných.\\n- EXPORTS: `class ApiKeyManager`.\\n- IMPORTS:\\n  - `import os`\\n  - `from ..services.logging_manager import LoggingManager`\\n- ApiKeyManager čte/zapisuje API klíč do environment proměnných (např. `OPENAI_API_KEY`), případně validuje jeho přítomnost a loguje operace.\\n\\n18) `src/kaja/services/secret_scanner.py`\\n- Purpose: Detekce citlivých souborů a tajemství.\\n- EXPORTS:\\n  - `class SecretScanner`\\n  - `class SecretScanResult`\\n- IMPORTS:\\n  - `import re`\\n  - `from dataclasses import dataclass`\\n  - `from ..services.settings_manager import SettingsManager`\\n  - `from ..services.logging_manager import LoggingManager`\\n- SecretScanner používá regexy a konfiguraci ze Settings k detekci tajemství (tokeny, klíče, hesla) v souborech. SecretScanResult shrnuje nálezy (např. typ, pozice, soubor). Loguje varování a může označovat soubory jako nevhodné k uploadu.\\n\\n19) `src/kaja/services/allow_deny_filter.py`\\n- Purpose: Aplikace allow/deny listů přípon a cest.\\n- EXPORTS: `class AllowDenyFilter`.\\n- IMPORTS:\\n  - `import fnmatch, os`\\n  - `from ..services.settings_manager import SettingsManager`\\n  - `from ..services.logging_manager import LoggingManager`\\n- AllowDenyFilter rozhoduje, zda soubor/cesta má být zahrnut podle allow/deny patternů (přípony, glob patterny). Používá fnmatch a Settings, loguje důvody zamítnutí.\\n\\n20) `src/kaja/services/encryption_manager.py`\\n- Purpose: Volitelné šifrování logů a cache.\\n- EXPORTS: `class EncryptionManager`.\\n- IMPORTS:\\n  - `from cryptography.fernet import Fernet`\\n  - `from ..services.settings_manager import SettingsManager`\\n  - `from ..services.logging_manager import LoggingManager`\\n  - `import os`\\n- EncryptionManager spravuje šifrovací klíč (generování/uložení) a poskytuje metody pro šifrování/dešifrování dat (např. logy, cache) pomocí Fernet. Respektuje nastavení v Settings (zapnuto/vypnuto) a loguje operace.\\n\\n21) `src/kaja/services/script_executor.py`\\n- Purpose: Bezpečné spuštění lokálních a SSH skriptů.\\n- EXPORTS:\\n  - `class ScriptExecutor`\\n  - `class ScriptExecutionResult`\\n- IMPORTS:\\n  - `import subprocess, datetime`\\n  - `from dataclasses import dataclass`\\n  - `from ..models.domain_models import SSHConfig`\\n  - `from ..services.logging_manager import LoggingManager`\\n- ScriptExecutor spouští lokální příkazy a skripty, případně přes SSH (pomocí SSHConfig). ScriptExecutionResult obsahuje výstup, chybový výstup, návratový kód a časové údaje. Modul loguje spuštění a výsledky, dbá na bezpečnost (omezení příkazů dle konfigurace).\\n\\n22) `src/kaja/services/clipboard_manager.py`\\n- Purpose: Abstrakce nad systémovou schránkou.\\n- EXPORTS: `class ClipboardManager`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QApplication`\\n- ClipboardManager poskytuje jednoduché API pro čtení/zápis textu do systémové schránky v kontextu Qt aplikace (využívá QApplication.clipboard()).\\n\\n23) `src/kaja/diagnostics/__init__.py`\\n- Purpose: Inicializace podbalíku `kaja.diagnostics`.\\n- EXPORTS: žádné.\\n- IMPORTS: žádné.\\n- Pouze označuje adresář jako balíček.\\n\\n24) `src/kaja/diagnostics/diagnostics_windows.py`\\n- Purpose: FULL Windows Diagnostics dle specifikace.\\n- EXPORTS:\\n  - `class WindowsDiagnosticsManager`\\n  - `class DiagnosticsResult`\\n- IMPORTS:\\n  - `import subprocess, os, datetime`\\n  - `from dataclasses import dataclass`\\n  - `from ..core.fs_utils import FSUtils`\\n  - `from ..services.file_api_manager import FileApiManager`\\n  - `from ..services.logging_manager import LoggingManager`\\n- WindowsDiagnosticsManager provádí komplexní diagnostiku Windows prostředí (systémové info, síť, procesy, služby, disk, logy). Výstupy ukládá přes FSUtils, může je nahrát přes FileApiManager. DiagnosticsResult shrnuje stav a cesty k artefaktům. Vše se loguje.\\n\\n25) `src/kaja/diagnostics/diagnostics_ubuntu_ssh.py`\\n- Purpose: FULL Ubuntu (Web Server) Diagnostics přes SSH.\\n- EXPORTS: `class UbuntuSSHDiagnosticsManager`.\\n- IMPORTS:\\n  - `import subprocess, os, datetime`\\n  - `from ..core.fs_utils import FSUtils`\\n  - `from ..services.file_api_manager import FileApiManager`\\n  - `from ..services.logging_manager import LoggingManager`\\n  - `from ..models.domain_models import SSHConfig`\\n- UbuntuSSHDiagnosticsManager se připojuje na Ubuntu server přes SSH (dle SSHConfig), spouští diagnostické příkazy (systém, síť, web server, logy), ukládá výsledky přes FSUtils a může je nahrát přes FileApiManager. Loguje průběh a chyby.\\n\\n26) `src/kaja/persistence/__init__.py`\\n- Purpose: Inicializace podbalíku `kaja.persistence`.\\n- EXPORTS: žádné.\\n- IMPORTS: žádné.\\n\\n27) `src/kaja/persistence/persistence_manager.py`\\n- Purpose: SAVE/LOAD UI stavu a LOAD REQUEST.\\n- EXPORTS: `class PersistenceManager`.\\n- IMPORTS:\\n  - `import json, os`\\n  - `from ..services.logging_manager import LoggingManager`\\n  - `from ..core.fs_utils import FSUtils`\\n- PersistenceManager ukládá a načítá stav UI (např. poslední run, nastavení formulářů) do souborů (JSON) pomocí FSUtils. Zajišťuje také načtení uložených requestů. Loguje operace a chyby.\\n\\n28) `src/kaja/persistence/receipts_repository.py`\\n- Purpose: SQLite úložiště účtenek.\\n- EXPORTS:\\n  - `class ReceiptsRepository`\\n  - `class Receipt`\\n  - `class ReceiptFilter`\\n  - `class ReceiptSummary`\\n  - `class ReceiptSummaryAggregate`\\n- IMPORTS:\\n  - `import sqlite3, datetime`\\n  - `from dataclasses import dataclass`\\n  - `from ..services.logging_manager import LoggingManager`\\n  - `from ..services.pricing_manager import ReceiptCostBreakdown`\\n- ReceiptsRepository spravuje SQLite databázi účtenek (vytváření tabulek, CRUD operace). Receipt je datová třída pro jednu účtenku (včetně nákladů z ReceiptCostBreakdown). ReceiptFilter umožňuje filtrování (datum, model, tagy). ReceiptSummary a ReceiptSummaryAggregate poskytují agregované přehledy (součty, průměry). Vše se loguje.\\n\\n29) `src/kaja/models/__init__.py`\\n- Purpose: Inicializace podbalíku `kaja.models`.\\n- EXPORTS: žádné.\\n- IMPORTS: žádné.\\n- Slouží jen jako označení balíčku; doménové modely jsou v `domain_models.py`.\\n\\nChunk končí u `\\\"path\\\": \\\"src/kaja/models/domain_models.py\\\",` – detailní specifikace doménových modelů (Settings, LogRotationPolicy, RetryPolicy, PricingSourceConfig, SecuritySettings, BatchPollingSettings, DefaultModelSettings, HooksConfig, AllowDenyConfig, FileApiFileInfo, VectorStoreInfo, VectorStoreFileInfo, BatchJobInfo, OpenAIModelInfo, SSHConfig, AttachedFile, DiagnosticsResult aj.) je definována v dalších částech A2 a je již referencována v předchozích modulech (SettingsManager, OpenAIClient, RequestBuilders, ResponseParsers, ScriptExecutor, Diagnostics, atd.).\\n\\nCelkově tento chunk doplňuje services vrstvu (FileApiManager, VectorStoreManager, PricingManager, ApiKeyManager, SecretScanner, AllowDenyFilter, EncryptionManager, ScriptExecutor, ClipboardManager), diagnostickou vrstvu (WindowsDiagnosticsManager, UbuntuSSHDiagnosticsManager) a persistence vrstvu (PersistenceManager, ReceiptsRepository) a uzavírá základní strukturu models balíčku. Všechny moduly jsou úzce provázané s RunOrchestrator a ostatními core/services komponentami z předchozích chunků a musí být v A3 implementovány přesně dle uvedených kontraktů (názvy tříd, importy, zodpovědnosti).\",\"chunk_index\":5,\"chunk_count\":6,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4387,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2823,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 7210
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767981475,
+    "store": true
+  }
+}

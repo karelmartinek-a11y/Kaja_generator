@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_53998c",
+    "logged_at": "2026-01-08T20:10:13.165806",
+    "request_id": "c18cfb09"
+  },
+  "payload": {
+    "id": "resp_0a89e568449a1d2a0069600f08f034819d9292f71eebc97d55",
+    "created_at": 1767902984.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0a89e568449a1d2a0069600f09a1f8819da42e15acb5e3c230",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Nástroj musí dokončit FULL diagnostiku na běžném serveru/stanici v rozumném čase (v minutách, ne hodinách), s ohledem na velikost logů a souborových systémů. Musí poskytovat jasné chybové zprávy pro selhání jednotlivých kroků, ideálně s návrhem možných příčin, pokud jsou známé. Výstupy mají být navrženy tak, aby nad nimi bylo snadné stavět další nástroje (parsování MANIFESTu, automatická analýza). Nástroj smí používat pouze standardní knihovnu Pythonu a systémové nástroje dostupné na cílových OS, bez externích knihoven.\\n\\nKontrainty:\\n- MASTER: žádné externí soubory – nástroj nesmí stahovat ani vyžadovat externí závislosti mimo standardní knihovnu a vestavěné systémové nástroje.\\n- Struktura adresářů a názvy souborů pro Linux a Windows jsou pevně dané předchozími MASTER chunky a nesmí být v tomto plánu měněny.\\n- Nástroj je čistě read‑only diagnostika: nesmí měnit konfiguraci systému, pouze číst informace a zapisovat je do výstupní struktury.\\n- Nesmí ukládat ani logovat citlivé informace nad rámec toho, co je povoleno v MASTER zadání (např. plná hesla, privátní klíče).\\n- Nesmí spoléhat na specifické shellové featury mimo standardní /bin/sh na Linuxu a PowerShell/cmd na Windows, pokud to není v MASTER zadání výslovně povoleno.\\n- Nesmí měnit časová razítka souborů jinak než jejich vytvořením/zápisem (žádné dodatečné dotyky).\\n- Nesmí používat databáze ani jiné perzistentní úložiště mimo generovanou diagnostickou strukturu.\\n- Pokud některý systémový nástroj není dostupný (např. lsb_release, wmic), musí to být zaznamenáno do logu a MANIFESTu jako částečné selhání, ale nesmí kvůli tomu selhat celý běh, pokud nejde o kritickou část definovanou v MASTER zadání.\\n- Konkrétní seznam příkazů a souborů pro jednotlivé sekce je dán MASTER zadáním; tento plán ho nesmí rozšiřovat o nové povinné požadavky, pouze ho implementačně strukturuje.\\n- Kájovo UI DESIGN STANDARD slouží jen jako referenční kontrakt pro budoucí GUI; aktuální implementace je čistě CLI a nesmí generovat grafické rozhraní.\\n\\nArchitektura – moduly:\\n\\n1) core.config\\n- Odpovědnost: centrální konfigurace nástroje, parsování CLI argumentů, datové modely konfigurace běhu.\\n- Exporty:\\n  - DiagMode(Enum): LINUX, WINDOWS, AUTO.\\n  - DetailLevel(Enum): FULL, BASIC (pokud BASIC není v MASTER používán, mapuje se na FULL).\\n  - SectionName(Enum): SYSTEM, REGISTRY, FILESYSTEM, HARDWARE, STORAGE, DRIVERS, PROCESSES_SERVICES, NETWORK, SECURITY, PYTHON, DEVTOOLS, VIRTUALIZATION, WSL, LOGS.\\n  - RunConfig(dataclass): mode:DiagMode, detail:DetailLevel, output_dir:Path, selected_sections:Set[SectionName], dry_run:bool, enable_hashes:bool, enable_logs:bool.\\n  - parse_cli_args(argv:list[str]) -> RunConfig.\\n  - detect_os() -> DiagMode.\\n- Závislosti: argparse, enum, dataclasses, pathlib, typing, platform.\\n\\n2) core.paths\\n- Odpovědnost: generování a správa cest v diagnostické struktuře (kořen Diag_YYYYMMDD-HHMMSS, podsložky, soubory) v souladu s pevně daným MASTER layoutem.\\n- Exporty:\\n  - DiagPaths(dataclass): root:Path, manifest:Path, key_index:Path, logs_dir:Path, plus per‑section adresáře a klíčové soubory.\\n  - generate_root_dir(base_dir:Path, timestamp:datetime) -> Path.\\n  - build_paths(config:RunConfig, timestamp:datetime) -> DiagPaths.\\n- Závislosti: RunConfig, pathlib, datetime.\\n\\n3) core.logging\\n- Odpovědnost: interní logování běhu diagnostiky do souboru v podsložce logs a případně na stderr/stdout. Formát logu musí respektovat nefunkční požadavky (ISO 8601, úroveň INFO/WARN/ERROR).\\n- Exporty:\\n  - DiagLogger: metody info(msg), warn(msg), error(msg), exception(msg).\\n  - init_logger(paths:DiagPaths, enable_logs:bool) -> DiagLogger.\\n- Závislosti: DiagPaths, logging, pathlib, sys, traceback.\\n\\n4) core.manifest\\n- Odpovědnost: model a generování MANIFEST.md a indexu klíčových souborů, včetně hashů a metadat běhu. Musí zajistit deterministické, lexikograficky seřazené výstupy.\\n- Exporty:\\n  - ManifestEntry(dataclass): relative_path:str, description:str, sha256:str|None, size:int|None, section:SectionName|None.\\n  - Manifest(dataclass): entries:list[ManifestEntry], tool_version:str, python_version:str, os_info:str, run_timestamp:str, config_summary:str.\\n  - create_empty_manifest(config:RunConfig, paths:DiagPaths) -> Manifest.\\n  - add_file(manifest:Manifest, paths:DiagPaths, abs_path:Path, description:str, section:SectionName|None = None, compute_hash:bool = True) -> None.\\n  - write_manifest(manifest:Manifest, paths:DiagPaths) -> None.\\n  - write_key_files_index(manifest:Manifest, paths:DiagPaths) -> None.\\n- Závislosti: RunConfig, SectionName, DiagPaths, dataclasses, hashlib, pathlib, platform, sys, textwrap.\\n\\n5) core.exec\\n- Odpovědnost: bezpečné a deterministické spouštění systémových příkazů na Linuxu a Windows, sběr stdout/stderr a návratových kódů, bez závislosti na nestandardních shell featurách.\\n- Exporty:\\n  - CommandResult(dataclass): command:list[str], returncode:int, stdout:str, stderr:str.\\n  - run_command(cmd:list[str], timeout:int|None = None, shell:bool = False) -> CommandResult.\\n  - write_command_result(result:CommandResult, target_file:Path) -> None.\\n- Závislosti: subprocess, dataclasses, pathlib, textwrap.\\n\\n6) core.errors\\n- Odpovědnost: společná hierarchie výjimek a utility pro chybové stavy, včetně rozlišení kritických chyb a chyb sekcí.\\n- Exporty:\\n  - DiagError(Exception).\\n  - CriticalDiagError(DiagError).\\n  - SectionError(DiagError) s vazbou na SectionName.\\n- Slouží k jednotnému zachycení a propagaci chyb do logu a MANIFESTu, v souladu s požadavkem na jasné chybové zprávy a nenulový návratový kód při kritických selháních.\",\"chunk_index\":2,\"chunk_count\":8,\"notes\":[\"Zachovat striktní omezení: žádné externí soubory/závislosti, read‑only chování, žádné změny pevně dané struktury z MASTER, žádné GUI.\",\"Architektonické moduly core.config, core.paths, core.logging, core.manifest, core.exec a core.errors tvoří základní jádro; CLI vrstva musí tyto moduly pouze používat, ne nahrazovat jejich logiku.\",\"Manifest a logování musí být deterministické a vhodné pro další automatizované zpracování (parsování, analýza).\",\"Při nedostupnosti systémových nástrojů se běh nesmí zbytečně ukončit; stav se musí promítnout do logu i MANIFESTu jako částečné selhání.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4026,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1902,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 5928
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767903012,
+    "store": true
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "GENERATE_53998c",
+    "logged_at": "2026-01-08T20:29:29.629663",
+    "request_id": "5980f75e"
+  },
+  "payload": {
+    "id": "resp_0af10afcf00ad2830069601373f804819c9c84a861b56b58cf",
+    "created_at": 1767904115.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0af10afcf00ad28300696013746870819c951182b98e80bdb4",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk pokračuje v architektonickém návrhu modulů, zejména chybové vrstvy a sekčních implementací pro Linux a Windows.\\n\\n1) core.errors (rozšíření)\\n- Odpovědnost: společná hierarchie výjimek a formátování chyb.\\n- Nové exporty:\\n  - class CriticalDiagError(DiagError): reprezentuje kritické chyby běhu diagnostiky, které mohou ohrozit celý proces (např. selhání inicializace klíčových komponent). Používá se tam, kde MASTER označuje části jako kritické.\\n  - class SectionError(DiagError): výjimka specifická pro jednotlivé sekce. Má mít pole section: SectionName, aby bylo možné jednoznačně přiřadit chybu k sekci (SYSTEM, FILESYSTEM, atd.). Umožňuje logování a záznam do MANIFESTu jako částečné selhání sekce.\\n  - def format_exception(e: BaseException) -> str: pomocná funkce pro konzistentní textové formátování výjimek (včetně tracebacku) pro logy a případně pro shrnutí v MANIFESTu. Využívá standardní modul traceback.\\n- Závislosti: core.config.SectionName, traceback.\\n\\n2) sections.base\\n- Odpovědnost: společný abstraktní základ pro všechny sekce diagnostiky (system, registry, filesystem, hardware, storage, drivers, processes/services, network, security, python, devtools, virtualization, WSL, logs).\\n- Exporty:\\n  - class SectionContext(dataclass): sdílený kontext předávaný do všech sekcí. Pole:\\n    - config: RunConfig – globální konfigurace běhu (mód, detail, výběr sekcí, hashování, logování, dry-run, atd.).\\n    - paths: DiagPaths – předpočítané cesty do výstupní struktury (root, manifest, logs_dir, per-sekční adresáře).\\n    - logger: DiagLogger – logger pro zapisování interních logů sekce.\\n    - manifest: Manifest – objekt manifestu, do kterého sekce registruje své výstupy.\\n    - mode: DiagMode – detekovaný/požadovaný OS mód (LINUX, WINDOWS), aby sekce věděla, v jakém prostředí běží.\\n  - class BaseSection(ABC): abstraktní třída, kterou dědí všechny konkrétní sekce.\\n    - Povinné metody:\\n      - name(self) -> SectionName: vrací enum identifikující sekci (SYSTEM, FILESYSTEM, NETWORK, LOGS, atd.).\\n      - run(self, ctx: SectionContext) -> None: hlavní vstupní bod sekce, provede sběr dat a zápis do souborů.\\n    - Chráněné pomocné metody (návrh, detaily v dalších chuncích):\\n      - helper pro bezpečné vytváření souborů v rámci sekce (např. open_section_file(name) -> Path / file handle), aby se dodržela struktura adresářů a názvů definovaná v MASTER.\\n      - helper pro registraci souborů do manifestu (wrap nad core.manifest.add_file), který automaticky doplní section= self.name().\\n      - helper pro jednotné zachycení a zalogování chyb v rámci sekce, případně převod na SectionError.\\n  - def run_sections(ctx: SectionContext, sections: list[BaseSection]) -> None: orchestrátor, který spouští jednotlivé sekce v deterministickém pořadí (např. podle SectionName nebo podle předaného seznamu). Zajišťuje:\\n    - Respektování config.selected_sections – spustí jen vybrané sekce.\\n    - Zachycení SectionError a jiných výjimek, jejich zalogování přes DiagLogger a případný záznam do MANIFESTu jako částečné selhání.\\n    - Běh jako celek nesmí selhat kvůli chybě ne-kritické sekce; kritické chyby mohou být reprezentovány CriticalDiagError.\\n- Závislosti: core.config (RunConfig, DiagMode, SectionName), core.paths.DiagPaths, core.logging.DiagLogger, core.manifest.Manifest, core.errors.SectionError, standardní knihovna abc, dataclasses, typing.\\n\\n3) sections.linux.system\\n- Odpovědnost: Linux/Ubuntu sekce \\\"system\\\" dle MASTER – sběr základních systémových informací (kernel, distribuce, uptime, hostname, CPU info, paměť, atd.).\\n- Exporty:\\n  - class LinuxSystemSection(BaseSection): implementuje name() (vrací SectionName.SYSTEM) a run().\\n- Implementační nástin run():\\n  - Používá core.exec.run_command pro volání systémových nástrojů (např. uname, lsb_release, hostnamectl, uptime, cat /etc/os-release, atd., přesně dle MASTER – tento plán je jen strukturální, nepřidává nové povinné příkazy).\\n  - Výstupy jednotlivých příkazů zapisuje do souborů v příslušném adresáři (např. system_dir) pomocí helperů z BaseSection.\\n  - Pro každý vytvořený soubor volá core.manifest.add_file (přímo nebo přes helper), aby se zapsal do MANIFESTu s příslušným popisem a sekcí.\\n  - Případné chybějící nástroje (např. lsb_release) zaznamená do logu a manifestu jako částečné selhání, ale nesmí ukončit běh celé diagnostiky.\\n- Závislosti: sections.base (BaseSection, SectionContext), core.exec (run_command, write_command_result), core.manifest.add_file, core.paths.DiagPaths, core.logging.DiagLogger, standardní knihovna pathlib, os.\\n\\n4) sections.linux.filesystem\\n- Odpovědnost: Linux sekce \\\"filesystem\\\" dle MASTER – informace o souborovém systému (mounty, df, lsblk, struktura klíčových adresářů, atd.).\\n- Exporty:\\n  - class LinuxFilesystemSection(BaseSection): implementuje name() (SectionName.FILESYSTEM) a run().\\n- Implementační nástin:\\n  - Spouští příkazy typu mount, df -h, lsblk, případně tree/ls vybraných adresářů (přesně dle MASTER).\\n  - Výstupy ukládá do souborů v adresáři pro filesystem sekci a registruje je do manifestu.\\n  - Respektuje read-only požadavek – žádné změny FS, pouze čtení.\\n- Závislosti: sections.base (BaseSection, SectionContext), core.exec (run_command, write_command_result), core.manifest.add_file, core.paths.DiagPaths, core.logging.DiagLogger, standardní knihovna pathlib, os.\\n\\n5) sections.linux.network\\n- Odpovědnost: Linux sekce \\\"network\\\" dle MASTER – síťová konfigurace a stav (ip, ss/netstat, routing, DNS, atd.).\\n- Exporty:\\n  - class LinuxNetworkSection(BaseSection): implementuje name() (SectionName.NETWORK) a run().\\n- Implementační nástin:\\n  - Používá run_command pro příkazy jako ip addr, ip route, ss -tulpn / netstat, resolv.conf čtení, atd. (konkrétní seznam je v MASTER, zde se nerozšiřuje).\\n  - Výstupy zapisuje do souborů a registruje do manifestu.\\n- Závislosti: sections.base (BaseSection, SectionContext), core.exec (run_command, write_command_result), core.manifest.add_file, core.paths.DiagPaths, core.logging.DiagLogger.\\n\\n6) sections.linux.logs\\n- Odpovědnost: Linux sekce \\\"logs\\\" dle MASTER – sběr systémových a aplikačních logů (journalctl, syslog, další definované logy).\\n- Exporty:\\n  - class LinuxLogsSection(BaseSection): implementuje name() (SectionName.LOGS) a run().\\n- Implementační nástin:\\n  - Používá run_command pro journalctl a další logovací příkazy, případně čte soubory z /var/log a jiných cest definovaných v MASTER.\\n  - Respektuje omezení na citlivá data – nesmí sbírat hesla, privátní klíče apod.\\n  - Výstupy ukládá do logs sekčního adresáře a registruje do manifestu.\\n- Závislosti: sections.base (BaseSection, SectionContext), core.exec (run_command, write_command_result), core.manifest.add_file, core.paths.DiagPaths, core.logging.DiagLogger, standardní knihovna pathlib.\\n\\n7) sections.windows.system\\n- Odpovědnost: Windows sekce \\\"system\\\" dle MASTER – základní systémové informace (systeminfo, verze OS, build, atd.).\\n- Exporty:\\n  - class WindowsSystemSection(BaseSection): implementuje name() (SectionName.SYSTEM) a run().\\n- Implementační nástin:\\n  - Používá run_command pro systeminfo a další příkazy/PowerShell cmdlety definované v MASTER.\\n  - Výstupy zapisuje do souborů v system sekci a registruje do manifestu.\\n- Závislosti: sections.base (BaseSection, SectionContext), core.exec (run_command, write_command_result), core.manifest.add_file, core.paths.DiagPaths, core.logging.DiagLogger.\\n\\n8) sections.windows.registry\\n- Odpovědnost: Windows sekce \\\"registry\\\" dle MASTER – export vybraných klíčů a hodnot z registru.\\n- Exporty:\\n  - class WindowsRegistrySection(BaseSection): implementuje name() (SectionName.REGISTRY) a run().\\n- Implementační nástin:\\n  - Používá run_command pro reg.exe nebo PowerShell (Get-ItemProperty, Export-Registry, atd.) podle MASTER.\\n  - Exportované .reg nebo textové soubory ukládá do registry sekčního adresáře a registruje do manifestu.\\n  - Musí dbát na to, aby neexportoval citlivé údaje nad rámec MASTER.\\n- Závislosti: sections.base (BaseSection, SectionContext), core.exec (run_command, write_command_result), core.manifest.add_file, core.paths.DiagPaths, core.logging.DiagLogger, standardní knihovna pathlib.\\n\\n9) sections.windows.filesystem\\n- Odpovědnost: Windows sekce \\\"filesystem\\\" dle MASTER – informace o discích a adresářové struktuře (diskpart/list volume, dir struktury, atd.).\\n- Exporty:\\n  - class WindowsFilesystemSection(BaseSection): implementuje name() (SectionName.FILESYSTEM) a run().\\n- Implementační nástin:\\n  - Používá run_command pro diskpart / list volume, dir /s vybraných cest, atd. dle MASTER.\\n  - Výstupy ukládá do filesystem sekčního adresáře a registruje do manifestu.\\n- Závislosti: sections.base (BaseSection, SectionContext), core.exec (run_command, write_command_result), core.manifest.add_file, core.paths.DiagPaths, core.logging.DiagLogger, standardní knihovna pathlib, os.\\n\\n10) sections.windows.hardware\\n- Odpovědnost: Windows sekce \\\"hardware\\\" dle MASTER – informace o HW (wmic, Get-CimInstance, atd.).\\n- Exporty:\\n  - class WindowsHardwareSection(BaseSection): implementuje name() (SectionName.HARDWARE) a run().\\n- Implementační nástin:\\n  - Používá run_command pro wmic nebo PowerShell cmdlety (Get-CimInstance, Get-WmiObject) dle MASTER.\\n  - Výstupy ukládá do hardware sekčního adresáře a registruje do manifestu.\\n- Závislosti: sections.base (BaseSection, SectionContext), core.exec (run_command, write_command_result), core.manifest.add_file, core.paths.DiagPaths, core.logging.DiagLogger.\\n\\n11) sections.windows.storage\\n- Odpovědnost: Windows sekce \\\"storage\\\" dle MASTER – informace o discích, partition, případně SMART.\\n- Exporty:\\n  - class WindowsStorageSection(BaseSection): implementuje name() (SectionName.STORAGE) a run().\\n- Implementační nástin:\\n  - Používá run_command pro nástroje typu diskpart, Get-PhysicalDisk, Get-Volume, případně SMART nástroje, pokud jsou v MASTER.\\n  - Výstupy ukládá do storage sekčního adresáře a registruje do manifestu.\\n- Závislosti: sections.base (BaseSection, SectionContext), core.exec (run_command, write_command_result), core.manifest.add_file, core.paths.DiagPaths, core.logging.DiagLogger.\\n\\n12) sections.windows.drivers\\n- Odpovědnost: Windows sekce \\\"drivers\\\" dle MASTER – informace o ovladačích (driverquery, signování, atd.).\\n- Exporty:\\n  - class WindowsDriversSection(BaseSection): implementuje name() (SectionName.DRIVERS) a run().\\n- Implementační nástin (část je v dalším chunku):\\n  - Používá run_command pro driverquery a případné PowerShell cmdlety.\\n  - Výstupy ukládá do drivers sekčního adresáře a registruje do manifestu.\\n- Závislosti (částečně uvedené, zbytek v navazujícím chunku): sections.base (BaseSection, SectionContext), core.exec (run_command, write_command_result), core.manifest.add_file, core.paths.DiagPaths, core.logging.DiagLogger.\\n\\nVšechny sekce respektují globální omezení: pouze standardní knihovna a vestavěné systémové nástroje, read-only přístup k systému, žádné GUI, deterministické pořadí výstupů a robustní chování při chybějících nástrojích (log + záznam do MANIFESTu, bez pádu celého běhu, pokud nejde o kritickou část). Tento chunk navazuje na předchozí návrh core.* modulů a připravuje půdu pro detailní implementaci sekcí v dalších chuncích, aniž by měnil MASTER definice nebo přidával nové povinné příkazy.\",\"chunk_index\":3,\"chunk_count\":10,\"notes\":[\"Zachovat hierarchii výjimek v core.errors: DiagError jako základ, CriticalDiagError pro kritické chyby, SectionError s polem section:SectionName pro chyby v sekcích; format_exception musí používat traceback a vracet konzistentní text pro logy/MANIFEST.\",\"BaseSection a SectionContext tvoří klíčový abstraktní rámec pro všechny sekce; run_sections musí spouštět sekce deterministicky, respektovat config.selected_sections a nesmí ukončit běh kvůli ne-kritickým chybám (ty se logují a případně zapisují do MANIFESTu).\",\"Linux a Windows sekce zde definované (system, filesystem, network, logs, registry, hardware, storage, drivers) jsou pouze strukturálně navrženy; konkrétní příkazy a soubory musí přesně odpovídat MASTER a tento plán je nesmí rozšiřovat o nové povinné požadavky.\",\"Všechny sekce používají core.exec.run_command a write_command_result pro spouštění příkazů a zápis jejich výstupů, core.manifest.add_file (přímo nebo přes helper v BaseSection) pro registraci souborů do MANIFESTu a DiagLogger pro logování; musí respektovat read-only charakter diagnostiky a omezení na citlivá data.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 3815,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3648,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 7463
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767904169,
+    "store": true
+  }
+}

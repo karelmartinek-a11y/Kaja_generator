@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_628874",
+    "logged_at": "2026-01-08T22:00:09.119082",
+    "request_id": "982645de"
+  },
+  "payload": {
+    "id": "resp_041adddd9ca67142006960289c7a90819e88acea509cc52a3c",
+    "created_at": 1767909532.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.2-pro-2025-12-11",
+    "object": "response",
+    "output": [
+      {
+        "id": "rs_041adddd9ca6714200696028e82750819e9023e96d26bf3f61",
+        "summary": [],
+        "type": "reasoning",
+        "content": null,
+        "encrypted_content": null,
+        "status": null
+      },
+      {
+        "id": "msg_041adddd9ca6714200696028e828e0819eb47aba226426b3dc",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Projekt Kája: Windows desktop UI aplikace (C#/.NET 8) pro automatizaci OpenAI Responses API včetně Files API uploadů, volitelně vector store/file_search, robustní logování, pricing a diagnostické sběry. Cíl: Windows 10/11 klient + vzdálený Ubuntu server přes SSH. Existující codebase už má OpenAI automatizaci, uploady, logování a pipeline primitiva; umí spouštět externí procesy (PowerShell/ssh/scp) a deterministicky chytat stdout/stderr.\\n\\nUbuntu SSH diagnostics (28.x): povinně použít PowerShell one-liner Variant B s heslem inline přes `sshpass -p $pw` a `-o StrictHostKeyChecking=no` pro ssh i scp. Na Ubuntu spustit bash skript, který vytvoří `$remote_root` jako `Diag_YYYYMMDD-HHMMSS`, vždy `mkdir -p` strom a ukládá stdout+stderr každého příkazu do souborů. Každý očekávaný artefakt musí existovat i při chybě; pokud subsystém chybí, obsah souboru musí explicitně uvést `NOT PRESENT`. Skript musí na konci vypsat přesně jeden řádek `REMOTE_ROOT=$remote_root` na stdout; lokální PS to parsuje přes `Select-String '^REMOTE_ROOT='` a stáhne celý adresář přes `scp -r` (také přes sshpass). Výstup musí obsahovat MANIFEST.md a README s aktualizovaným seznamem složek včetně nginx/, app/, python/, database/, certs/, cron_webhooks/, logs/, virtualization_containers/. README/MANIFEST: „File Index“ tabulka s příklady položek a varování o redakci secretů/PII; integrita `Total files {{file_count}}`, `Total size {{total_size_human}}`, volitelně sha256.txt. MANIFEST šablona 28.23: timestamp_local, hostname, collector_user, is_root, os_pretty_name, kernel, uptime, output_root; purpose „Ubuntu web server diagnostic snapshot“; Folder Overview min. system/, hardware/, storage/, network/, firewall/, users_permissions/, processes_services/, packages/, web/. Povinné Ubuntu artefakty (min. s NOT PRESENT) zahrnují firewall, users_permissions, processes_services, packages, web, nginx, app, python (inventáře), database/postgres, certs/certbot+expiry report, cron_webhooks, logs (journal/syslog tails), virtualization_containers (docker info/ps/compose nalezení).\\n\\nWindows FULL diagnostics (29): vytvořit výstupní adresář (ne ZIP) `Diag_YYYYMMDD-HHMMSS/` se strukturou MANIFEST.md, README_problem.md, CHANGELOG_last_actions.txt a složkami system/, registry/, filesystem/, hardware/, storage/, drivers/, processes_services/, network/, security/, python/, devtools/, virtualization/, wsl/, logs/. MANIFEST autogenerovat (Generated at, Machine, User, PS ver, Run as Admin; Folder Overview; tabulka souborů vč. velikostí; pozn. ACCESS DENIED a chybějící subsystémy). Detailní artefakty dle specifikace 29, vč. pravidel pro hloubku tree/sizes a neexportování citlivých dat (např. Wi‑Fi bez cleartext klíčů).\\n\\nGlobální pravidla diagnostik: nikdy neexportovat secrets (tokeny/hesla/privátní klíče); u citlivých configů pouze metadata/masking. Všechny artefakty uploadnout do OpenAI Files API a evidovat v manifestech. Volitelně indexovat do vector store s atributy {source=diagnostics, scope, captured_at} jen pokud podporováno; jinak no‑op a stále upload přes Files API.\\n\\nNon‑funkční: deterministické názvy a struktura; vždy vytvořit plný očekávaný strom složek i souborů. Robustní logování: pro každý command (lokální i remote) logovat start/end timestamp, exit code, duration a cesty k output souborům; nelogovat secrety (zejm. SSH heslo). Odolnost: per‑artefakt best‑effort; missing subsystems => NOT PRESENT; Ubuntu: když nejde parsovat REMOTE_ROOT, uložit plné ssh logy lokálně, označit run failed, nespouštět scp; SCP partial download zachovat; Windows ACCESS DENIED poznámky; vector indexing nesmí shodit run; timeouts per kategorie.\\n\\nArchitektura (moduly): Security.Redaction (IRedactionPolicy, DefaultRedactionPolicy, SensitiveContentGuards.ShouldOnlyListMetadata, NotPresentWriter.WriteNotPresent); Diagnostics.Manifest (IManifestGenerator + ManifestSpec: OutputRoot, Title, HeaderFields, FolderOverview, FileEntries, Notes, Integrity, UploadRecords, VectorRecords); Diagnostics.Integrity (IIntegrityService: file count/size + volitelně sha256); Diagnostics.Upload.OpenAIFiles (IFilesUploader.UploadDirectoryAsync); Diagnostics.Indexing.VectorStore (IVectorIndexer.TryIndexAsync detekuje podporu); Diagnostics.UbuntuSsh.RemoteScript (builder bash skriptu pro 28.x); Diagnostics.UbuntuSsh.Collector (sshpass+ssh -> parse REMOTE_ROOT -> scp -r -> integrity+manifest+upload+optional index); Diagnostics.WindowsFull.Collector; Windows.Python.Inventory (IPythonInventoryService: interpreters_inventory.csv, venv candidates + per‑venv JSON reporty; bez secretů); Diagnostics.Orchestrator (IDiagnosticsOrchestrator.RunUbuntuSshAsync/RunWindowsFullAsync; progress).\\n\\nBuild/Run: .NET 8 SDK; PowerShell 5.1+; OpenSSH klient; Ubuntu: bash+coreutils; optional systemd/journalctl,nft,docker,nginx,openssl,certbot,postgres; sshpass pro Variant B. OpenAI credentials pro Responses+Files; vector store optional.\\n\\nDoplněné akceptační/ověřovací body: Ubuntu MANIFEST.md musí odpovídat šabloně 28.23 (fields + Purpose + min. Folder Overview), README obsahuje File Index příklady a Notes; integritní totals jsou vyplněné; volitelný sha256.txt existuje, když je zapnut. Windows FULL run vytvoří požadovanou strukturu a soubory; MANIFEST obsahuje environment/PATH diff analýzu a ACCESS DENIED poznámky; nevzniká ZIP. Uploady: MANIFEST obsahuje Files API file IDs; pokud je indexace enabled+supported, MANIFEST obsahuje vector store file IDs a atributy {source=diagnostics, scope, captured_at}. Security: testy/scan logů a artefaktů na forbidden patterny (tokens/passwords/private keys); ověřit, že SSH heslo se nikdy neobjeví v logách.\\n\\nDeliverable policy: strategie generování souborů PLAN->STRUCTURE->FILE_CONTENT; max_lines_per_chunk=500.\\n\\nA2_STRUCTURE (začátek repo struktury):\\n- Kaja.sln (solution pro projekty Kaja.App, Kaja.Diagnostics, Kaja.OpenAI, Kaja.Logging).\\n- README.md (repo instrukce build/run + ověření).\\n- src/Kaja.App/Kaja.App.csproj (.NET 8 WPF app; reference na Diagnostics/OpenAI/Logging).\\n- src/Kaja.App/App.xaml + App.xaml.cs (bootstrap/DI composition root; sestaví IDiagnosticsOrchestrator; importy: ConsoleLog, OpenAIClient impl, ProcessRunnerFactory, DefaultRedactionPolicy).\\n- src/Kaja.App/MainWindow.xaml + MainWindow.xaml.cs (shell; tlačítka pro Ubuntu SSH a Windows FULL; binding na DiagnosticsViewModel).\\n- src/Kaja.App/Ui/Diagnostics/DiagnosticsViewModel.cs (validace vstupů, spouštění běhů, progress, output paths; používá UbuntuSshRunSpec, WindowsFullRunSpec, DiagnosticsRunResult, ILog).\\n- src/Kaja.Diagnostics/Kaja.Diagnostics.csproj (diagnostics knihovna; embed resources: Ubuntu MANIFEST_28_23_template.md, Ubuntu README_template.md, Windows MANIFEST_template.md; references OpenAI/Logging).\\n- src/Kaja.Diagnostics/DomainModels/DiagnosticsDomainModels.cs (sdílené deterministické kontrakty: specs, artifact models, command result, manifest entry, upload/index records, run result).\\n- src/Kaja.Diagnostics/Execution/ProcessRunnerAbstractions.cs (IProcessRunner, ProcessRunSpec; vrací CommandResult).\\n- A2_STRUCTURE pokračuje dále (následující položka začíná src/Kaja.Diagnostics/Execution/DefaultProcessRunner.cs).\",\"chunk_index\":5,\"chunk_count\":10,\"notes\":[\"Přidány ověřovací (verification) body: manifest/README integrita + sha256, Windows FULL bez ZIP, MANIFEST obsahuje PATH diff, upload a vektorové ID záznamy, security scan (zakázané patterny) a zákaz logování SSH hesla.\",\"Přidána deliverable_policy: generování souborů PLAN->STRUCTURE->FILE_CONTENT, limit max_lines_per_chunk=500.\",\"Zachycen začátek A2_STRUCTURE: seznam klíčových repo souborů/projektů a jejich účel/importy/exporty až po ProcessRunnerAbstractions; pokračování (DefaultProcessRunner a další) je v dalším chunku.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 0.98,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "medium",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4756,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2145,
+      "output_tokens_details": {
+        "reasoning_tokens": 46
+      },
+      "total_tokens": 6901
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767909608,
+    "store": true
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A1_DIALOG_CHUNK",
+    "response_id": "GENERATE_94f2ac",
+    "event": "api_payload_prepared",
+    "sequence": 12,
+    "logged_at": "2026-01-09T17:45:20.958497"
+  },
+  "details": {
+    "event": "api_payload_prepared",
+    "level": "info",
+    "details": {
+      "stage": "A1_DIALOG_CHUNK",
+      "request_id": "1f9cf8da",
+      "payload_keys": [
+        "model",
+        "instructions",
+        "input"
+      ],
+      "has_temperature": false,
+      "has_tools": false,
+      "previous_response_id": ""
+    },
+    "timestamp": "2026-01-09T17:45:20.958488"
+  }
+}

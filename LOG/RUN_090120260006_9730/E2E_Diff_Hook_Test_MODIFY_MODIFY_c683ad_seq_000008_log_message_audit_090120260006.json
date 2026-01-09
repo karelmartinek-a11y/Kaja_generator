@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "MODIFY",
+    "response_id": "MODIFY_c683ad",
+    "event": "log_message",
+    "sequence": 8,
+    "logged_at": "2026-01-08T23:06:44.931855"
+  },
+  "details": {
+    "event": "log_message",
+    "level": "info",
+    "details": {
+      "message": "Upload C:\\Kaja_generator\\IN\\dry_seed.txt selhal: Error code: 400 - {'error': {'message': \"'in mirror' is not one of ['fine-tune', 'assistants', 'batch', 'user_data', 'vision', 'evals'] - 'purpose'\", 'type': 'invalid_request_error', 'param': 'purpose', 'code': None}}"
+    },
+    "timestamp": "2026-01-08T23:06:44.931847"
+  }
+}

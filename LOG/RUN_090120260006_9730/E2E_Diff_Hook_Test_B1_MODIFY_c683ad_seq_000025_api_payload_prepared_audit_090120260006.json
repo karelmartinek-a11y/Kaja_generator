@@ -1,0 +1,30 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "B1",
+    "response_id": "MODIFY_c683ad",
+    "event": "api_payload_prepared",
+    "sequence": 25,
+    "logged_at": "2026-01-08T23:06:45.769372"
+  },
+  "details": {
+    "event": "api_payload_prepared",
+    "level": "info",
+    "details": {
+      "stage": "B1",
+      "request_id": "98b9bf89",
+      "payload_keys": [
+        "model",
+        "temperature",
+        "tools",
+        "instructions",
+        "input"
+      ],
+      "has_temperature": true,
+      "has_tools": true,
+      "previous_response_id": ""
+    },
+    "timestamp": "2026-01-08T23:06:45.769366"
+  }
+}

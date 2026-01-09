@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_94f2ac",
+    "logged_at": "2026-01-09T17:55:48.033840",
+    "request_id": "442c6468"
+  },
+  "payload": {
+    "id": "resp_005df7d9ff9db24f00696140c5052081908608c162341a64bd",
+    "created_at": 1767981253.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_005df7d9ff9db24f00696140c96c4c819091a82aaa9a76aa8c",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Vstup popisuje projekt A1/A2 pro desktopovou Windows aplikaci „Kája – OpenAI Responses Orchestrator“. Aplikace je psaná v Pythonu 3.11+ s PySide6 (Qt) a běží na Windows 10/11. Hlavní účel: robustní orchestrace OpenAI Responses API, Files, Vector Stores a Batch, včetně diagnostiky, pricingu a verzování souborů. Musí dodržet zadání z instructions a input_text, mít robustní logování, fallbacky a deterministické chování, používat jen ověřené knihovny (Python 3.11, PySide6, další explicitně uvedené). Architektura: desktopová aplikace s vlastním UI frameworkem „Kájovo“. Build/run kroky mají být popsány pro Python 3.11 + PySide6. Výstup projektu musí splnit kontrakty A2/A3 a design standard.\\n\\nA2_STRUCTURE definuje adresářovou strukturu projektu s kořenem `kaja_app`. Obsahuje soubory:\\n- `README.md`: dokumentace projektu Kája – účel, architektura, workflow. Neexportuje kódové symboly, jen odkazuje na technické detaily v `src/app_main.py`, `src/ui/main_window.py`, `src/core/run_orchestrator.py`.\\n- `requirements.txt`: seznam Python závislostí (openai, PySide6, cryptography, requests/httpx, paramiko nebo ssh/sshpass wrapper atd.). Používán instalačními příkazy v README a build skripty.\\n- `pyproject.toml`: konfigurace Python projektu (metadata, závislosti, nástroje pro balení/testování). Odkazuje na balík `src/kaja` a jeho moduly (např. `kaja.app_main`).\\n- `src/__init__.py`: označení balíku `src`, bez veřejných symbolů.\\n- `src/kaja/__init__.py`: inicializace balíku `kaja`. EXPORTS: `__all__ = ['app_main', 'ui', 'core', 'services', 'diagnostics', 'pricing', 'persistence']`. IMPORTS: `from . import app_main, ui, core, services, diagnostics, pricing, persistence`.\\n- `src/kaja/app_main.py`: vstupní bod aplikace Kája. EXPORTS: `run_app()`, `class KajaApplication(QApplication)`, `init_fonts(resources_path: str) -> None`, `show_fatal_font_error(message: str) -> None`. IMPORTS: `QApplication` z PySide6, dále interní moduly: `.ui.main_window.MainWindow`, `.services.settings_manager.SettingsManager`, `.services.logging_manager.LoggingManager`, `.services.api_key_manager.ApiKeyManager`, `.services.pricing_manager.PricingManager`, `.services.openai_client.OpenAIClient`, `.services.retry_manager.RetryManager`, `.persistence.receipts_repository.ReceiptsRepository`, `.persistence.persistence_manager.PersistenceManager`, `.services.encryption_manager.EncryptionManager`.\\n- `src/kaja/ui/__init__.py`: označení podbalíku `kaja.ui`, bez veřejných symbolů.\\n- `src/kaja/ui/main_window.py`: implementace hlavního okna Kája (záhlaví, status bar, workspace layout). EXPORTS: `class MainWindow(QMainWindow)`. IMPORTS: `QMainWindow` z PySide6 a množství UI sekcí a dialogů: `ZadaniSection`, `AttachedFilesSection`, `InSection`, `OutSection`, `DiagnosticsSection`, `ModeSection`, `ModelSection`, `BatchMonitorSection`, `GoSection`, `AnswareSection`, `LocalFilesSection`, `FileApiSection`, `VectorStoresSection`, dále dialogy `ApiKeyDialog`, `SettingsDialog`, `PricingWindow`, `ProgressDialog`, komponentu `DiffViewerDialog`. Z core importuje `RunOrchestrator`. Ze services/persistence importuje `SettingsManager`, `LoggingManager`, `PricingManager`, `PersistenceManager`, `ClipboardManager`, `ApiKeyManager`.\\n- `src/kaja/ui/sections_zadani.py`: sekce Zadání – název projektu a multiline zadání. EXPORTS: `class ZadaniSection(QWidget)`. IMPORTS: `QWidget, QLineEdit, QTextEdit` z PySide6, dále `UiTokens` z `..style.tokens` a `create_section_frame` z `..style.layout_utils`.\\n- Další soubor `src/kaja/ui/sections_files_attached.py` je naznačen, ale jeho obsah v tomto chunku ještě není uveden.\\n\\nKontrakt A2_STRUCTURE určuje jazyk jednotlivých souborů (markdown, text, toml, python) a fázi generování (A3). Struktura a import/export vztahy jsou pevně dané a musí být zachovány v dalších fázích (A3 kód, dokumentace). Projekt se jmenuje KAJOVO/Kája a je zaměřen na orchestraci OpenAI API s důrazem na diagnostiku, pricing, práci se soubory a vektory, a deterministické chování dle zadání.\",\"chunk_index\":1,\"chunk_count\":6,\"notes\":[\"Zachovat název aplikace: „Kája – OpenAI Responses Orchestrator“, interní projektové jméno KAJOVO.\",\"Dodržet kontrakty A1_PLAN a A2_STRUCTURE, zejména pevně definované exporty/importy modulů a balíkové uspořádání.\",\"Aplikace je desktopová pro Windows 10/11, v Pythonu 3.11+ s PySide6 (Qt).\",\"README.md, requirements.txt, pyproject.toml nemají exportovat kódové symboly, slouží pro dokumentaci/konfiguraci.\",\"`app_main.py` je vstupní bod s funkcí `run_app()` a třídou `KajaApplication(QApplication)` a musí inicializovat služby (settings, logging, API keys, pricing, OpenAI client, retry, persistence, encryption).\",\"`MainWindow` v `ui/main_window.py` agreguje různé sekce (zadání, soubory, in/out, diagnostika, režim, model, batch monitor, go, odpověď, lokální soubory, File API, Vector Stores) a dialogy (API key, settings, pricing, progress, diff viewer).\",\"Sekce Zadání (`sections_zadani.py`) používá vlastní stylovací utilitky (`UiTokens`, `create_section_frame`).\",\"Další UI sekce a soubory budou definovány v následujících chuncích – je nutné je později propojit s již popsanou strukturou.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 1847,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1496,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 3343
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767981347,
+    "store": true
+  }
+}

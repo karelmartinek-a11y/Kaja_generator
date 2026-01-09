@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260017_939d",
+    "project": "Kajovo",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_0c08a12b94e2bb5d00695e55b91f0c8190bc901c344ddab58c",
+    "logged_at": "2026-01-08T23:18:00.486849",
+    "request_id": "fe3d1408"
+  },
+  "payload": {
+    "id": "resp_08888bf1af07e3fc0069603b1c6e888193b761cfc12be178bf",
+    "created_at": 1767914268.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 46080 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-4o-2024-08-06",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_08888bf1af07e3fc0069603b1f1b148193830eb94238ae6768",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"This document outlines the consolidated program requirements for the 'Kája' application, a Windows-based desktop program designed to automate requests to OpenAI's Responses API and process responses. The document is divided into several sections, each detailing specific aspects of the program's design, functionality, and implementation. Key sections include the Design Manifest UI, which sets binding rules for the user interface's appearance and behavior, and the Consolidated Master Program Requirements, which specify the program's functional and technical requirements. The program must be robust, with detailed logging and error handling, and support for various operational modes such as GENERATE, MODIFY, and QA. It must also include features like API key management, file handling, and batch processing. The document also provides detailed instructions for implementing diagnostics, pricing, and security measures, as well as guidelines for the program's user interface and interaction elements.\",\"chunk_index\":1,\"chunk_count\":4,\"notes\":[\"The document is intended as the sole prompt for generating the program.\",\"Binding sections include the Design Manifest UI and the Consolidated Master Program Requirements.\",\"The program must be robust, with detailed logging and error handling.\",\"The user interface must adhere to strict design rules, including a black-and-white color scheme and specific typography.\",\"The program must support various operational modes and include features like API key management and batch processing.\",\"Detailed instructions are provided for implementing diagnostics, pricing, and security measures.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": null,
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 33601,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 292,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 33893
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767914279,
+    "store": true
+  }
+}

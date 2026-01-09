@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_94f2ac",
+    "event": "progress_update",
+    "sequence": 92,
+    "logged_at": "2026-01-09T17:54:01.976554"
+  },
+  "details": {
+    "event": "progress_update",
+    "level": "info",
+    "details": {
+      "message": "A2X_LONG_PROMPT: sestavuji request",
+      "ratio": 0.3
+    },
+    "timestamp": "2026-01-09T17:54:01.976533"
+  }
+}

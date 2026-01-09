@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "MODIFY",
+    "response_id": "",
+    "event": "model_capabilities_in_use",
+    "sequence": 3,
+    "logged_at": "2026-01-08T23:06:43.433697"
+  },
+  "details": {
+    "event": "model_capabilities_in_use",
+    "level": "info",
+    "details": {
+      "model": "gpt-4o",
+      "supports_vector_store": true,
+      "supports_file_search": true,
+      "supports_temperature": true,
+      "resolved": true,
+      "source": "gpt-4o",
+      "supported_tools": [],
+      "supported_parameters": []
+    },
+    "timestamp": "2026-01-08T23:06:43.433690"
+  }
+}

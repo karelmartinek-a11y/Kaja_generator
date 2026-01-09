@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260017_939d",
+    "project": "Kajovo",
+    "stage": "A1",
+    "response_id": "resp_0c08a12b94e2bb5d00695e55b91f0c8190bc901c344ddab58c",
+    "event": "request_payload_built",
+    "sequence": 115,
+    "logged_at": "2026-01-08T23:18:26.783683"
+  },
+  "details": {
+    "event": "request_payload_built",
+    "level": "info",
+    "details": {
+      "stage": "A1",
+      "model": "gpt-4o",
+      "instructions_chars": 596,
+      "input_chars": 772,
+      "input_parts": 1,
+      "previous_response_id": "",
+      "tools_enabled": false,
+      "temperature": 0.2,
+      "attachments": 0,
+      "vector_store_id": null,
+      "file_search_enabled": false
+    },
+    "timestamp": "2026-01-08T23:18:26.783676"
+  }
+}

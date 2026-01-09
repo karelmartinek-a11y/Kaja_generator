@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "MODIFY",
+    "response_id": "MODIFY_c683ad",
+    "event": "progress_update",
+    "sequence": 23,
+    "logged_at": "2026-01-08T23:06:45.767029"
+  },
+  "details": {
+    "event": "progress_update",
+    "level": "info",
+    "details": {
+      "message": "B1: sestavuji request",
+      "ratio": 0.1
+    },
+    "timestamp": "2026-01-08T23:06:45.767018"
+  }
+}

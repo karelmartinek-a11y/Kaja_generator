@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "MODIFY",
+    "response_id": "MODIFY_c683ad",
+    "event": "run_failed",
+    "sequence": 45,
+    "logged_at": "2026-01-08T23:06:50.633718"
+  },
+  "details": {
+    "event": "run_failed",
+    "level": "error",
+    "details": {
+      "error": "Error code: 400 - {'error': {'message': \"Invalid 'previous_response_id': 'MODIFY_c683ad'. Expected an ID that begins with 'resp'.\", 'type': 'invalid_request_error', 'param': 'previous_response_id', 'code': 'invalid_value'}}",
+      "type": "BadRequestError",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3624, in execute\n    files = self._run_modify(user_spec, assets, ui_state, progress_callback, stop_check)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 4143, in _run_modify\n    b2_response = self._send_request(\"B2\", b2_payload, ui_state, assets)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2739, in _send_request\n    response = self._client.create_response(api_payload)\n  File \"C:\\kaja_generator\\kaja\\core\\openai_client.py\", line 57, in create_response\n    response = self._client.responses.create(**payload)\n  File \"C:\\Users\\provo\\AppData\\Roaming\\Python\\Python314\\site-packages\\openai\\resources\\responses\\responses.py\", line 866, in create\n    return self._post(\n           ~~~~~~~~~~^\n        \"/responses\",\n        ^^^^^^^^^^^^^\n    ...<40 lines>...\n        stream_cls=Stream[ResponseStreamEvent],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\Users\\provo\\AppData\\Roaming\\Python\\Python314\\site-packages\\openai\\_base_client.py\", line 1259, in post\n    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))\n                           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\provo\\AppData\\Roaming\\Python\\Python314\\site-packages\\openai\\_base_client.py\", line 1047, in request\n    raise self._make_status_error_from_response(err.response) from None\nopenai.BadRequestError: Error code: 400 - {'error': {'message': \"Invalid 'previous_response_id': 'MODIFY_c683ad'. Expected an ID that begins with 'resp'.\", 'type': 'invalid_request_error', 'param': 'previous_response_id', 'code': 'invalid_value'}}\n"
+    },
+    "timestamp": "2026-01-08T23:06:50.633711"
+  }
+}

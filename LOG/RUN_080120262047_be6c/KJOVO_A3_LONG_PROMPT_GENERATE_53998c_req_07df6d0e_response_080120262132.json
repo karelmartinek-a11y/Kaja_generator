@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "GENERATE_53998c",
+    "logged_at": "2026-01-08T20:32:15.272073",
+    "request_id": "07df6d0e"
+  },
+  "payload": {
+    "id": "resp_0baefe41a5128d3b006960141c20a48196836ce418ba6496cc",
+    "created_at": 1767904284.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0baefe41a5128d3b006960141ce7948196a8f77ca4fd0e9de0",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk přidává A2_STRUCTURE specifikaci adresářové a souborové struktury projektu `crossplatform_fulldiag` a popisuje účel a rozhraní jednotlivých modulů, které budou generovány ve fázi A3. Navazuje na předchozí chunk, který popsal orchestraci běhu, error-handling, bezpečnost a build/run.\\n\\nKořen projektu:\\n- `root`: `crossplatform_fulldiag` – hlavní balíček nástroje.\\n\\nBalíček `core` – společná infrastruktura:\\n1) `core/__init__.py`\\n- Účel: pouze označení balíčku `core`, bez veřejných exportů a bez importů.\\n\\n2) `core/config.py`\\n- Účel: definice konfigurace běhu a CLI.\\n- EXPORTS:\\n  - `DiagMode` – enum režimů běhu (např. auto, linux, windows; přesná sada definována v MASTER, ale zde je jasné, že se používá pro volbu OS/profilu).\\n  - `DetailLevel` – enum úrovně detailu sběru (např. minimal/basic/full; používá se v CLI přepínači `--detail`).\\n  - `SectionName` – enum nebo typ identifikující jednotlivé sekce (system, network, logs, filesystem, registry atd.), používá se v konfiguraci, manifestu a při filtrování sekcí (`--sections`).\\n  - `RunConfig` – dataclass s kompletní konfigurací běhu (z CLI a případně z prostředí): obsahuje minimálně zvolený `DiagMode`, `DetailLevel`, seznam povolených sekcí, příznak `dry-run`, příznak pro hashování (`no-hash`), výstupní adresář a další parametry definované v MASTER.\\n  - `parse_cli_args` – funkce, která pomocí `argparse.ArgumentParser` zpracuje CLI argumenty (např. `--mode`, `--detail`, `--output-dir`, `--sections`, `--dry-run`, `--no-hash`) a vrátí `RunConfig`.\\n  - `detect_os` – funkce, která pomocí `platform` (z modulu `python:platform`) detekuje aktuální OS a pomůže nastavit `DiagMode` v auto režimu.\\n- IMPORTS: `Enum` z `enum`, `dataclass` z `dataclasses`, `Path` z `pathlib`, `Set` z `typing`, `platform` z `platform`, `ArgumentParser` z `argparse`.\\n\\n3) `core/paths.py`\\n- Účel: správa cest a struktury výstupu.\\n- EXPORTS:\\n  - `DiagPaths` – dataclass popisující všechny důležité cesty: kořenový diagnostický adresář (např. `Diag_YYYYMMDD-HHMMSS`), podsložky pro sekce (`system`, `network`, `logs`, `filesystem`, `registry` atd.), cesta k logu běhu (`diag_run.log`), k manifestu (`MANIFEST.md`), k indexu klíčových souborů (`KEY_FILES_INDEX.md`) a případné další cesty definované v MASTER.\\n  - `generate_root_dir` – funkce, která na základě `RunConfig` a aktuálního času (`datetime`) vygeneruje název kořenového adresáře diagnostiky (časové razítko, případně prefix) a zajistí jeho vytvoření (s ohledem na error-handling a `CriticalDiagError` popsané v jiném chunku).\\n  - `build_paths` – funkce, která z `RunConfig` a kořenové cesty sestaví instanci `DiagPaths` se všemi podsložkami (vytvoří je, pokud není `dry-run`).\\n- IMPORTS: `RunConfig` z `core/config.py`, `Path` z `pathlib`, `datetime` z `datetime`, `dataclass` z `dataclasses`.\\n\\n4) `core/logging.py`\\n- Účel: logování běhu diagnostiky.\\n- EXPORTS:\\n  - `DiagLogger` – wrapper nebo typ pro logger (pravděpodobně tenký obal nad `logging.Logger`), který zajišťuje konzistentní formátování, úrovně logů a případné maskování citlivých údajů (v souladu s bezpečnostními zásadami z jiného chunku).\\n  - `init_logger` – funkce, která inicializuje logging pro celý běh: nastaví logování do souboru `diag_run.log` v adresáři definovaném v `DiagPaths`, případně i na stderr/stdout, nastaví úroveň logování a formát (čas, úroveň, sekce, zpráva). Musí respektovat omezení z bezpečnostní části (nemaskovat logy, neobsahovat tajné hodnoty).\\n- IMPORTS: `DiagPaths` z `core/paths.py`, `logging` z `logging`, `Path` z `pathlib`, `sys` z `sys`, `traceback` z `traceback` (pro logování neočekávaných výjimek).\\n\\n5) `core/manifest.py`\\n- Účel: model a generování manifestu a indexu klíčových souborů.\\n- EXPORTS:\\n  - `ManifestEntry` – dataclass reprezentující jednu položku manifestu: relativní cesta k souboru, popis, velikost, volitelný SHA-256 hash, případně metadata (sekce, typ souboru, poznámky o chybách atd.).\\n  - `Manifest` – struktura (např. dataclass nebo třída) držící kolekci `ManifestEntry` a případná globální metadata (OS, verze nástroje, čas běhu, konfigurace). Používá se v `SectionContext` a v `runner.main`.\\n  - `create_empty_manifest` – funkce pro vytvoření prázdného manifestu na začátku běhu.\\n  - `add_file` – funkce, kterou sekce volají po vytvoření významného souboru. Přidá `ManifestEntry` do `Manifest`, volitelně spočítá SHA-256 hash (pomocí `hashlib`), zapíše velikost souboru a popis. Musí respektovat chybový model: při selhání výpočtu hashů zaloguje chybu a pokračuje bez hash hodnoty.\\n  - `write_manifest` – funkce, která zapíše `Manifest` do souboru `MANIFEST.md` (nebo jiného formátu) v kořenovém adresáři diagnostiky (cesta z `DiagPaths`).\\n  - `write_key_files_index` – funkce, která vytvoří index klíčových souborů (např. `KEY_FILES_INDEX.md`) s odkazy na nejdůležitější výstupy (shrnutí systému, hlavní logy, konfigurace sítě atd.).\\n- IMPORTS: `RunConfig`, `SectionName` z `core/config.py`, `DiagPaths` z `core/paths.py`, `dataclass` z `dataclasses`, `hashlib` z `hashlib`, `Path` z `pathlib`, `platform` z `platform`, `sys` z `sys`, `textwrap` z `textwrap` (pro formátování textového výstupu manifestu a indexu).\\n\\n6) `core/exec.py`\\n- Účel: spouštění systémových příkazů a zápis jejich výstupu.\\n- EXPORTS:\\n  - `CommandResult` – dataclass obsahující výsledek spuštěného příkazu: příkaz (seznam/řetězec), návratový kód, stdout, stderr, případně dobu běhu. Musí být vrácen i při nenulovém návratovém kódu.\\n  - `run_command` – funkce, která pomocí `subprocess` spustí systémový příkaz, zachytí stdout/stderr, nevyhazuje výjimku při nenulovém návratovém kódu (výjimky pouze při technických problémech – např. nespustitelný binární soubor, chyba v IO). Respektuje `dry-run` (v takovém případě příkaz nespouští a pouze loguje plánovanou akci; detailní chování je popsáno v jiném chunku, ale zde je jasné, že modul je centrální pro spouštění příkazů).\\n  - `write_command_result` – funkce, která zapíše stdout/stderr z `CommandResult` do souborů v příslušném adresáři sekce (např. `cmd_<name>.out`, `cmd_<name>.err`), případně přidá hlavičky s příkazem a návratovým kódem. Sekce ji používají pro standardizovaný zápis výstupů.\\n- IMPORTS: `dataclass` z `dataclasses`, `subprocess` z `subprocess`, `Path` z `pathlib`, `textwrap` z `textwrap`.\\n\\n7) `core/errors.py`\\n- Účel: společná hierarchie výjimek a formátování chyb.\\n- EXPORTS:\\n  - `DiagError` – základní třída pro chyby nástroje.\\n  - `CriticalDiagError` – chyba, která znemožní pokračování běhu nebo by vedla k nekonzistentnímu výstupu (např. selhání vytvoření kořenového adresáře, manifestu, loggeru). `runner.main` ji zachytává a ukončuje běh s nenulovým kódem.\\n  - `SectionError` – chyba v rámci konkrétní sekce; obsahuje název sekce (`SectionName`), kontext operace (příkaz, soubor) a původní výjimku. Používá se pro nekritické chyby, které se logují a neukončují celý běh.\\n  - `format_exception` – funkce, která vrací jednotný textový formát pro logování neočekávaných výjimek (včetně stack trace), používaná v `runner.main` a v sekcích.\\n- IMPORTS: `SectionName` z `core/config.py`, `traceback` z `traceback`.\\n\\nBalíček `sections` – implementace jednotlivých diagnostických sekcí:\\n\\n8) `sections/__init__.py`\\n- Účel: označení balíčku `sections`, bez veřejných exportů a bez importů.\\n\\n9) `sections/base.py`\\n- Účel: abstraktní základ pro všechny sekce diagnostiky.\\n- EXPORTS:\\n  - `SectionContext` – dataclass obsahující sdílený kontext pro sekce: `RunConfig`, `DiagMode`, `DiagPaths`, `DiagLogger`, `Manifest` a případně další sdílené objekty. Předává se do každé sekce.\\n  - `BaseSection` – abstraktní třída (dědí z `ABC`), která definuje rozhraní pro všechny sekce, typicky metodu `run(ctx: SectionContext) -> None` a metadata sekce (např. `name: SectionName`, popis, cílový podadresář). Implementace pro Linux/Windows sekce z ní dědí.\\n  - `run_sections` – funkce, která přijímá seznam instancí sekcí a `SectionContext`, iteruje přes ně v deterministickém pořadí a volá jejich `run(ctx)`. Zajišťuje jednotné zachytávání `SectionError` a dalších výjimek, logování a pokračování běhu podle chybového modelu (viz předchozí chunk).\\n- IMPORTS: `RunConfig`, `DiagMode`, `SectionName` z `core/config.py`, `DiagPaths` z `core/paths.py`, `DiagLogger` z `core/logging.py`, `Manifest` z `core/manifest.py`, `SectionError` z `core/errors.py`, `ABC` z `abc`, `dataclass` z `dataclasses`, `List` z `typing`.\\n\\nLinux sekce (`sections/linux`):\\n\\n10) `sections/linux/__init__.py`\\n- Účel: označení balíčku `sections.linux`, bez veřejných exportů a bez importů.\\n\\n11) `sections/linux/system.py`\\n- Účel: sekce `system` pro Linux – sběr základních systémových informací (např. `uname -a`, distribuce, kernel, CPU, paměť, běžící služby; konkrétní příkazy jsou definovány v MASTER, ale zde je jasné, že jde o systémový přehled).\\n- EXPORTS: `LinuxSystemSection` – konkrétní implementace `BaseSection` pro Linux systém.\\n- IMPORTS: `BaseSection`, `SectionContext` z `sections/base.py`, `run_command`, `write_command_result` z `core/exec.py`, `add_file` z `core/manifest.py`, `DiagPaths` z `core/paths.py`, `DiagLogger` z `core/logging.py`, `Path` z `pathlib`, `os` z `os`.\\n- Sekce bude používat `run_command` pro volání systémových příkazů, `write_command_result` pro zápis výstupů a `add_file` pro registraci souborů do manifestu.\\n\\n12) `sections/linux/filesystem.py`\\n- Účel: sekce `filesystem` pro Linux – sběr informací o souborových systémech (např. `df -h`, `lsblk`, mounty, kvóty; přesné příkazy dle MASTER).\\n- EXPORTS: `LinuxFilesystemSection`.\\n- IMPORTS: stejné základní stavební bloky jako `linux/system.py`: `BaseSection`, `SectionContext`, `run_command`, `write_command_result`, `add_file`, `DiagPaths`, `DiagLogger`, `Path`, `os`.\\n\\n13) `sections/linux/network.py`\\n- Účel: sekce `network` pro Linux – síťová konfigurace a spojení (např. `ip addr`, `ip route`, `ss -tulpen`, DNS konfigurace atd.).\\n- EXPORTS: `LinuxNetworkSection`.\\n- IMPORTS: `BaseSection`, `SectionContext` z `sections/base.py`, `run_command`, `write_command_result` z `core/exec.py`, `add_file` z `core/manifest.py`, `DiagPaths` z `core/paths.py`, `DiagLogger` z `core/logging.py`.\\n\\n14) `sections/linux/logs.py`\\n- Účel: sekce `logs` pro Linux – sběr systémových a aplikačních logů (např. `journalctl`, logy v `/var/log`; s ohledem na maskování citlivých údajů a omezení cest definovaných v MASTER).\\n- EXPORTS: `LinuxLogsSection`.\\n- IMPORTS: `BaseSection`, `SectionContext` z `sections/base.py`, `run_command`, `write_command_result` z `core/exec.py`, `add_file` z `core/manifest.py`, `DiagPaths` z `core/paths.py`, `DiagLogger` z `core/logging.py`, `Path` z `pathlib`.\\n\\nWindows sekce (`sections/windows`):\\n\\n15) `sections/windows/__init__.py`\\n- Účel: označení balíčku `sections.windows`, bez veřejných exportů a bez importů.\\n\\n16) `sections/windows/system.py`\\n- Účel: sekce `system` pro Windows – sběr systémových informací o OS (např. `systeminfo`, informace o HW, službách; konkrétní příkazy dle MASTER).\\n- EXPORTS: `WindowsSystemSection`.\\n- IMPORTS: `BaseSection`, `SectionContext` z `sections/base.py`, `run_command`, `write_command_result` z `core/exec.py`, `add_file` z `core/manifest.py`, `DiagPaths` z `core/paths.py`, `DiagLogger` z `core/logging.py`.\\n\\n17) `sections/windows/registry.py`\\n- Účel: sekce `registry` pro Windows – export vybraných částí registru (přesně definovaných v MASTER, s ohledem na citlivost dat a případné maskování).\\n- EXPORTS: `WindowsRegistrySection`.\\n- IMPORTS: `BaseSection`, `SectionContext` z `sections/base.py`, `run_command`, `write_command_result` z `core/exec.py`, `add_file` z `core/manifest.py`, `DiagPaths` z `core/paths.py`, `DiagLogger` z `core/logging.py`, `Path` z `pathlib`.\\n\\n18) `sections/windows/filesystem.py`\\n- (Chunk končí u této položky, ale z kontextu je zřejmé, že půjde o analogii k Linux filesystem sekci pro Windows; detailní popis bude pravděpodobně v následujícím chunku.)\\n\\nTento chunk tak definuje přesnou strukturu modulů, jejich účel, exportované symboly a závislosti (IMPORTS). Vše je v souladu s předchozími částmi návrhu: moduly `core.*` poskytují konfiguraci, cesty, logování, manifest, spouštění příkazů a chybovou hierarchii; moduly `sections.*` implementují konkrétní diagnostické sekce pro Linux a Windows, dědí z `BaseSection`, používají `run_command` a `write_command_result` pro sběr dat a `add_file` pro registraci výstupů do manifestu. Tato struktura je určena k implementaci ve fázi A3 a respektuje dříve popsaný orchestrátor, chybový model, bezpečnostní zásady a strategii generování souborů (PLAN->STRUCTURE->FILE_CONTENT).\",\"chunk_index\":6,\"chunk_count\":10,\"notes\":[\"Zachovat přesné názvy souborů, exportovaných symbolů a importů, protože na nich budou záviset další fáze generování kódu.\",\"`sections/windows/filesystem.py` je v tomto chunku pouze načatý; jeho plný popis je nutné doplnit z následujících chunků, nelze ho zde domýšlet nad rámec uvedeného.\",\"Struktura balíčků `core`, `sections`, `sections.linux` a `sections.windows` musí zůstat zachována, včetně toho, že __init__.py soubory neslouží k exportu veřejných symbolů.\",\"Všechny moduly označené `generated_in_phase: A3` mají být implementovány v pozdější fázi podle zde uvedeného rozhraní a v návaznosti na orchestraci a chybový model popsaný v předchozích chuncích.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 6196,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 4299,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 10495
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767904334,
+    "store": true
+  }
+}

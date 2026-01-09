@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A2X_FILE_MAP",
+    "response_id": "GENERATE_94f2ac",
+    "event": "response_contract_invalid",
+    "sequence": 206,
+    "logged_at": "2026-01-09T18:00:10.134994"
+  },
+  "details": {
+    "event": "response_contract_invalid",
+    "level": "warning",
+    "details": {
+      "expected_contract": "A2X_FILE_MAP",
+      "error": "A2X_FILE_MAP neodpovídá A2_STRUCTURE. Chybí=['README.md', 'pyproject.toml', 'requirements.txt', 'resources/montserrat_bold.ttf', 'resources/montserrat_regular.ttf', 'src/__init__.py', 'src/kaja/__init__.py', 'src/kaja/app_main.py', 'src/kaja/core/__init__.py', 'src/kaja/core/fs_mirror_manager.py', 'src/kaja/core/fs_utils.py', 'src/kaja/core/request_builders.py', 'src/kaja/core/response_parsers.py', 'src/kaja/core/run_bundle_manager.py', 'src/kaja/core/run_orchestrator.py', 'src/kaja/core/run_timeline.py', 'src/kaja/core/versing_manager.py', 'src/kaja/diagnostics/__init__.py', 'src/kaja/diagnostics/diagnostics_ubuntu_ssh.py', 'src/kaja/diagnostics/diagnostics_windows.py', 'src/kaja/models/__init__.py', 'src/kaja/models/domain_models.py', 'src/kaja/persistence/__init__.py', 'src/kaja/persistence/persistence_manager.py', 'src/kaja/persistence/receipts_repository.py', 'src/kaja/services/__init__.py', 'src/kaja/services/allow_deny_filter.py', 'src/kaja/services/api_key_manager.py', 'src/kaja/services/clipboard_manager.py', 'src/kaja/services/encryption_manager.py', 'src/kaja/services/file_api_manager.py', 'src/kaja/services/logging_manager.py', 'src/kaja/services/openai_client.py', 'src/kaja/services/pricing_manager.py', 'src/kaja/services/retry_manager.py', 'src/kaja/services/script_executor.py', 'src/kaja/services/secret_scanner.py', 'src/kaja/services/settings_manager.py', 'src/kaja/services/vector_store_manager.py', 'src/kaja/ui/__init__.py', 'src/kaja/ui/components_diff_viewer.py', 'src/kaja/ui/dialogs_api_key.py', 'src/kaja/ui/dialogs_pricing.py', 'src/kaja/ui/dialogs_progress.py', 'src/kaja/ui/dialogs_settings.py', 'src/kaja/ui/main_window.py', 'src/kaja/ui/models/ui_models.py', 'src/kaja/ui/sections_answare.py', 'src/kaja/ui/sections_batch_monitor.py', 'src/kaja/ui/sections_diagnostics.py', 'src/kaja/ui/sections_file_api.py', 'src/kaja/ui/sections_files_attached.py', 'src/kaja/ui/sections_go.py', 'src/kaja/ui/sections_in.py', 'src/kaja/ui/sections_local_files.py', 'src/kaja/ui/sections_mode.py', 'src/kaja/ui/sections_model.py', 'src/kaja/ui/sections_out.py', 'src/kaja/ui/sections_vector_stores.py', 'src/kaja/ui/sections_zadani.py', 'src/kaja/ui/style/__init__.py', 'src/kaja/ui/style/button_group.py', 'src/kaja/ui/style/icons.py', 'src/kaja/ui/style/layout_utils.py', 'src/kaja/ui/style/tokens.py'], navíc=[]."
+    },
+    "timestamp": "2026-01-09T18:00:10.134988"
+  }
+}

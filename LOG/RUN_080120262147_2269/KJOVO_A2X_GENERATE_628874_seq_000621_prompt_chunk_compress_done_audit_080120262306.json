@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "A2X",
+    "response_id": "GENERATE_628874",
+    "event": "prompt_chunk_compress_done",
+    "sequence": 621,
+    "logged_at": "2026-01-08T22:06:40.002063"
+  },
+  "details": {
+    "event": "prompt_chunk_compress_done",
+    "level": "info",
+    "details": {
+      "stage": "A2X",
+      "instructions_chars": 8048,
+      "input_chars": 8440
+    },
+    "timestamp": "2026-01-08T22:06:40.002055"
+  }
+}

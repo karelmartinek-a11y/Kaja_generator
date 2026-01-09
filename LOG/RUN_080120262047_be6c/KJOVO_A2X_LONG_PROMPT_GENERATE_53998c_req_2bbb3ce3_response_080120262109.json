@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_53998c",
+    "logged_at": "2026-01-08T20:09:44.808402",
+    "request_id": "2bbb3ce3"
+  },
+  "payload": {
+    "id": "resp_01c3d243adc427d50069600ede256881a1963326f9f34c8228",
+    "created_at": 1767902942.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_01c3d243adc427d50069600edeea9081a1af62b172361a3099",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"A1_PLAN definuje projekt \\\"CrossPlatformFullDiag\\\" – plně skriptovatelnou diagnostiku pro Linux (Ubuntu Server) a Windows 10/11 v Pythonu 3 (CPython 3.10+, pouze standardní knihovna). Nástroj má deterministickou strukturu výstupu, generuje MANIFEST a je navržen tak, aby šel snadno obalit GUI dle Kájovo UI DESIGN STANDARD MASTER v1.0 (aktuálně se řeší primárně CLI).\\n\\nPředpoklady:\\n- Detailní obsah předchozích MASTER chunků (FULL diagnostika Linux/Windows, struktury adresářů, MANIFEST, indexy souborů, bezpečnostní poznámky) je závazný, ale zde se neopakuje.\\n- Na cílových systémech je dostupný Python 3.10+ se standardní knihovnou.\\n- Na Linuxu (Ubuntu web server) je povoleno spouštět standardní systémové utility (uname, lsb_release, df, lsblk, ip, ss, systemctl, journalctl atd.) dle MASTER zadání.\\n- Na Windows je povoleno spouštět PowerShell (pwsh nebo powershell.exe) a vestavěné nástroje (wmic, systeminfo, wevtutil, netsh, sc, driverquery) dle MASTER zadání.\\n- Diagnostika běží s dostatečnými oprávněními (Linux: root/sudo, Windows: administrátor) pro čtení požadovaných informací.\\n- Výstupní adresář je zapisovatelný a má dost místa pro logy a exporty.\\n- Kájovo UI DESIGN STANDARD MASTER v1.0 je závazný jen pro budoucí GUI; tento plán řeší CLI, ale API a moduly mají být snadno použitelné pro GUI.\\n- Nástroj nesmí stahovat žádné externí soubory ani závislosti z internetu (MASTER: žádné externí soubory).\\n- Kořenový adresář diagnostiky má časové razítko ve formátu YYYYMMDD-HHMMSS v lokálním čase stroje.\\n- Detailní seznam souborů a podsložek pro Linux a Windows je již definován v MASTER zadání a je brán jako neměnný doménový kontrakt.\\n\\nFunkční požadavky:\\n1) Kořenový adresář diagnostiky:\\n- Nástroj musí vytvořit kořenový adresář diagnostiky s názvem ve formátu `Diag_YYYYMMDD-HHMMSS` v aktuálním pracovním adresáři nebo v explicitně zadaném cílovém adresáři.\\n\\n2) Struktura pro Linux:\\n- Pro Linux (Ubuntu web server) musí nástroj vytvořit adresářovou strukturu a soubory přesně podle MASTER návrhu FULL diagnostiky, včetně:\\n  - MANIFEST.md\\n  - indexu klíčových souborů\\n  - bezpečnostních poznámek\\n  - dalších souborů a podsložek definovaných v MASTER zadání.\\n\\n3) Struktura pro Windows:\\n- Pro Windows musí nástroj vytvořit adresářovou strukturu `Diag_YYYYMMDD-HHMMSS/` se všemi podsložkami přesně dle MASTER návrhu, minimálně:\\n  - `system`\\n  - `registry`\\n  - `filesystem`\\n  - `hardware`\\n  - `storage`\\n  - `drivers`\\n  - `processes_services`\\n  - `network`\\n  - `security`\\n  - `python`\\n  - `devtools`\\n  - `virtualization`\\n  - `wsl`\\n  - `logs`\\n  - plus další soubory/podsložky dle MASTER.\\n\\n4) MANIFEST a indexy:\\n- Nástroj musí generovat soubor `MANIFEST.md` v kořenovém adresáři diagnostiky.\\n- MANIFEST musí obsahovat kompletní index všech vytvořených souborů a podsložek, stručný popis obsahu a informace o integritě (např. hash).\\n- Musí být generován index klíčových souborů (např. `KEY_FILES_INDEX.md` nebo jiný název dle MASTER) s rychlým přehledem nejdůležitějších diagnostických výstupů.\\n- Pro každý významný výstupní soubor musí být v MANIFESTu a/nebo samostatném souboru uveden kryptografický hash (např. SHA-256) pro ověření integrity.\\n\\n5) Podpora režimů běhu:\\n- Nástroj musí podporovat režimy:\\n  - Linux-only\\n  - Windows-only\\n  - auto-detekce podle aktuálního OS.\\n\\n6) CLI rozhraní:\\n- Musí existovat jasně definované CLI s příkazy/přepínači, např.:\\n  - `--mode linux|windows|auto`\\n  - `--output-dir PATH`\\n  - `--no-hash`\\n  - `--no-logs`\\n  - `--section NAME` (pro selektivní sekce).\\n\\n7) Selektivní sekce:\\n- Nástroj musí umožnit spuštění pouze vybraných sekcí diagnostiky (např. pouze `network`, pouze `storage`) podle již definovaných doménových sekcí.\\n\\n8) Logování běhu:\\n- Nástroj musí logovat průběh běhu do interního log souboru v podsložce `logs` (např. `diag_run.log`).\\n- Log musí obsahovat časová razítka, informace o úspěšných krocích i chybách.\\n\\n9) Souhrnné soubory sekcí:\\n- Pro každou sekci (system, registry, filesystem, hardware, storage, drivers, processes_services, network, security, python, devtools, virtualization, wsl, logs) musí nástroj vytvořit minimálně jeden souhrnný soubor (např. `SUMMARY.txt` nebo JSON) s agregovanými informacemi, pokud to MASTER zadání vyžaduje.\\n\\n10) Bezpečnostní omezení:\\n- Nástroj musí respektovat bezpečnostní poznámky a omezení z MASTER zadání:\\n  - neexportovat citlivá data nad rámec definice,\\n  - maskovat tajné hodnoty, pokud je to požadováno.\\n\\n11) Návratové kódy:\\n- V případě kritické chyby, která znemožní dokončení diagnostiky (např. nelze vytvořit kořenový adresář), musí proces vrátit nenulový návratový kód.\\n\\n12) Determinismus:\\n- Nástroj musí být deterministický v názvosloví souborů a adresářů (stejné vstupy → stejná struktura a názvy; liší se pouze časové razítko).\\n\\n13) Architektura (oddělení jádra a CLI):\\n- Jádro nástroje (sběr dat a generování struktury) musí být oddělené od CLI vrstvy.\\n- Jádro musí být volatelné z jiných programů (např. budoucí GUI dle Kájovo UI standardu).\\n\\n14) Dry-run:\\n- Nástroj musí podporovat suchý běh (dry-run), který pouze vypíše plánované akce a strukturu bez skutečného vytváření souborů.\\n\\n15) Úroveň detailu:\\n- Nástroj musí umožnit konfiguraci úrovně detailu diagnostiky (např. `basic` vs. `full`), pokud takový rozdíl definuje MASTER.\\n- Pokud MASTER rozdíl nedefinuje, nástroj musí vždy provádět FULL diagnostiku.\\n\\n16) Metadata v MANIFESTu:\\n- MANIFEST musí obsahovat:\\n  - verzi nástroje,\\n  - verzi Pythonu,\\n  - informace o OS,\\n  - datum a čas běhu,\\n  - seznam aktivovaných přepínačů.\\n\\n17) Offline režim:\\n- Nástroj musí být schopen běžet bez přístupu k internetu.\\n- Nesmí se pokoušet o žádnou síťovou komunikaci mimo diagnostiku samotnou (např. testy konektivity v `network` sekci jsou povoleny, ale žádné stahování či volání externích API).\\n\\nNefunkční požadavky:\\n1) Přenositelnost:\\n- Nástroj by měl být plně přenosný mezi podporovanými verzemi Linux (Ubuntu LTS) a Windows 10/11 bez nutnosti instalace dalších balíků.\\n\\n2) Výkon:\\n- Nástroj by měl minimalizovat dopad na výkon systému během běhu.\\n- Nemá provádět zbytečně náročné operace paralelně, pokud to není nutné.\\n\\n3) Udržovatelnost a modularita:\\n- Kód by měl být čitelný a udržovatelný.\\n- Moduly pro jednotlivé doménové sekce diagnostiky mají být jasně oddělené.\\n\\n4) Logovací formát:\\n- Logování by mělo být konzistentní, textové, s časovým razítkem v ISO 8601 a úrovní logu (INFO/WARN/ERROR).\\n\\n5) Rozšiřitelnost:\\n- Nástroj by měl být navržen tak, aby bylo snadné přidat nové sekce diagnostiky nebo rozšířit existující bez narušení stávajícího API.\\n\\n6) Determinismus manifestu:\\n- Generování MANIFESTu a indexů by mělo být deterministické se stabilním pořadím položek (např. lexikografické řazení).\",\"chunk_index\":1,\"chunk_count\":8,\"notes\":[\"Zachovat striktní vazbu na MASTER zadání pro strukturu adresářů, seznam souborů, bezpečnostní omezení a definici sekcí.\",\"Jádro nástroje musí být OS-agnostické tam, kde to dává smysl, a OS-specifické části mají být jasně oddělené (Linux vs. Windows moduly).\",\"CLI návrh musí umožnit budoucí rozšíření o další přepínače bez porušení kompatibility.\",\"Hashování významných souborů (např. SHA-256) je povinné, ale musí být vypnutelné přepínačem typu --no-hash, pokud to bude implementováno dle požadavků.\",\"Deterministické pořadí v MANIFESTu a indexech je klíčové pro porovnávání výstupů mezi běhy.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 2142,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2427,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 4569
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767902984,
+    "store": true
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A2",
+    "response_id": "GENERATE_94f2ac",
+    "event": "request_payload_built",
+    "sequence": 71,
+    "logged_at": "2026-01-09T17:52:38.617985"
+  },
+  "details": {
+    "event": "request_payload_built",
+    "level": "info",
+    "details": {
+      "stage": "A2",
+      "model": "gpt-5.1",
+      "instructions_chars": 15865,
+      "input_chars": 398,
+      "input_parts": 1,
+      "previous_response_id": "resp_0f578689332b72ae0069613eb864d4819f8063b107076c4da8",
+      "tools_enabled": false,
+      "temperature": 0.2,
+      "attachments": 0,
+      "vector_store_id": null,
+      "file_search_enabled": false
+    },
+    "timestamp": "2026-01-09T17:52:38.617978"
+  }
+}

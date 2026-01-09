@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262024_31ec",
+    "project": "KJOVO",
+    "stage": "A2_STRUCTURE",
+    "response_id": "GENERATE_94a897",
+    "event": "response_text_extracted",
+    "sequence": 250,
+    "logged_at": "2026-01-08T19:37:34.675839"
+  },
+  "details": {
+    "event": "response_text_extracted",
+    "level": "info",
+    "details": {
+      "expected_contract": "A2_STRUCTURE",
+      "text_chars": 9204
+    },
+    "timestamp": "2026-01-08T19:37:34.675833"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262024_31ec",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_94a897",
+    "event": "log_message",
+    "sequence": 8,
+    "logged_at": "2026-01-08T19:24:56.299749"
+  },
+  "details": {
+    "event": "log_message",
+    "level": "info",
+    "details": {
+      "message": "A1: zadání je dlouhé (22753 tokenů); komprimuji po chunkech."
+    },
+    "timestamp": "2026-01-08T19:24:56.299740"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "run_id": "TEST",
+    "project": "",
+    "stage": "A1_PLAN",
+    "response_id": "",
+    "event": "json_coerce_match",
+    "sequence": 1,
+    "logged_at": "2026-01-09T13:58:51.737488"
+  },
+  "details": {
+    "event": "json_coerce_match",
+    "level": "info",
+    "details": {
+      "expected_contract": "A1_PLAN",
+      "candidate_count": 2,
+      "parsed_count": 1,
+      "unescape_count": 0,
+      "response_chars": 1909
+    },
+    "timestamp": "2026-01-09T13:58:51.737475"
+  }
+}

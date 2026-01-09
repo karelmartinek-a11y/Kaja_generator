@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "GENERATE_628874",
+    "logged_at": "2026-01-08T22:25:08.210480",
+    "request_id": "c5b40f78"
+  },
+  "payload": {
+    "id": "resp_0c6f3e1b98b47a9d0069602e8a534481918d06318ce8793f24",
+    "created_at": 1767911050.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.2-pro-2025-12-11",
+    "object": "response",
+    "output": [
+      {
+        "id": "rs_0c6f3e1b98b47a9d0069602ec34b248191a3a19f5cbcf0eb50",
+        "summary": [],
+        "type": "reasoning",
+        "content": null,
+        "encrypted_content": null,
+        "status": null
+      },
+      {
+        "id": "msg_0c6f3e1b98b47a9d0069602ec34c8081918f81291ab4d9b9d2",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Pokračuje definice architektury diagnostik a orchestrace běhů:\\n\\n- Diagnostics.WindowsFull.Collector: formalizuje rozhraní a vstupní specifikaci pro FULL Windows diagnostiku (dle 29). Exporty: IWindowsFullDiagnosticsCollector.RunAsync(WindowsFullRunSpec, ct). WindowsFullRunSpec: LocalOutputRoot, UploadToFilesApi, TryIndexToVectorStore, VectorStoreId?, IncludeAdminOnlySections, IncludeChecksums. Závislosti: ProcessRunner, Manifest, Integrity, Upload.OpenAIFiles, Indexing.VectorStore, Logging.Core, Security.Redaction, Windows.Python.Inventory.\\n\\n- Windows.Python.Inventory: služba pro detekci více instalací Pythonu a všech virtuálních prostředí bez sběru tajemství. Produkuje: interpreters_inventory.csv, venv_candidates_found.txt, stromové souhrny venv, per-venv JSON reporty. Exporty: IPythonInventoryService.CollectAsync(PythonInventorySpec, ct); PythonInventorySpec: OutputRootPythonFolder, IncludeVenvReports, PerInterpreterTimeout; PythonInventoryResult: InterpreterPaths, VenvRoots, Warnings. Závislosti: ProcessRunner, Diagnostics.DomainModels, Security.Redaction, Logging.Core.\\n\\n- Diagnostics.Orchestrator: koordinuje UI-spouštěné běhy diagnostik, generuje konzistentní RunId a kořen výstupní složky, routuje na Ubuntu SSH nebo Windows FULL collector, reportuje průběh do UI i logu. Exporty: IDiagnosticsOrchestrator.RunUbuntuSshAsync(spec, progress, ct) a RunWindowsFullAsync(spec, progress, ct); DiagnosticsProgress: Phase, Percent?, Message. Závislosti: UbuntuSsh.Collector, WindowsFull.Collector, Logging.Core.\\n\\n- Data flow (end-to-end):\\n  - Uživatel vybere DIAGNOSTICS (Ubuntu SSH 28.x nebo Windows FULL 29) → Orchestrator vytvoří RunId a lokální výstup Diag_YYYYMMDD-HHMMSS.\\n  - Ubuntu SSH: Build remote bash script → spuštění přes sshpass+ssh (StrictHostKeyChecking=no) → remote zapisuje artefakty pod $remote_root a vypíše REMOTE_ROOT=... → lokální parsování → stažení přes sshpass+scp -r → integrita (počty/velikosti/checksums) → MANIFEST.md + README → upload do Files API → volitelně index do vector store (pokud podporováno).\\n  - Windows FULL: vytvořit lokální strukturu → spouštět příkazy a ukládat výstupy → export registry → Python inventory + venv reporty → integrita → MANIFEST.md → upload do Files API → volitelný vector store index.\\n  - Uploady vrací Files API IDs, které se zapisují do MANIFEST; volitelně se zapisují i záznamy o indexování.\\n\\n- Error handling (globálně):\\n  - Best-effort po artefaktech: selhání příkazu nesmí shodit celý běh; do cílového souboru nebo *.error.txt zapsat detaily (exit code, stderr). Běh selže jen pokud nelze vytvořit output root.\\n  - Chybějící subsystem: vytvořit očekávaný soubor s „NOT PRESENT“ + důvod (command not found, service not installed, permission denied).\\n  - Ubuntu SSH: pokud nelze naparsovat REMOTE_ROOT, uložit plné ssh logy lokálně, označit běh jako failed a neprovádět scp.\\n  - Ubuntu scp: při částečném stažení zachovat partial, zapsat warningy a stejně generovat MANIFEST z toho, co existuje.\\n  - Windows ACCESS DENIED: zapsat do MANIFEST Notes i do konkrétního artefaktu, pokračovat dál.\\n  - Vector store indexing: vždy volitelné; při nepodpoře/selhání zapsat Supported=false + poznámku; nebortit běh.\\n  - Timeouty: vynucovat limity dle kategorií; při timeoutu zapsat NOT PRESENT/TIMEOUT marker a pokračovat.\\n\\n- Security notes:\\n  - Nikdy neukládat secrets do artefaktů; nedumpovat env proměnné plošně, zaměřit se na PATH a vybrané ne-secret klíče; vše potenciálně tajné maskovat/omitnout dle policy.\\n  - Ubuntu varianta s heslem inline je méně bezpečná; aplikace nesmí heslo logovat a musí ho redigovat z command line.\\n  - StrictHostKeyChecking=no je vynucené; kompenzovat varováním v MANIFEST Notes a doporučit bezpečnější alternativy.\\n  - app_env_files_found.txt na Ubuntu: pouze metadata (cesty, owner, perms, size, mtime), nikdy obsah.\\n  - Windows wifi_profiles.txt: nesmí exportovat cleartext klíče; pouze názvy/metadatika, jinak skip/mask a označit NOT PRESENT/REDACTED.\\n  - Files API uploady musí být svázané s runem a zaznamenané; upozornit, že logy mohou obsahovat PII a sdílení má být selektivní.\\n\\n- Build/Run prerequisites (část):\\n  - Windows: .NET 8 SDK; PowerShell 5.1+ (nebo 7+ dle použití); OpenSSH client (ssh/scp) nebo již bundlovaná závislost.\\n  - Ubuntu remote: bash, coreutils; volitelné balíky dle dostupnosti (systemd/journalctl, nft, docker, nginx, openssl, certbot, postgres); pro variantu s heslem v příkazu musí být sshpass.\\n  - OpenAI: nakonfigurované credentials pro Responses API + Files API; vector store volitelně a jen pokud podporováno.\\n\\n- Test/verification a politika deliverables:\\n  - Manuální smoke testy:\\n    - Ubuntu collector: DIAGNOSTICS → Ubuntu SSH → zadat host/user/password → ověřit, že se naparsuje REMOTE_ROOT a složka se stáhne.\\n    - Windows FULL: DIAGNOSTICS → FULL Windows → ověřit vytvoření root složky a že MANIFEST obsahuje tabulku souborů.\\n  - Verifikace:\\n    - Ubuntu běh vytvoří lokální Diag_YYYYMMDD-HHMMSS se složkami nginx/, app/, python/, database/, certs/, cron_webhooks/, logs/, virtualization_containers/ a požadovanými názvy artefaktů.\\n    - Ubuntu MANIFEST.md odpovídá šabloně 28.23 (povinná pole), obsahuje Purpose a minimální Folder Overview; README obsahuje příklady File Index a Notes; integrity totals jsou vyplněné; volitelně existuje sha256.txt.\\n    - Windows FULL vytvoří požadovanou strukturu i soubory; MANIFEST.md obsahuje environment/PATH diff analýzu a poznámky k ACCESS DENIED; nevytváří se ZIP.\\n    - Uploady: MANIFEST uvádí Files API file IDs; při zapnutém a podporovaném indexování MANIFEST uvádí vector store file IDs + atributy {source=diagnostics, scope, captured_at}.\\n    - Security: sken logů/artefaktů na zakázané patterny (tokeny/hesla/privátní klíče) přes redaction policy testy; ssh password se nikdy nesmí objevit v logu.\\n  - Deliverable policy: strategie generování souborů „PLAN->STRUCTURE->FILE_CONTENT“; max_lines_per_chunk = 500.\\n\\n- A2_STRUCTURE (začátek repo struktury a účely souborů):\\n  - Root: kaja.\\n  - Kaja.sln: solution entrypoint; zahrnuje projekty Kaja.App, Kaja.Diagnostics, Kaja.OpenAI, Kaja.Logging.\\n  - README.md: repo instrukce build/run a verifikační kroky.\\n  - src/Kaja.App/Kaja.App.csproj: WPF desktop app (.NET 8) s ProjectReference na Diagnostics/OpenAI/Logging.\\n  - src/Kaja.App/App.xaml: WPF application resource root.\\n  - src/Kaja.App/App.xaml.cs: bootstrap + DI composition root; konfiguruje IDiagnosticsOrchestrator; používá ConsoleLog, OpenAIClient implementaci, ProcessRunnerFactory, DefaultRedactionPolicy.\\n  - src/Kaja.App/MainWindow.xaml: minimální UI se spouštěcími tlačítky pro Ubuntu SSH a FULL Windows.\\n  - src/Kaja.App/MainWindow.xaml.cs: code-behind; bind na DiagnosticsViewModel.\\n  - src/Kaja.App/Ui/Diagnostics/DiagnosticsViewModel.cs: ViewModel pro DIAGNOSTICS; validace vstupů, spouštění běhů, progress, zobrazení output path; volá IDiagnosticsOrchestrator; používá kontrakty DiagnosticsProgress, UbuntuSshRunSpec, WindowsFullRunSpec, DiagnosticsRunResult, ILog.\\n  - src/Kaja.Diagnostics/Kaja.Diagnostics.csproj: diagnostics library (.NET 8) + embedded resources šablon: Ubuntu MANIFEST_28_23_template.md, Ubuntu README_template.md, Windows MANIFEST_template.md.\\n  - src/Kaja.Diagnostics/DomainModels/DiagnosticsDomainModels.cs: sdílené deterministické datové kontrakty: DiagnosticsRunSpec, ArtifactSpec, ArtifactKind, ArtifactPresencePolicy, CommandResult, ManifestFileEntry, FilesApiUploadRecord, VectorIndexRecord, DiagnosticsRunResult.\\n  - Následuje (rozpracováno v dalším chunku): src/Kaja.Diagnostics/Execution/ProcessRunnerAbstractions.cs.\",\"chunk_index\":5,\"chunk_count\":14,\"notes\":[\"Added manual smoke tests and verification checklist (Ubuntu/Windows, manifest requirements, uploads, security scanning).\",\"Captured deliverable_policy settings: PLAN->STRUCTURE->FILE_CONTENT and max_lines_per_chunk=500.\",\"Started summarizing A2_STRUCTURE repository file list and per-file purposes/imports/exports up to DomainModels; noted ProcessRunnerAbstractions continues in next chunk.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 0.98,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "medium",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 3147,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2338,
+      "output_tokens_details": {
+        "reasoning_tokens": 64
+      },
+      "total_tokens": 5485
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767911107,
+    "store": true
+  }
+}

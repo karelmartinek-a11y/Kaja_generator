@@ -1,0 +1,24 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260046_109e",
+    "project": "Kajovo",
+    "stage": "A1",
+    "response_id": "resp_0c08a12b94e2bb5d00695e55b91f0c8190bc901c344ddab58c",
+    "event": "chunk_compress_request",
+    "sequence": 28,
+    "logged_at": "2026-01-08T23:57:10.263361"
+  },
+  "details": {
+    "event": "chunk_compress_request",
+    "level": "info",
+    "details": {
+      "stage": "A1",
+      "label": "instructions",
+      "chunk_index": 2,
+      "chunk_count": 3,
+      "chunk_chars": 102400,
+      "summary_chars": 1547
+    },
+    "timestamp": "2026-01-08T23:57:10.263354"
+  }
+}

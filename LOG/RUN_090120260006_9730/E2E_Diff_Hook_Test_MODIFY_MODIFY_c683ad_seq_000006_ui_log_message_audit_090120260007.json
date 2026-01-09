@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "MODIFY",
+    "response_id": "MODIFY_c683ad",
+    "event": "ui_log_message",
+    "sequence": 6,
+    "logged_at": "2026-01-08T23:07:01.866767"
+  },
+  "details": {
+    "message": "Chyba běhu: Error code: 400 - {'error': {'message': \"Invalid 'previous_response_id': 'MODIFY_c683ad'. Expected an ID that begins with 'resp'.\", 'type': 'invalid_request_error', 'param': 'previous_response_id', 'code': 'invalid_value'}}",
+    "timestamp_local": "00:07:01",
+    "source": "ui_log"
+  }
+}

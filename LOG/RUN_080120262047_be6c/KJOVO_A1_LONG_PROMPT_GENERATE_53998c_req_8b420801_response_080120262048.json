@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "GENERATE_53998c",
+    "logged_at": "2026-01-08T19:48:26.742642",
+    "request_id": "8b420801"
+  },
+  "payload": {
+    "id": "resp_0a574db05882f55b00696009ec570481909069a9c3be2f1a28",
+    "created_at": 1767901676.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0a574db05882f55b00696009ed01d4819088385f8d6017cb9d",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"MASTER zadání definuje desktopový program pro Windows s názvem „Kája“, který automatizuje requesty na OpenAI Responses API a následné zpracování odpovědí. Program je koncipován jako detailní ovládací panel, kde uživatel nastavuje vstupy, režimy, modely a způsob zpracování odpovědí. Po spuštění requestu se provede automatická sada kroků podle voleb v UI.\\n\\nKlíčové vlastnosti:\\n- Program musí být robustní, nesmí padat ani zamrzat, a musí být odolný vůči chybám a neúplným vstupům.\\n- Všechny operace, které mohou trvat déle než 3–5 sekund, musí zobrazit popup dialog s informací o probíhající činnosti, průběhem a zabránit dojmu „zatuhnutí“ UI.\\n- UI se nesmí blokovat: síťové operace, uploady, polling, kopírování adresářů, zipování apod. musí běžet na pozadí.\\n\\nPrecedence pravidel:\\n1) Nejvyšší prioritu mají TOKENS a KONTRAKTY stavů (sekce 20 a 24).\\n2) Pak specifikace komponent (sekce 25).\\n3) Následuje layout aplikace (sekce 23).\\n4) Poté obecná pravidla (sekce 21–22).\\n5) Nakonec ostatní části zadání (funkční logika, pipeline, logování, robustnost, pricing, batch, diagnostika).\\n\\nVšechna pravidla označená „MUSÍ“ nebo „NESMÍ“ jsou závazná. Pokud jsou uvedeny vzorce nebo odvozené hodnoty, musí se použít přesně, včetně definovaného zaokrouhlování (round(x) = matematické zaokrouhlení, 0.5 nahoru). Všechny rozměry jsou v logických pixelech. Nesmí docházet k překryvu UI prvků, kromě overlay prvků (tooltip, roletka, dialog, scrollbar).\\n\\nRobustnost a průběhové dialogy:\\n- Program musí být navržen tak, aby pokud chybí nutné vstupy, uživatele na to jasně upozornil a neumožnil spuštění neplatné operace.\\n- Dlouhé operace musí mít průběhový dialog s:\\n  - průběžným logováním kroků,\\n  - odhadem zbývajícího času (ETA),\\n  - procentuálním průběhem (0–100 %) pro celý krok i sub-kroky.\\n\\nLogování:\\n- V adresáři spuštění programu musí existovat složka LOG/ (vytvořit, pokud neexistuje).\\n- Každý běh programu má vlastní Run ID ve formátu `RUN_<DDMMRRRRHHMM>_<random4>`.\\n- Každý request a response se ukládá jako samostatný soubor do LOG/.\\n- Název log souboru musí obsahovat:\\n  - název projektu (pokud je vyplněn),\\n  - ResponseID (nebo BatchID / C_RUN_ID / RUN_ID),\\n  - časový kód DDMMRRRHHMM.\\n\\nPovinné log artefakty pro každý běh:\\n- Kompletní request JSON (odeslaný) – samostatný soubor.\\n- Kompletní response JSON (přijatý) – samostatný soubor.\\n- Kompletní „UI state“ (všechna vyplněná a zvolená nastavení) – samostatný soubor a zároveň embed v request logu, aby bylo možné použít pro funkci LOAD REQUEST.\\n- Manifesty:\\n  - mirror manifest (IN mirror),\\n  - diagnostické manifesty (Windows/SSH snapshot),\\n  - výstupní mapa uložených souborů (co se uložilo kam),\\n  - stavové logy kroků: uploady, pollingy, validace, retry, backoff, cancel.\\n\\nDetailní logování změn souborů:\\n- Logovat seznam všech souborů, které program:\\n  - přidal (nově vytvořil),\\n  - přepsal,\\n  - smazal (lokálně nebo na File API),\\n  - přesunul / zkopíroval,\\n  - adresáře, které vytvořil.\\n- U každé změny logovat:\\n  - časové razítko,\\n  - původní a cílovou cestu,\\n  - velikost před/po (pokud existuje),\\n  - hash (např. SHA256) před/po, pokud je to rozumné (u velkých souborů volitelně).\\n\\nLogování interakce s Files API:\\n- U uploadů:\\n  - lokální path,\\n  - file_id,\\n  - purpose,\\n  - velikost,\\n  - timestamp uploadu.\\n- U mazání:\\n  - file_id,\\n  - původní jméno (pokud dostupné),\\n  - timestamp.\\n\\nBatch logování:\\n- Ukládat:\\n  - vstupní JSONL,\\n  - výstupní JSONL,\\n  - error JSONL,\\n  - mapování `custom_id → path` (pokud je použito),\\n  - stavový průběh jobu (polling snapshots).\\n\\nSkripty (pokud jsou vyžádány diagnostikou OUT a přijdou v response):\\n- Ukládat:\\n  - `readmerepair.txt`,\\n  - skripty,\\n  - log spuštění skriptu (stdout/stderr),\\n  - návratové kódy,\\n  - záznam o potvrzení uživatele před spuštěním skriptu.\\n\\nKontrola logiky kombinací:\\n- Program musí kontrolovat, že zvolené kombinace nastavení jsou přípustné.\\n- Nesmí odeslat request v neplatné kombinaci.\\n- Při chybné kombinaci musí uživateli zobrazit jasnou chybu s návrhem opravy.\\n\\nCenová evidence a nacenění:\\n- Program musí přesně sledovat ceny za jednotlivé requesty i batch joby.\\n- Musí evidovat náklady na:\\n  - input tokens,\\n  - output tokens,\\n  - Batch (s ohledem na specifické batch pricing),\\n  - file_search a Vector store náklady (tool + storage).\\n- Důraz na přesnost a aktuálnost ceníku.\\n\\nUI pro ceny:\\n- Musí existovat samostatná obrazovka pro ceny, dostupná pod tlačítkem „$“ v záhlaví vedle tlačítka API-KEY.\\n- Na hlavní ploše programu se ceny nezobrazují a neovlivňují workflow; ceny se řeší pouze v této samostatné obrazovce.\\n\\nElektronická účtenka:\\n- Pro každý běh vzniká „účtenka“ s detailním rozpisem položek.\\n- Účtenka se ukládá do lokální SQLite databáze a zároveň jako exportovatelný JSON v LOG.\\n- Účtenky musí být filtrovatelné podle:\\n  - data,\\n  - projektu,\\n  - modelu,\\n  - režimu,\\n  - typu (A/B/QA/C),\\n  - obsahu zadání (fulltext),\\n  - ResponseID/BatchID.\\n- Musí být možné účtenky mazat, exportovat a sumarizovat za období.\\n\\nAktualizace ceníku:\\n- Program musí podporovat lokální cache „price table“ a ruční refresh z oficiálních podkladů (konfigurovatelné v SETTINGS).\\n- Musí podporovat i automatický refresh při startu (pokud je v SETTINGS zapnuto).\\n- Pokud program nemá aktuální ceny, musí:\\n  - jasně upozornit (banner/popup),\\n  - umožnit pokračovat, ale účtenka musí být označena jako „odhad / neověřeno“.\\n\\nTechnologie a runtime:\\n- Program je desktopová aplikace pro Windows 10 a Windows 11, běží pouze lokálně na PC.\\n- UI musí být stabilní, vhodné pro dlouhé běhy a background operace.\\n- Musí být použit standardní OpenAI SDK (Python nebo JS) a implementace musí být plně funkční.\\n\\nCelkově: „Kája“ je robustní, detailně logující desktopový klient pro OpenAI Responses API s důslednou kontrolou kombinací nastavení, neblokujícím UI, propracovaným logováním (včetně souborových operací a batch jobů) a přesnou cenovou evidencí s účtenkami a správou ceníku. Tato část zadání pokrývá hlavně obecné zásady, robustnost, logování, kontrolu kombinací a pricing, plus základní technologické požadavky. Další sekce (TOKENS, KONTRAKTY, layout, komponenty) mají vyšší prioritu, ale zatím nejsou v tomto chunku detailně rozvedeny.\",\"chunk_index\":1,\"chunk_count\":15,\"notes\":[\"Tento chunk obsahuje úvodní a obecné požadavky: precedence pravidel, robustnost, logování, kontrolu kombinací, cenovou evidenci a základní technologické požadavky.\",\"Je nutné zachovat, že TOKENS a KONTRAKTY stavů mají nejvyšší prioritu, i když jejich obsah zatím není v tomto úseku specifikován.\",\"Program musí být navržen tak, aby UI nikdy neblokovalo dlouhé operace a aby všechny dlouhé operace měly průběhový dialog s ETA a procenty.\",\"Logování je extrémně detailní a zahrnuje nejen request/response, ale i UI state, manifesty, souborové operace, Files API a batch joby.\",\"Cenová logika je oddělena do samostatné obrazovky a nesmí ovlivňovat hlavní workflow, ale musí být velmi přesná a auditovatelná přes účtenky v SQLite a JSON.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 2262,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2338,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 4600
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767901706,
+    "store": true
+  }
+}

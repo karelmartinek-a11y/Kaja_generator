@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "A2X",
+    "response_id": "GENERATE_628874",
+    "event": "api_payload_prepared",
+    "sequence": 626,
+    "logged_at": "2026-01-08T22:06:40.015051"
+  },
+  "details": {
+    "event": "api_payload_prepared",
+    "level": "info",
+    "details": {
+      "stage": "A2X",
+      "request_id": "e7760b77",
+      "payload_keys": [
+        "model",
+        "instructions",
+        "input",
+        "previous_response_id"
+      ],
+      "has_temperature": false,
+      "has_tools": false,
+      "previous_response_id": "resp_0f9be7b8ba82c929006960256329008196b839a70cf19f4584"
+    },
+    "timestamp": "2026-01-08T22:06:40.015042"
+  }
+}

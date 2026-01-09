@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "GENERATE_53998c",
+    "logged_at": "2026-01-08T20:33:22.728696",
+    "request_id": "f7d6cfd5"
+  },
+  "payload": {
+    "id": "resp_0986b52e7110308f006960146d277c819c943dd5fa210f8bfc",
+    "created_at": 1767904365.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0986b52e7110308f006960146d9404819c84d5b7ba2c295c2f",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk dokončuje specifikaci modulu `runner/main.py` a přináší částečný výpis `EXPORT_INDEX` s klíčovými třídami a jejich signaturami.\\n\\n1) `runner/main.py`\\n- Účel: hlavní vstupní bod CLI a orchestrátor běhu diagnostiky.\\n- EXPORTS: funkce `main` (hlavní spustitelná funkce nástroje).\\n- IMPORTS:\\n  - Z `core/config.py`: `parse_cli_args` (funkce pro zpracování CLI argumentů – dříve definovaná v návrhu), `detect_os` (detekce OS), `DiagMode`, `SectionName`.\\n  - Z `core/paths.py`: `generate_root_dir` (vytvoření kořenového adresáře výstupu podle konfigurace a času běhu), `build_paths` (sestavení instance `DiagPaths` s cestami k manifestu, logům atd.).\\n  - Z `core/logging.py`: `init_logger` (inicializace `DiagLogger` a případně standardního loggeru).\\n  - Z `core/manifest.py`: `create_empty_manifest` (vytvoření prázdného manifestu s metadaty běhu), `write_manifest` (uložení manifestu na disk), `write_key_files_index` (zápis indexu klíčových souborů pro rychlou orientaci).\\n  - Ze `sections/base.py`: `SectionContext` (dataclass s kontextem běhu pro sekce), `run_sections` (funkce, která spustí seznam sekcí v daném kontextu, zpracuje chyby na úrovni sekcí a aktualizuje manifest).\\n  - Linux sekce: `LinuxSystemSection` z `sections/linux/system.py`, `LinuxFilesystemSection` z `sections/linux/filesystem.py`, `LinuxNetworkSection` z `sections/linux/network.py`, `LinuxLogsSection` z `sections/linux/logs.py`.\\n  - Windows sekce: `WindowsSystemSection` z `sections/windows/system.py`, `WindowsRegistrySection` z `sections/windows/registry.py`, `WindowsFilesystemSection` z `sections/windows/filesystem.py`, `WindowsHardwareSection` z `sections/windows/hardware.py`, `WindowsStorageSection` z `sections/windows/storage.py`, `WindowsDriversSection` z `sections/windows/drivers.py`, `WindowsProcessesServicesSection` z `sections/windows/processes_services.py`, `WindowsNetworkSection` z `sections/windows/network.py`, `WindowsSecuritySection` z `sections/windows/security.py`, `WindowsPythonSection` z `sections/windows/python.py`, `WindowsDevtoolsSection` z `sections/windows/devtools.py`, `WindowsVirtualizationSection` z `sections/windows/virtualization.py`, `WindowsWslSection` z `sections/windows/wsl.py`, `WindowsLogsSection` z `sections/windows/logs.py`.\\n  - Z `core/errors.py`: `CriticalDiagError` (výjimka pro kritické chyby běhu, které mají ukončit nástroj s chybovým kódem).\\n  - Standardní knihovna: `sys` (pro `sys.exit`, práci s argv, případně přesměrování výstupu), `datetime` (pro časové značky, např. v názvu výstupního adresáře nebo v manifestu).\\n\\n- Očekávané chování `main` (navazuje na předchozí chunky):\\n  - Zavolá `parse_cli_args` a získá konfiguraci běhu (případně `RunConfig` nebo mezistrukturu, která se na `RunConfig` mapuje).\\n  - Pomocí `detect_os` a hodnoty `DiagMode` rozhodne, zda běží v Linux nebo Windows režimu (případně vyhodí `CriticalDiagError`, pokud OS neodpovídá požadovanému režimu).\\n  - Vygeneruje kořenový adresář výstupu (`generate_root_dir`) a z něj sestaví `DiagPaths` (`build_paths`).\\n  - Inicializuje logger (`init_logger`) s ohledem na konfiguraci (úroveň logování, umístění log souboru v `paths.logs_dir`).\\n  - Vytvoří prázdný manifest (`create_empty_manifest`) s metadaty (verze nástroje, verze Pythonu, OS info, timestamp, shrnutí konfigurace) a uloží jej do `paths.manifest` (případně až po doběhu všech sekcí).\\n  - Sestaví seznam sekcí podle detekovaného OS a konfigurace (výběr podle `SectionName` a `selected_sections` v `RunConfig`, případně podle `DetailLevel`). Pro Linux použije `LinuxSystemSection`, `LinuxFilesystemSection`, `LinuxNetworkSection`, `LinuxLogsSection`. Pro Windows použije `WindowsSystemSection`, `WindowsRegistrySection`, `WindowsFilesystemSection`, `WindowsHardwareSection`, `WindowsStorageSection`, `WindowsDriversSection`, `WindowsProcessesServicesSection`, `WindowsNetworkSection`, `WindowsSecuritySection`, `WindowsPythonSection`, `WindowsDevtoolsSection`, `WindowsVirtualizationSection`, `WindowsWslSection`, `WindowsLogsSection`. Pořadí sekcí je definováno v návrhu (typicky systém, registry, filesystem, hardware, storage, drivers, processes_services, network, security, python, devtools, virtualization, wsl, logs).\\n  - Vytvoří `SectionContext` s `RunConfig`, `DiagPaths`, `DiagLogger`, `Manifest` a `DiagMode`.\\n  - Předá seznam instancí sekcí a `SectionContext` do `run_sections`, které je postupně spustí a aktualizuje manifest.\\n  - Po doběhu sekcí zavolá `write_manifest` a `write_key_files_index` pro uložení finálního manifestu a indexu klíčových souborů.\\n  - Implementuje chybový model: zachytí `CriticalDiagError` (zaloguje, případně vypíše stručnou zprávu na stderr a ukončí proces s nenulovým kódem), zachytí obecné neočekávané výjimky (zaloguje pomocí loggeru, případně vypíše stack trace nebo zkrácenou informaci, a ukončí proces s jiným chybovým kódem). Pro úspěšný běh ukončí proces s kódem 0.\\n\\n2) `EXPORT_INDEX` (částečný výpis)\\nChunk obsahuje začátek globálního indexu exportovaných symbolů (tříd) s jejich cestami a signaturami. Tyto položky slouží jako referenční API kontrakt pro implementaci v A3.\\n\\nZahrnuté třídy:\\n- `BaseSection` (`sections/base.py`): abstraktní základ pro všechny sekce, definuje abstraktní metody `name(self) -> SectionName` a `run(self, ctx: SectionContext) -> None`.\\n- `CommandResult` (`core/exec.py`): dataclass s poli `command: list[str]`, `returncode: int`, `stdout: str`, `stderr: str` – standardizovaný výsledek spuštěného příkazu.\\n- `CriticalDiagError` (`core/errors.py`): podtřída `DiagError`, reprezentuje kritickou chybu, která má ukončit běh nástroje.\\n- `DetailLevel` (`core/config.py`): enum s hodnotami `FULL` a `BASIC` – úroveň detailu sbíraných dat.\\n- `DiagError` (`core/errors.py`): základní výjimka pro chyby diagnostiky.\\n- `DiagLogger` (`core/logging.py`): wrapper nad `logging.Logger` s metodami `info`, `warn`, `error`, `exception` pro jednotné logování.\\n- `DiagMode` (`core/config.py`): enum s hodnotami `LINUX`, `WINDOWS`, `AUTO` – režim běhu diagnostiky.\\n- `DiagPaths` (`core/paths.py`): dataclass s cestami `root`, `manifest`, `key_index`, `logs_dir`.\\n- `LinuxFilesystemSection` (`sections/linux/filesystem.py`): sekce pro Linux filesystem, dědí z `BaseSection`, implementuje `name` a `run`.\\n- `LinuxLogsSection` (`sections/linux/logs.py`): sekce pro Linux logy.\\n- `LinuxNetworkSection` (`sections/linux/network.py`): sekce pro Linux síť.\\n- `LinuxSystemSection` (`sections/linux/system.py`): sekce pro Linux systém.\\n- `Manifest` (`core/manifest.py`): dataclass s poli `entries: list[ManifestEntry]`, `tool_version`, `python_version`, `os_info`, `run_timestamp`, `config_summary`.\\n- `ManifestEntry` (`core/manifest.py`): dataclass s poli `relative_path`, `description`, `sha256`, `size`, `section`.\\n- `RunConfig` (`core/config.py`): dataclass s poli `mode: DiagMode`, `detail: DetailLevel`, `output_dir: pathlib.Path`, `selected_sections: set[SectionName]`, `dry_run: bool`, `enable_hashes: bool`, `enable_logs: bool`.\\n- `SectionContext` (`sections/base.py`): dataclass s poli `config: RunConfig`, `paths: DiagPaths`, `logger: DiagLogger`, `manifest: Manifest`, `mode: DiagMode`.\\n- `SectionError` (`core/errors.py`): podtřída `DiagError` s konstruktorem `__init__(self, section: SectionName, message: str)` – chyba v konkrétní sekci.\\n- `SectionName` (`core/config.py`): enum se jmény sekcí: `SYSTEM`, `REGISTRY`, `FILESYSTEM`, `HARDWARE`, `STORAGE`, `DRIVERS`, `PROCESSES_SERVICES`, `NETWORK`, `SECURITY`, `PYTHON`, `DEVTOOLS`, `VIRTUALIZATION`, `WSL`, `LOGS`.\\n- `WindowsDevtoolsSection` (`sections/windows/devtools.py`): Windows sekce pro vývojové nástroje, dědí z `BaseSection`, implementuje `name` a `run`.\\n- `WindowsDriversSection` – následuje v dalším textu (chunk je uprostřed položky, ale z předchozího shrnutí víme, že jde o Windows sekci pro ovladače, analogicky k ostatním Windows sekcím).\\n\\nTento chunk tak doplňuje detailní importy a roli `runner/main.py` jako centrálního orchestrátoru a začíná globální index exportovaných tříd, který definuje veřejné API a kontrakty mezi moduly. Vše je generováno ve fázi A3 v jazyce Python a navazuje na předchozí návrh struktury projektu `crossplatform_fulldiag`.\",\"chunk_index\":8,\"chunk_count\":10,\"notes\":[\"Zachovat přesné názvy importovaných symbolů v runner/main.py (parse_cli_args, detect_os, DiagMode, SectionName, generate_root_dir, build_paths, init_logger, create_empty_manifest, write_manifest, write_key_files_index, SectionContext, run_sections, všechny Linux* a Windows* sekce, CriticalDiagError, sys, datetime).\",\"Funkce main musí implementovat chybový model s rozlišením CriticalDiagError a obecných výjimek a ukončovat proces přes sys.exit s odpovídajícími kódy.\",\"Seznam sekcí pro Linux a Windows se skládá z konkrétních tříd uvedených v importech a je filtrován podle RunConfig.selected_sections a případně DetailLevel.\",\"EXPORT_INDEX slouží jako pevný API kontrakt – signatury tříd (zejména dataclass polí a enum hodnot) je nutné zachovat beze změny v implementaci.\",\"WindowsDriversSection a další Windows sekce mají stejný základní vzor: dědí z BaseSection, implementují name() vracející odpovídající SectionName a run(ctx) využívající SectionContext a core nástroje.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 3833,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2716,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 6549
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767904402,
+    "store": true
+  }
+}

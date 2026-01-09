@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A2X",
+    "response_id": "GENERATE_94f2ac",
+    "event": "prompt_tokens_over_context",
+    "sequence": 86,
+    "logged_at": "2026-01-09T17:54:01.957387"
+  },
+  "details": {
+    "event": "prompt_tokens_over_context",
+    "level": "warning",
+    "details": {
+      "stage": "A2X",
+      "estimated_tokens": 8538,
+      "context_limit": 8192
+    },
+    "timestamp": "2026-01-09T17:54:01.957379"
+  }
+}

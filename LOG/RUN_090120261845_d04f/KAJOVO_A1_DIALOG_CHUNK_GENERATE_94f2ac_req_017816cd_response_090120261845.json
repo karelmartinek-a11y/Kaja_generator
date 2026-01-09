@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A1_DIALOG_CHUNK",
+    "response_id": "GENERATE_94f2ac",
+    "logged_at": "2026-01-09T17:45:26.547346",
+    "request_id": "017816cd"
+  },
+  "payload": {
+    "id": "resp_0f578689332b72ae0069613eb4aa68819fba2923762d7acb32",
+    "created_at": 1767980724.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Ulož si chunk zadání 1:1. Neprováděj shrnutí ani úpravy. Odpověz pouze potvrzením CHUNK_OK <index>/<count>.",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0f578689332b72ae0069613eb5d7b4819f8d3dffb18e5191ef",
+        "content": [
+          {
+            "annotations": [],
+            "text": "CHUNK_OK 3/4",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": "resp_0f578689332b72ae0069613eb2b9c8819fba79c4ebaf6264ae",
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 23097,
+      "input_tokens_details": {
+        "cached_tokens": 14848
+      },
+      "output_tokens": 17,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 23114
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767980726,
+    "store": true
+  }
+}

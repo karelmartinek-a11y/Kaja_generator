@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_53998c",
+    "event": "ui_log_message",
+    "sequence": 6,
+    "logged_at": "2026-01-08T20:35:28.493428"
+  },
+  "details": {
+    "message": "Chyba běhu: A3_FILE.chunking musí být objekt.",
+    "timestamp_local": "21:35:28",
+    "source": "ui_log"
+  }
+}

@@ -28,7 +28,6 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import (
     QApplication,
-    QCheckBox,
     QComboBox,
     QDialog,
     QFrame,
@@ -70,7 +69,12 @@ from ..core.log_manager import (
     log_vector_store_entry,
 )
 from ..core.openai_client import OpenAIClient
-from ..core.pipeline import PipelineCancelled, PipelineExecutor, PipelineResult
+from ..core.pipeline import (
+    PipelineCancelled,
+    PipelineContinueContext,
+    PipelineExecutor,
+    PipelineResult,
+)
 from ..core.pricing import PricingStore
 from ..core.price_catalog import PriceCatalog
 from ..core.settings import SettingsStore
@@ -81,6 +85,7 @@ from ..core.diagnostics import (
     collect_windows_diagnostics,
 )
 from ..core import security
+from ..components import AnalogClock, ProcessThermometer, RockerSwitch, SyncButton
 from .dialogs import ProgressDialog
 from .dialogs.api_key_dialog import ApiKeyDialog
 from .dialogs.pricing_dialog import PricingDialog
@@ -114,119 +119,219 @@ class ButtonActiveFilter(QObject):
         button.setProperty("active", active)
         button.style().unpolish(button)
         button.style().polish(button)
+
+
+class SyncButtonHeightCoordinator(QObject):
+    def __init__(self, window: "MainWindow") -> None:
+        super().__init__(window)
+        self._window = window
+        self._app: QApplication | None = None
+        self._applying = False
+        self._timer = QTimer(self)
+        self._timer.setSingleShot(True)
+        self._timer.timeout.connect(self._apply)
+
+    def attach(self) -> None:
+        app = QApplication.instance()
+        if app:
+            self._app = app
+            app.installEventFilter(self)
+            try:
+                self._window.destroyed.connect(self._on_window_destroyed)
+            except Exception:
+                pass
+        self.request_update()
+
+    def _on_window_destroyed(self) -> None:
+        if self._app:
+            try:
+                self._app.removeEventFilter(self)
+            except Exception:
+                pass
+        self._app = None
+
+    def request_update(self) -> None:
+        if self._timer.isActive():
+            return
+        self._timer.start(0)
+
+    def eventFilter(self, obj: QObject, event) -> bool:
+        try:
+            if isinstance(obj, QWidget) and (
+                obj is self._window or self._window.isAncestorOf(obj)
+            ):
+                if event.type() in {
+                    QEvent.Resize,
+                    QEvent.Show,
+                    QEvent.Hide,
+                    QEvent.LayoutRequest,
+                    QEvent.ChildAdded,
+                    QEvent.ChildRemoved,
+                }:
+                    self.request_update()
+        except RuntimeError:
+            return False
+        return super().eventFilter(obj, event)
+
+    def _apply(self) -> None:
+        if self._applying:
+            return
+        try:
+            if not self._window.isVisible():
+                return
+        except RuntimeError:
+            return
+        buttons = [
+            button
+            for button in self._window.findChildren(SyncButton)
+            if button.isVisible()
+        ]
+        candidates: List[int] = []
+        scale_divisor = 240.0
+        min_height = 32
+        for button in buttons:
+            context = self._scale_context(button)
+            span = context.height() if context else 0
+            if span <= 0:
+                span = button.parentWidget().height() if button.parentWidget() else 0
+            if span <= 0:
+                span = button.height()
+            if span <= 0:
+                continue
+            scale = min(1.0, float(span) / scale_divisor)
+            candidates.append(max(min_height, int(round(64 * scale))))
+        if not candidates:
+            return
+        target = max(min_height, min(candidates))
+        self._applying = True
+        try:
+            for button in buttons:
+                if button.height() != target or button.minimumHeight() != target or button.maximumHeight() != target:
+                    button.setFixedHeight(target)
+            self._window._apply_global_control_scale(target)
+        finally:
+            self._applying = False
+
+    @staticmethod
+    def _scale_context(button: SyncButton) -> QWidget | None:
+        parent = button.parentWidget()
+        while parent:
+            if isinstance(parent, SectionWidget):
+                return parent
+            if parent.objectName() == "app_header":
+                return parent
+            if parent.objectName() == "park_panel":
+                return parent
+            parent = parent.parentWidget()
+        return None
 try:
     import winreg
 except ImportError:
     winreg = None
 
 
-class StatusThermometer(QWidget):
-    """Monochrome progress indicator shaped like a thermometer (2.05.000)."""
-
-    def __init__(self, parent: QWidget | None = None) -> None:
-        super().__init__(parent)
-        self._progress = 0.0
-        self._pulse_offset = 0.0
-        self._pulse_active = False
-        self.setMinimumHeight(18)
-        self.setMaximumHeight(18)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-
-    def set_progress(self, ratio: float) -> None:
-        self._progress = max(0.0, min(1.0, ratio))
-        self.update()
-
-    def set_pulse_active(self, active: bool) -> None:
-        if self._pulse_active == active:
-            return
-        self._pulse_active = active
-        if not active:
-            self._pulse_offset = 0.0
-        self.update()
-
-    def advance_pulse(self, step: float = 0.06) -> None:
-        if not self._pulse_active:
-            return
-        self._pulse_offset = (self._pulse_offset + step) % 1.0
-        self.update()
-
-    def paintEvent(self, event) -> None:
-        super().paintEvent(event)
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        outer = self.rect().adjusted(0, 0, -1, -1)
-        outer_pen = QPen(QColor(PALETTE_WHITE))
-        outer_pen.setWidth(2)
-        painter.setPen(outer_pen)
-        painter.setBrush(Qt.NoBrush)
-        painter.drawRoundedRect(outer, KJA_RADIUS, KJA_RADIUS)
-
-        inner = outer.adjusted(2, 2, -2, -2)
-        inner_pen = QPen(QColor(PALETTE_BLACK))
-        inner_pen.setWidth(KJA_BORDER_PX)
-        painter.setPen(inner_pen)
-        painter.drawRoundedRect(inner, max(0, KJA_RADIUS - 2), max(0, KJA_RADIUS - 2))
-
-        if self._progress:
-            fill_width = max(1, int(inner.width() * self._progress))
-            fill_rect = QRect(inner.left(), inner.top(), fill_width, inner.height())
-            painter.fillRect(fill_rect, QColor(PALETTE_WHITE))
-        if self._pulse_active:
-            pulse_width = max(8, int(inner.width() * 0.08))
-            travel = inner.width() + pulse_width
-            pulse_x = inner.left() + int(travel * self._pulse_offset) - pulse_width
-            pulse_rect = QRect(pulse_x, inner.top(), pulse_width, inner.height())
-            pulse_color = QColor(PALETTE_GRAY)
-            pulse_color.setAlpha(160)
-            painter.fillRect(pulse_rect, pulse_color)
-
 
 class StatusBar(QFrame):
     """Header status bar that reports time/date plus dynamic progress (5.04.000)."""
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, parent: QWidget | None = None, *, include_clock: bool = True
+    ) -> None:
         super().__init__(parent)
         self.setObjectName("status_bar")
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(16, 6, 16, 6)
-        layout.setSpacing(16)
-        font_regular = QFont("Montserrat", 12, QFont.Normal)
-        font_bold = QFont("Montserrat", 12, QFont.Bold)
-        self._time_label = QLabel()
-        self._time_label.setFont(font_regular)
-        self._time_label.setStyleSheet(f"color:{PALETTE_WHITE};")
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self._layout = QHBoxLayout(self)
+        self._layout.setContentsMargins(12, 2, 12, 2)
+        self._layout.setSpacing(6)
+        self._base_font_pt = 11
+        font_regular = QFont("Montserrat", self._base_font_pt, QFont.Normal)
+        font_bold = QFont("Montserrat", self._base_font_pt, QFont.Bold)
+
+        self._clock: AnalogClock | None = AnalogClock(self) if include_clock else None
+
+        self._date_label = QLabel()
+        self._date_label.setFont(font_regular)
+        self._date_label.setStyleSheet(f"color:{PALETTE_WHITE};")
+        self._date_label.setAlignment(Qt.AlignCenter)
+
+        if self._clock:
+            clock_block = QWidget()
+            clock_block.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+            clock_layout = QVBoxLayout(clock_block)
+            clock_layout.setContentsMargins(0, 0, 0, 0)
+            clock_layout.setSpacing(2)
+            clock_layout.addWidget(self._clock, 0, Qt.AlignCenter)
+            clock_layout.addWidget(self._date_label)
+            self._layout.addWidget(clock_block)
+        else:
+            self._layout.addWidget(self._date_label, 0, Qt.AlignVCenter)
+
         self._state_label = QLabel("PROGRAM NIC NEDĚLÁ")
         self._state_label.setAlignment(Qt.AlignCenter)
         self._state_label.setFont(font_bold)
         self._state_label.setStyleSheet(f"color:{PALETTE_WHITE};")
+
         self._countdown_label = QLabel("ETA: N/A")
         self._countdown_label.setFont(font_regular)
         self._countdown_label.setStyleSheet(f"color:{PALETTE_WHITE};")
+
         self._progress_label = QLabel("0%")
         self._progress_label.setFont(font_regular)
         self._progress_label.setStyleSheet(f"color:{PALETTE_WHITE};")
-        self._thermometer = StatusThermometer(self)
-        layout.addWidget(self._time_label)
-        layout.addWidget(self._state_label, 1)
-        layout.addWidget(self._countdown_label)
-        layout.addWidget(self._progress_label)
-        layout.addWidget(self._thermometer, 2)
+
+        self._thermometer = ProcessThermometer(self)
+        self._thermometer.setContentsMargins(0, 0, 0, 0)
+        self._layout.addWidget(self._state_label, 1)
+        self._layout.addWidget(self._countdown_label)
+        self._layout.addWidget(self._progress_label)
+        self._layout.addWidget(self._thermometer, 2)
+
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._refresh_time)
         self._timer.start(1000)
-        self._pulse_timer = QTimer(self)
-        self._pulse_timer.timeout.connect(self._advance_pulse)
-        self._pulse_timer.start(180)
+
         self._progress_ratio = 0.0
         self._progress_start: Optional[datetime] = None
         self._refresh_time()
         self.mark_idle()
+        self.apply_control_scale(42)
+
+    def apply_control_scale(self, button_height: int) -> None:
+        h = max(18, int(button_height))
+        scale = max(0.35, min(1.0, h / 64.0))
+
+        margin_h = max(0, int(round(12 * scale)))
+        margin_v = max(0, int(round(3 * scale)))
+        spacing = max(0, int(round(6 * scale)))
+        self._layout.setContentsMargins(margin_h, margin_v, margin_h, margin_v)
+        self._layout.setSpacing(spacing)
+
+        regular_pt = max(6, int(round(self._base_font_pt * scale)))
+        bold_pt = max(6, int(round(self._base_font_pt * scale)))
+        font_regular = QFont("Montserrat", regular_pt, QFont.Normal)
+        font_bold = QFont("Montserrat", bold_pt, QFont.Bold)
+
+        for label in (self._date_label, self._countdown_label, self._progress_label):
+            label.setFont(font_regular)
+        self._state_label.setFont(font_bold)
+
+        if self._clock:
+            clock_size = max(60, int(round(140 * scale)))
+            self._clock.setMinimumSize(clock_size, clock_size)
+            self._clock.setMaximumSize(clock_size, clock_size)
+
+        thermo_height = max(20, int(round(72 * scale)))
+        if self._thermometer:
+            self._thermometer.setMinimumHeight(thermo_height)
+            self._thermometer.setMaximumHeight(thermo_height)
+            thermo_policy = self._thermometer.sizePolicy()
+            thermo_policy.setVerticalPolicy(QSizePolicy.Fixed)
+            self._thermometer.setSizePolicy(thermo_policy)
+        self.updateGeometry()
 
     def _refresh_time(self) -> None:
         now = datetime.now()
-        self._time_label.setText(
-            f"ČAS {now.strftime('%H:%M:%S')}   DATUM {now.strftime('%Y-%m-%d')}"
-        )
+        self._date_label.setText(f"DATUM {now.strftime('%Y-%m-%d')}")
 
     def start_progress(self, message: str) -> None:
         self._progress_start = datetime.utcnow()
@@ -235,21 +340,19 @@ class StatusBar(QFrame):
     def update_progress(self, message: str, ratio: float) -> None:
         text = (message or "PROCES").upper()
         self._state_label.setText(text)
-        self._thermometer.set_progress(ratio)
-        percent = int(round(max(0.0, min(1.0, ratio)) * 100))
-        self._progress_label.setText(f"{percent}%")
-        self._countdown_label.setText(self._compute_eta(ratio))
         self._progress_ratio = ratio
-        self._thermometer.set_pulse_active(ratio < 1.0)
+        ratio_clamped = max(0.0, min(1.0, ratio))
+        self._progress_label.setText(f"{int(round(ratio_clamped * 100)):d}%")
+        self._countdown_label.setText(self._compute_eta(ratio_clamped))
+        self._update_thermometer(ratio_clamped)
 
     def mark_idle(self, message: str = "PROGRAM NIC NEDĚLÁ") -> None:
         self._progress_start = None
         self._state_label.setText(message.upper())
-        self._thermometer.set_progress(0.0)
-        self._thermometer.set_pulse_active(False)
         self._progress_label.setText("0%")
         self._countdown_label.setText("ETA: N/A")
         self._progress_ratio = 0.0
+        self._update_thermometer(0.0, idle=True)
 
     def _compute_eta(self, ratio: float) -> str:
         if not self._progress_start or ratio <= 0 or ratio >= 1:
@@ -260,13 +363,35 @@ class StatusBar(QFrame):
         remaining = elapsed * (1.0 - ratio) / ratio
         return f"ETA: {int(remaining)} s"
 
-    def _advance_pulse(self) -> None:
-        if self._progress_start and self._progress_ratio < 1.0:
-            self._thermometer.set_pulse_active(True)
-            self._thermometer.advance_pulse()
-        else:
-            self._thermometer.set_pulse_active(False)
+    def _update_thermometer(self, ratio: float, idle: bool = False) -> None:
+        if not self._thermometer:
+            return
+        if idle or ratio <= 0.0:
+            self._thermometer.set_mode(ProcessThermometer.MODE_INDETERMINATE)
+            self._thermometer.set_indeterminate(True)
+            self._thermometer.set_progress(0.0)
+            return
 
+        self._thermometer.set_indeterminate(False)
+        self._thermometer.set_progress(ratio)
+
+        if ratio >= 1.0:
+            elapsed = int((datetime.utcnow() - (self._progress_start or datetime.utcnow())).total_seconds())
+            self._thermometer.set_mode(ProcessThermometer.MODE_PERCENT)
+            self._thermometer.set_time_elapsed_total(elapsed, max(1, elapsed))
+            self._thermometer.set_eta_seconds(0)
+            return
+
+        if self._progress_start:
+            elapsed = int((datetime.utcnow() - self._progress_start).total_seconds())
+            total = max(elapsed, int(round(elapsed / max(ratio, 1e-6))))
+            remaining = max(0, total - elapsed)
+            self._thermometer.set_mode(ProcessThermometer.MODE_TIME)
+            self._thermometer.set_time_elapsed_total(elapsed, total)
+            self._thermometer.set_eta_seconds(remaining)
+        else:
+            self._thermometer.set_mode(ProcessThermometer.MODE_PERCENT)
+            self._thermometer.set_eta_seconds(None)
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
@@ -275,7 +400,7 @@ class MainWindow(QMainWindow):
         app = QApplication.instance()
         if app:
             app.installEventFilter(self._button_active_filter)
-        self._click_handlers: List[QPushButton] = []
+        self._click_handlers: List[QWidget] = []
         self.setWindowTitle("Kája – SuperCodex")
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setMinimumSize(0, 0)
@@ -322,14 +447,20 @@ class MainWindow(QMainWindow):
         self._diff_view.setReadOnly(True)
         self._diff_view.setPlainText("Spusťte pipeline pro zobrazení diffu IN ↔ OUT.")
         self._diff_status_label = QLabel("Diff viewer čeká na spuštění runu.")
-        self._status_bar = StatusBar(self)
+        self._status_bar = StatusBar(self, include_clock=False)
+        self._header_title_label: QLabel | None = None
+        self._header_clock: AnalogClock | None = None
         self._last_run_ui_state: UiState | None = None
         self._active_run_artifacts: RunArtifacts | None = None
+        self._continue_context: PipelineContinueContext | None = None
         self._active_response_id = ""
         self._ui_audit_sequence = 0
+        self._sync_button_height_coordinator: SyncButtonHeightCoordinator | None = None
 
         self._init_ui()
         self._apply_manifest_styles()
+        self._sync_button_height_coordinator = SyncButtonHeightCoordinator(self)
+        self._sync_button_height_coordinator.attach()
         self._restore_workspace_layout()
         self._ensure_api_key_loaded()
         self._refresh_batch_monitor()
@@ -342,13 +473,18 @@ class MainWindow(QMainWindow):
 
     def _register_button(
         self,
-        button: QPushButton,
+        button: QWidget,
         *,
         danger: bool = False,
         park_control: bool = False,
         checkable: bool = False,
     ) -> None:
         button.setCursor(QCursor(Qt.PointingHandCursor))
+        if isinstance(button, SyncButton):
+            if danger:
+                button.set_variant(SyncButton.VARIANT_RB)
+            button.set_mode(SyncButton.MODE_TOGGLE if checkable else SyncButton.MODE_CONTACTOR)
+            return
         if danger:
             button.setProperty("danger", True)
         if park_control:
@@ -362,6 +498,41 @@ class MainWindow(QMainWindow):
             button.toggled.connect(lambda state, b=button: ButtonActiveFilter._set_active(b, state))
         self._click_handlers.append(button)
 
+    def _new_sync_button(self, label: str, *, variant: str | None = None) -> SyncButton:
+        button = SyncButton()
+        button.set_text(label)
+        if variant:
+            button.set_variant(variant)
+        return button
+
+    def _apply_global_control_scale(self, button_height: int) -> None:
+        self._status_bar.apply_control_scale(button_height)
+        header = self.findChild(QWidget, "app_header")
+        if not header or not header.layout():
+            return
+        scale = max(0.35, min(1.0, max(18, int(button_height)) / 64.0))
+        margin_x = max(0, int(round(14 * scale)))
+        margin_y = max(0, int(round(4 * scale)))
+        spacing = max(0, int(round(6 * scale)))
+        header.layout().setContentsMargins(margin_x, margin_y, margin_x, margin_y)
+        header.layout().setSpacing(spacing)
+        if self._header_title_label:
+            title_scale = max(0.7, min(1.0, scale + 0.2))
+            title_font = self._header_title_label.font()
+            title_font.setPointSize(max(10, int(round(20 * title_scale))))
+            self._header_title_label.setFont(title_font)
+        if self._header_clock:
+            clock_size = max(72, int(round(140 * scale)))
+            clock_max = max(clock_size, int(round(button_height * 3.0)))
+            self._header_clock.setMinimumSize(clock_size, clock_size)
+            self._header_clock.setMaximumSize(clock_max, clock_max)
+        target_height = max(
+            header.minimumSizeHint().height(),
+            int(round(button_height * 2.4)),
+        )
+        header.setMaximumHeight(max(1, target_height))
+        header.updateGeometry()
+
     def minimumSizeHint(self) -> QSize:
         return QSize(0, 0)
 
@@ -374,7 +545,8 @@ class MainWindow(QMainWindow):
         root_layout.setContentsMargins(0, 0, 0, 0)
         root_layout.setSpacing(0)
         root_layout.setSizeConstraint(QLayout.SetNoConstraint)
-        root_layout.addWidget(self._build_header())
+        header = self._build_header()
+        root_layout.addWidget(header, 0)
         root_layout.addWidget(self._build_workspace(), 1)
 
     def closeEvent(self, event) -> None:
@@ -404,7 +576,7 @@ class MainWindow(QMainWindow):
     def _auto_initialize_api_state(self) -> None:
         if self._auto_init_done:
             return
-        key = os.environ.get("OPENAI_API_KEY") or self.api_key_edit.text().strip()
+        key = os.environ.get("OPENAI_API_KEY", "").strip()
         dialog = ProgressDialog(self)
         dialog.setWindowTitle("Inicializace OpenAI")
         dialog.update_progress("Připravuji spojení…", 0.1)
@@ -481,7 +653,7 @@ class MainWindow(QMainWindow):
         self.mode_combo = QComboBox()
         self.mode_combo.addItems(["GENERATE", "MODIFY", "QA"])
         self.mode_combo.setCurrentText("GENERATE")
-        self.send_as_c_checkbox = QCheckBox("SEND AS BATCH")
+        self.send_as_batch_switch = RockerSwitch()
         self.in_dir_edit = QLineEdit()
         self.in_dir_edit.setReadOnly(True)
         self.in_dir_edit.setStyleSheet("color:#FFFFFF; background:#000000; border:1px solid #FFFFFF;")
@@ -492,20 +664,31 @@ class MainWindow(QMainWindow):
         self.model_combo = QComboBox()
         self.model_combo.addItems(["gpt-4o", "gpt-4o-mini", "gpt-4o-mini-transcribe"])
         self.model_combo.currentTextChanged.connect(self._on_model_changed)
-        self.get_models_button = QPushButton("GET MODELS")
+        self.get_models_button = SyncButton()
+        self.get_models_button.set_text("GET MODELS")
         self._register_button(self.get_models_button)
-        self.go_button = QPushButton("KÁJA GO")
+        self.go_button = SyncButton()
+        self.go_button.set_text("KÁJA GO")
         self._register_button(self.go_button)
         self.log_edit = QPlainTextEdit()
         self.log_edit.setReadOnly(True)
-        self.windows_in_checkbox = QCheckBox("WINDOWS IN")
-        self.windows_out_checkbox = QCheckBox("WINDOWS OUT")
-        self.ssh_in_checkbox = QCheckBox("SSH IN")
-        self.ssh_out_checkbox = QCheckBox("SSH OUT")
-        self.windows_in_checkbox.stateChanged.connect(self._on_windows_in_state_changed)
-        self.windows_out_checkbox.stateChanged.connect(self._on_windows_out_state_changed)
-        self.ssh_in_checkbox.stateChanged.connect(self._on_ssh_in_state_changed)
-        self.ssh_out_checkbox.stateChanged.connect(self._on_ssh_out_state_changed)
+        self.windows_in_switch = RockerSwitch()
+        self.windows_out_switch = RockerSwitch()
+        self.ssh_in_switch = RockerSwitch()
+        self.ssh_out_switch = RockerSwitch()
+        for sw, tip in (
+            (self.send_as_batch_switch, "SEND AS BATCH"),
+            (self.windows_in_switch, "WINDOWS IN"),
+            (self.windows_out_switch, "WINDOWS OUT"),
+            (self.ssh_in_switch, "SSH IN"),
+            (self.ssh_out_switch, "SSH OUT"),
+        ):
+            sw.setFixedSize(92, 38)
+            sw.setToolTip(tip)
+        self.windows_in_switch.toggled.connect(self._on_windows_in_toggled)
+        self.windows_out_switch.toggled.connect(self._on_windows_out_toggled)
+        self.ssh_in_switch.toggled.connect(self._on_ssh_in_toggled)
+        self.ssh_out_switch.toggled.connect(self._on_ssh_out_toggled)
         self.ssh_host_edit = QLineEdit(self._settings.ssh_host)
         self.ssh_host_edit.setPlaceholderText("IP / hostname")
         self.ssh_port_spin = QSpinBox()
@@ -513,47 +696,46 @@ class MainWindow(QMainWindow):
         self.ssh_port_spin.setValue(self._settings.ssh_port)
         self.ssh_user_edit = QLineEdit(self._settings.ssh_user or "root")
         self.ssh_key_edit = QLineEdit(self._settings.ssh_key_path)
-        self.ssh_key_button = QPushButton("Vybrat")
+        self.ssh_key_button = self._new_sync_button("Vybrat")
         self.ssh_key_button.clicked.connect(self._browse_ssh_key)
         self.ssh_password_edit = QLineEdit(self._settings.ssh_password)
         self.ssh_password_edit.setEchoMode(QLineEdit.Password)
-        self.in_dir_button = QPushButton("VSTUP")
+        self.in_dir_button = self._new_sync_button("VSTUP")
         self.in_dir_button.clicked.connect(self._pick_in_dir)
         self._register_button(self.in_dir_button)
-        self.out_dir_button = QPushButton("Výstup")
+        self.out_dir_button = self._new_sync_button("Výstup")
         self.out_dir_button.clicked.connect(self._pick_out_dir)
         self._register_button(self.out_dir_button)
-        self.in_equals_out_button = QPushButton("IN=OUT")
+        self.in_equals_out_button = self._new_sync_button("IN=OUT")
         self.in_equals_out_button.clicked.connect(self._on_in_equals_out)
         self._register_button(self.in_equals_out_button)
-        self.versing_button = QPushButton("VERSING")
+        self.versing_button = self._new_sync_button("VERSING")
         self.versing_button.setCheckable(True)
         self.versing_button.setEnabled(False)
         self._register_button(self.versing_button, checkable=True)
         self.versing_button.toggled.connect(self._on_versing_toggled)
-        self.api_key_button = QPushButton("API-KEY")
+        self.api_key_button = self._new_sync_button("API-KEY")
         self._register_button(self.api_key_button)
         self.api_key_button.clicked.connect(self._open_api_key_dialog)
-        self.pricing_button = QPushButton("$")
+        self.pricing_button = self._new_sync_button("$")
         self._register_button(self.pricing_button)
         self.pricing_button.clicked.connect(self._show_pricing)
-        self.settings_button = QPushButton("NASTAVENÍ")
+        self.settings_button = self._new_sync_button("NASTAVENÍ")
         self._register_button(self.settings_button)
         self.settings_button.clicked.connect(self._open_settings)
-        self.save_button = QPushButton("SAVE")
+        self.save_button = self._new_sync_button("SAVE")
         self._register_button(self.save_button)
         self.save_button.clicked.connect(self._on_save_state)
-        self.load_button = QPushButton("LOAD")
+        self.load_button = self._new_sync_button("LOAD")
         self._register_button(self.load_button)
         self.load_button.clicked.connect(self._on_load_state)
-        self.load_request_button = QPushButton("LOAD REQUEST")
+        self.load_request_button = self._new_sync_button("LOAD REQUEST")
         self._register_button(self.load_request_button)
         self.load_request_button.clicked.connect(self._on_load_request)
-        self.new_button = QPushButton("NEW")
+        self.new_button = self._new_sync_button("NEW")
         self._register_button(self.new_button)
         self.new_button.clicked.connect(self._on_new_clicked)
-        self.exit_button = QPushButton("EXIT")
-        self.exit_button.setProperty("danger", True)
+        self.exit_button = self._new_sync_button("EXIT", variant=SyncButton.VARIANT_RB)
         self._register_button(self.exit_button, danger=True)
         self.exit_button.clicked.connect(self._on_exit_clicked)
         for control in (
@@ -586,163 +768,44 @@ class MainWindow(QMainWindow):
     def _build_config_section(self) -> QWidget:
         self._init_controls()
         return QWidget()
-        group = QGroupBox("KONFIGURACE")
-        group_layout = QVBoxLayout(group)
-        toolbar = QHBoxLayout()
-        self.api_key_button = QPushButton("API-KEY")
-        self.api_key_button.clicked.connect(self._open_api_key_dialog)
-        self.pricing_button = QPushButton("$")
-        self.pricing_button.clicked.connect(self._show_pricing)
-        self.settings_button = QPushButton("NASTAVENÍ")
-        self.settings_button.clicked.connect(self._open_settings)
-        self.save_button = QPushButton("SAVE")
-        self.save_button.clicked.connect(self._on_save_state)
-        self.load_button = QPushButton("LOAD")
-        self.load_button.clicked.connect(self._on_load_state)
-        self.load_request_button = QPushButton("LOAD REQUEST")
-        self.load_request_button.clicked.connect(self._on_load_request)
-        self.exit_button = QPushButton("EXIT")
-        self.exit_button.setProperty("danger", True)
-        self.exit_button.clicked.connect(self._on_exit_clicked)
-        self.new_button = QPushButton("NEW")
-        self.new_button.clicked.connect(self._on_new_clicked)
-        for control in (
-            self.api_key_button,
-            self.pricing_button,
-            self.settings_button,
-            self.save_button,
-            self.load_button,
-            self.load_request_button,
-            self.new_button,
-        ):
-            control.setCursor(QCursor(Qt.PointingHandCursor))
-        self.exit_button.setCursor(QCursor(Qt.PointingHandCursor))
-        toolbar.addWidget(self.api_key_button)
-        toolbar.addWidget(self.pricing_button)
-        toolbar.addWidget(self.settings_button)
-        toolbar.addWidget(self.save_button)
-        toolbar.addWidget(self.load_button)
-        toolbar.addWidget(self.load_request_button)
-        toolbar.addStretch()
-        toolbar.addWidget(self.exit_button)
-        group_layout.addLayout(toolbar)
-        layout = QGridLayout()
-        layout.setColumnStretch(1, 1)
-        self.project_name_edit = QLineEdit()
-        self.prompt_edit = QPlainTextEdit()
-        self.mode_combo = QComboBox()
-        self.mode_combo.addItems(["GENERATE", "MODIFY", "QA"])
-        self.mode_combo.setCurrentText("GENERATE")
-        self.send_as_c_checkbox = QCheckBox("SEND AS BATCH")
-        self.in_dir_edit = QLineEdit()
-        self.out_dir_edit = QLineEdit()
-        self.response_id_edit = QLineEdit()
-        self.api_key_edit = QLineEdit()
-        self.api_key_edit.setPlaceholderText("API Key")
-        self.model_combo = QComboBox()
-        self.model_combo.addItems(["gpt-4o", "gpt-4o-mini", "gpt-4o-mini-transcribe"])
-        self.get_models_button = QPushButton("GET MODELS")
-        self.go_button = QPushButton("KÁJA GO")
-        self.log_edit = QPlainTextEdit()
-        self.log_edit.setReadOnly(True)
-        self.windows_in_checkbox = QCheckBox("WINDOWS IN")
-        self.windows_out_checkbox = QCheckBox("WINDOWS OUT")
-        self.ssh_in_checkbox = QCheckBox("SSH IN")
-        self.ssh_out_checkbox = QCheckBox("SSH OUT")
-        self.windows_in_checkbox.stateChanged.connect(self._on_windows_in_state_changed)
-        self.windows_out_checkbox.stateChanged.connect(self._on_windows_out_state_changed)
-        self.ssh_in_checkbox.stateChanged.connect(self._on_ssh_in_state_changed)
-        self.ssh_out_checkbox.stateChanged.connect(self._on_ssh_out_state_changed)
-        self.ssh_host_edit = QLineEdit(self._settings.ssh_host)
-        self.ssh_host_edit.setPlaceholderText("IP / hostname")
-        self.ssh_port_spin = QSpinBox()
-        self.ssh_port_spin.setRange(1, 65535)
-        self.ssh_port_spin.setValue(self._settings.ssh_port)
-        self.ssh_user_edit = QLineEdit(self._settings.ssh_user or "root")
-        self.ssh_key_edit = QLineEdit(self._settings.ssh_key_path)
-        self.ssh_key_button = QPushButton("Vybrat")
-        self.ssh_key_button.clicked.connect(self._browse_ssh_key)
-        self.ssh_password_edit = QLineEdit(self._settings.ssh_password)
-        self.ssh_password_edit.setEchoMode(QLineEdit.Password)
-        self.get_models_button.clicked.connect(self._on_fetch_models)
-        self.go_button.clicked.connect(self._on_go_clicked)
-        layout.addWidget(QLabel("Název projektu"), 0, 0)
-        layout.addWidget(self.project_name_edit, 0, 1)
-        layout.addWidget(QLabel("MODE / režim"), 1, 0)
-        layout.addWidget(self.mode_combo, 1, 1)
-        layout.addWidget(self.send_as_c_checkbox, 1, 2)
-        layout.addWidget(QLabel("Prompt / specifikace"), 2, 0)
-        layout.addWidget(self.prompt_edit, 2, 1, 1, 2)
-        layout.addWidget(QLabel("In Adresář"), 3, 0)
-        in_layout = QHBoxLayout()
-        self.in_dir_button = QPushButton("VSTUP")
-        self.in_dir_button.clicked.connect(self._pick_in_dir)
-        self.in_dir_button.setCursor(QCursor(Qt.PointingHandCursor))
-        in_layout.addWidget(self.in_dir_edit)
-        in_layout.addWidget(self.in_dir_button)
-        layout.addLayout(in_layout, 3, 1)
-        layout.addWidget(QLabel("Out Adresář"), 3, 2)
-        out_layout = QHBoxLayout()
-        self.out_dir_button = QPushButton("Výstup")
-        self.out_dir_button.clicked.connect(self._pick_out_dir)
-        self.out_dir_button.setCursor(QCursor(Qt.PointingHandCursor))
-        self.in_equals_out_button = QPushButton("IN=OUT")
-        self.in_equals_out_button.clicked.connect(self._on_in_equals_out)
-        self.in_equals_out_button.setCursor(QCursor(Qt.PointingHandCursor))
-        self.versing_button = QPushButton("VERSING")
-        self.versing_button.setCheckable(True)
-        self.versing_button.setEnabled(False)
-        self.versing_button.setCursor(QCursor(Qt.PointingHandCursor))
-        self.versing_button.toggled.connect(self._on_versing_toggled)
-        self.in_dir_edit.textChanged.connect(self._on_dir_content_changed)
-        self.out_dir_edit.textChanged.connect(self._on_dir_content_changed)
-        out_layout.addWidget(self.out_dir_edit)
-        out_layout.addWidget(self.out_dir_button)
-        out_layout.addWidget(self.in_equals_out_button)
-        out_layout.addWidget(self.versing_button)
-        layout.addLayout(out_layout, 3, 3)
-        layout.addWidget(QLabel("Response ID"), 4, 0)
-        layout.addWidget(self.response_id_edit, 4, 1)
-        layout.addWidget(QLabel("Model"), 4, 2)
-        layout.addWidget(self.model_combo, 4, 3)
-        layout.addWidget(QLabel("API Key"), 5, 0)
-        layout.addWidget(self.api_key_edit, 5, 1)
-        self._pricing_status_label = QLabel()
-        self._pricing_status_label.setWordWrap(True)
-        self._pricing_status_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        layout.addWidget(self._pricing_status_label, 5, 4, 1, 4)
-        layout.addWidget(self.windows_in_checkbox, 6, 0)
-        layout.addWidget(self.windows_out_checkbox, 6, 1)
-        layout.addWidget(self.ssh_in_checkbox, 6, 2)
-        layout.addWidget(self.ssh_out_checkbox, 6, 3)
-        self._diag_warning_label = QLabel()
-        self._diag_warning_label.setWordWrap(True)
-        layout.addWidget(self._diag_warning_label, 7, 0, 1, 4)
-        ssh_group = QGroupBox("SSH CÍL")
-        ssh_layout = QGridLayout(ssh_group)
-        ssh_layout.setColumnStretch(1, 1)
-        ssh_layout.addWidget(QLabel("Host / IP"), 0, 0)
-        ssh_layout.addWidget(self.ssh_host_edit, 0, 1)
-        ssh_layout.addWidget(QLabel("Port"), 0, 2)
-        ssh_layout.addWidget(self.ssh_port_spin, 0, 3)
-        ssh_layout.addWidget(QLabel("Uživatel"), 1, 0)
-        ssh_layout.addWidget(self.ssh_user_edit, 1, 1)
-        key_layout = QHBoxLayout()
-        key_layout.setContentsMargins(0, 0, 0, 0)
-        key_layout.addWidget(self.ssh_key_edit)
-        key_layout.addWidget(self.ssh_key_button)
-        ssh_layout.addWidget(QLabel("SSH klíč"), 2, 0)
-        ssh_layout.addLayout(key_layout, 2, 1, 1, 3)
-        ssh_layout.addWidget(QLabel("SSH heslo"), 3, 0)
-        ssh_layout.addWidget(self.ssh_password_edit, 3, 1)
-        layout.addWidget(ssh_group, 8, 0, 1, 6)
-        layout.addWidget(self.get_models_button, 9, 2)
-        layout.addWidget(self.go_button, 9, 3)
-        layout.addWidget(QLabel("Log"), 10, 0)
-        layout.addWidget(self.log_edit, 10, 1, 1, 3)
-        group_layout.addLayout(layout)
-        return group
 
+    def _apply_table_style(self, table: QTableWidget) -> None:
+        """Apply deterministic black/white table styling (manifest 6.10, 7.01.000)."""
+        base_font = QFont("Montserrat", self.font().pointSize())
+        header_font = QFont("Montserrat", self.font().pointSize(), QFont.Bold)
+        table.setFont(base_font)
+        table.horizontalHeader().setFont(header_font)
+        table.setStyleSheet(
+            f"""
+            QTableWidget {{
+                background: {PALETTE_BLACK};
+                color: {PALETTE_WHITE};
+                gridline-color: {PALETTE_WHITE};
+                border: {KJA_BORDER_PX}px solid {PALETTE_WHITE};
+                border-radius: {KJA_RADIUS}px;
+                selection-background-color: {PALETTE_WHITE};
+                selection-color: {PALETTE_BLACK};
+            }}
+            QTableWidget::item {{
+                padding: 4px;
+            }}
+            QTableWidget::item:selected {{
+                background: {PALETTE_WHITE};
+                color: {PALETTE_BLACK};
+            }}
+            QHeaderView::section {{
+                background: {PALETTE_BLACK};
+                color: {PALETTE_WHITE};
+                border: {KJA_BORDER_PX}px solid {PALETTE_WHITE};
+                padding: 4px;
+                font-weight: bold;
+            }}
+            QTableCornerButton::section {{
+                background: {PALETTE_BLACK};
+                border: {KJA_BORDER_PX}px solid {PALETTE_WHITE};
+            }}
+            """
+        )
     def _build_header(self) -> QWidget:
         header = QFrame()
         header.setObjectName("app_header")
@@ -752,17 +815,36 @@ class MainWindow(QMainWindow):
             f"QFrame#app_header {{ border:{KJA_BORDER_PX}px solid {PALETTE_WHITE}; "
             f"background:{PALETTE_BLACK}; border-radius:{KJA_RADIUS}px; }}"
         )
-        layout = QVBoxLayout(header)
-        layout.setContentsMargins(24, 12, 24, 12)
-        layout.setSpacing(10)
+        layout = QHBoxLayout(header)
+        layout.setContentsMargins(12, 4, 12, 4)
+        layout.setSpacing(8)
+
+        clock_block = QWidget()
+        clock_block.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        clock_layout = QVBoxLayout(clock_block)
+        clock_layout.setContentsMargins(0, 0, 0, 0)
+        clock_layout.setSpacing(2)
+        self._header_clock = AnalogClock(clock_block)
+        self._header_clock.setObjectName("header_clock")
+        self._header_clock.setMinimumSize(80, 80)
+        self._header_clock.setMaximumSize(200, 200)
+        clock_layout.addWidget(self._header_clock, 1, Qt.AlignCenter)
+        layout.addWidget(clock_block)
+
+        right_block = QWidget()
+        right_layout = QVBoxLayout(right_block)
+        right_layout.setContentsMargins(0, 0, 0, 0)
+        right_layout.setSpacing(4)
 
         title_block = QWidget()
         title_layout = QHBoxLayout(title_block)
         title_layout.setContentsMargins(0, 0, 0, 0)
-        title_layout.setSpacing(6)
+        title_layout.setSpacing(4)
         title_layout.addStretch(1)
         title_label = QLabel(f"KÁJOVO v{__version__}".upper())
-        title_font = QFont("Montserrat", 24, QFont.Bold)
+        title_label.setObjectName("header_title")
+        self._header_title_label = title_label
+        title_font = QFont("Montserrat", 20, QFont.Bold)
         title_label.setFont(title_font)
         title_label.setAlignment(Qt.AlignCenter)
         title_label.setStyleSheet(f"color:{PALETTE_WHITE};")
@@ -772,7 +854,7 @@ class MainWindow(QMainWindow):
         controls_row = QWidget()
         controls_layout = QHBoxLayout(controls_row)
         controls_layout.setContentsMargins(0, 0, 0, 0)
-        controls_layout.setSpacing(10)
+        controls_layout.setSpacing(4)
         for control in (
             self.settings_button,
             self.pricing_button,
@@ -786,9 +868,22 @@ class MainWindow(QMainWindow):
         controls_layout.addStretch(1)
         controls_layout.addWidget(self.exit_button)
 
-        layout.addWidget(title_block)
-        layout.addWidget(controls_row)
-        layout.addWidget(self._status_bar)
+        status_row = QWidget()
+        status_layout = QHBoxLayout(status_row)
+        status_layout.setContentsMargins(0, 0, 0, 0)
+        status_layout.setSpacing(6)
+        status_layout.addWidget(self._status_bar, 1)
+
+        right_layout.addWidget(title_block, 1)
+        right_layout.addWidget(controls_row, 1)
+        right_layout.addWidget(status_row, 2)
+        right_layout.setStretch(0, 1)
+        right_layout.setStretch(1, 1)
+        right_layout.setStretch(2, 2)
+
+        layout.addWidget(right_block, 1)
+        layout.setStretch(0, 0)
+        layout.setStretch(1, 1)
         return header
 
     def _build_workspace(self) -> QWidget:
@@ -807,7 +902,7 @@ class MainWindow(QMainWindow):
             SectionDefinition("go", "GO", self._build_go_section),
             SectionDefinition("answer", "ANSWARE", self._build_answare_section),
             SectionDefinition("local_files", "LOCAL FILES", self._build_local_files_widget),
-            SectionDefinition("file_api", "FILE API", self._build_file_api_widget),
+            SectionDefinition("file_api", "FILES API", self._build_file_api_widget),
             SectionDefinition("vector_stores", "VECTOR STORES", self._build_vector_store_widget),
             SectionDefinition("timeline", "TIMELINE", self._build_timeline_widget),
             SectionDefinition("diff_viewer", "DIFF VIEWER", self._build_diff_view_widget),
@@ -851,12 +946,8 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(box)
         layout.addWidget(QLabel("Model"))
         layout.addWidget(self.model_combo)
-        layout.addWidget(QLabel("Temperature"))
-        layout.addWidget(self.temperature_spin)
         layout.addWidget(self._model_capabilities_label)
         layout.addWidget(self.get_models_button)
-        layout.addWidget(QLabel("API Key"))
-        layout.addWidget(self.api_key_edit)
         layout.addWidget(self._pricing_status_label)
         return box
 
@@ -865,10 +956,24 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(box)
         layout.addWidget(QLabel("MODE / režim"))
         layout.addWidget(self.mode_combo)
-        layout.addWidget(self.send_as_c_checkbox)
+        send_row = QWidget()
+        send_layout = QHBoxLayout(send_row)
+        send_layout.setContentsMargins(0, 0, 0, 0)
+        send_layout.setSpacing(6)
+        send_layout.addWidget(QLabel('SEND AS BATCH'))
+        send_layout.addWidget(self.send_as_batch_switch)
+        send_layout.addStretch(1)
+        layout.addWidget(send_row)
         layout.addWidget(QLabel("Response ID"))
         layout.addWidget(self.response_id_edit)
-        layout.addWidget(self.go_button)
+        buttons = QHBoxLayout()
+        self.continue_button = SyncButton()
+        self.continue_button.set_text("KÁJA CONTINUE")
+        self._register_button(self.continue_button)
+        self.continue_button.clicked.connect(self._on_continue_clicked)
+        buttons.addWidget(self.go_button, 2)
+        buttons.addWidget(self.continue_button, 1)
+        layout.addLayout(buttons)
         layout.addWidget(QLabel("Log"))
         layout.addWidget(self.log_edit)
         return box
@@ -877,10 +982,20 @@ class MainWindow(QMainWindow):
         box = QWidget()
         layout = QVBoxLayout(box)
         row = QHBoxLayout()
-        row.addWidget(self.windows_in_checkbox)
-        row.addWidget(self.windows_out_checkbox)
-        row.addWidget(self.ssh_in_checkbox)
-        row.addWidget(self.ssh_out_checkbox)
+        for label, switch in (
+            ('WINDOWS IN', self.windows_in_switch),
+            ('WINDOWS OUT', self.windows_out_switch),
+            ('SSH IN', self.ssh_in_switch),
+            ('SSH OUT', self.ssh_out_switch),
+        ):
+            block = QWidget()
+            block_layout = QHBoxLayout(block)
+            block_layout.setContentsMargins(0, 0, 0, 0)
+            block_layout.setSpacing(4)
+            block_layout.addWidget(QLabel(label))
+            block_layout.addWidget(switch)
+            row.addWidget(block)
+        row.addStretch(1)
         layout.addLayout(row)
         layout.addWidget(self._diag_warning_label)
         ssh_group = QGroupBox("SSH CÍL")
@@ -910,10 +1025,10 @@ class MainWindow(QMainWindow):
         layout.addWidget(self._local_files_table)
         buttons = QHBoxLayout()
         buttons.setContentsMargins(0, 0, 0, 0)
-        add_button = QPushButton("VLOŽ")
+        add_button = self._new_sync_button("VLOŽ")
         self._register_button(add_button)
         add_button.clicked.connect(self._add_local_files)
-        upload_button = QPushButton("UPLOAD")
+        upload_button = self._new_sync_button("UPLOAD")
         self._register_button(upload_button)
         upload_button.clicked.connect(self._upload_local_files)
         buttons.addWidget(add_button)
@@ -923,27 +1038,16 @@ class MainWindow(QMainWindow):
         return box
 
     def _ensure_api_key_loaded(self) -> None:
-        if self.api_key_edit.text().strip():
+        if os.environ.get("OPENAI_API_KEY"):
             return
-        key = os.environ.get("OPENAI_API_KEY")
-        if key:
-            self.api_key_edit.setText(key)
-            return
-        reg_key = self._read_user_env("OPENAI_API_KEY")
-        if not reg_key:
-            reg_key = self._read_machine_env("OPENAI_API_KEY")
+        reg_key = self._read_user_env("OPENAI_API_KEY") or self._read_machine_env("OPENAI_API_KEY")
         if reg_key:
             os.environ["OPENAI_API_KEY"] = reg_key
-            self.api_key_edit.setText(reg_key)
 
     def _on_api_key_changed(self) -> None:
-        key = self.api_key_edit.text().strip()
+        key = os.environ.get("OPENAI_API_KEY", "").strip()
         self._openai_client = None
         self._model_capabilities_cache.clear()
-        if not key:
-            self._model_capabilities = self._default_model_capabilities()
-            self._apply_model_capabilities()
-            return
         self._update_model_capabilities()
 
     def _ensure_openai_client(self) -> OpenAIClient | None:
@@ -951,7 +1055,7 @@ class MainWindow(QMainWindow):
         if self._openai_client:
             return self._openai_client
         self._ensure_api_key_loaded()
-        key = self.api_key_edit.text().strip()
+        key = os.environ.get("OPENAI_API_KEY", "").strip()
         if not key:
             self._append_log("OpenAI klient: API key chybí.")
             QMessageBox.warning(self, "OpenAI", "Vyplňte API key pro OpenAI.")
@@ -995,7 +1099,7 @@ class MainWindow(QMainWindow):
             self._model_capabilities = dict(cached)
             self._apply_model_capabilities()
             return
-        if not (self.api_key_edit.text().strip() or os.environ.get("OPENAI_API_KEY")):
+        if not os.environ.get("OPENAI_API_KEY"):
             fallback = self._default_model_capabilities()
             fallback["source"] = model_id or fallback["source"]
             self._model_capabilities = fallback
@@ -1108,7 +1212,7 @@ class MainWindow(QMainWindow):
         flow.addWidget(SectionCard("TIMELINE", self._build_timeline_widget()))
         flow.addWidget(SectionCard("DIFF VIEWER", self._build_diff_view_widget()))
         flow.addWidget(SectionCard("PŘIPOJENÉ SOUBORY", self._build_attached_files_widget()))
-        flow.addWidget(SectionCard("FILE API", self._build_file_api_widget()))
+        flow.addWidget(SectionCard("FILES API", self._build_file_api_widget()))
         flow.addWidget(SectionCard("VECTOR STORES", self._build_vector_store_widget()))
         wrapper = QScrollArea()
         wrapper.setWidgetResizable(True)
@@ -1123,7 +1227,7 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(box)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(6)
-        refresh_button = QPushButton("REFRESH")
+        refresh_button = self._new_sync_button("REFRESH")
         refresh_button.clicked.connect(self._refresh_batch_monitor)
         self._register_button(refresh_button)
         layout.addWidget(refresh_button)
@@ -1141,7 +1245,12 @@ class MainWindow(QMainWindow):
         header_label.setStyleSheet("font-weight: bold;")
         header.addWidget(header_label)
         header.addStretch()
-        self._timeline_export_button = QPushButton("EXPORT")
+        self._timeline_run_button = self._new_sync_button("RUN TIMELINE")
+        self._register_button(self._timeline_run_button)
+        self._timeline_run_button.clicked.connect(self._on_run_timeline_clicked)
+        header.addWidget(self._timeline_run_button)
+
+        self._timeline_export_button = self._new_sync_button("EXPORT")
         self._register_button(self._timeline_export_button)
         self._timeline_export_button.clicked.connect(self._on_export_timeline)
         header.addWidget(self._timeline_export_button)
@@ -1168,7 +1277,7 @@ class MainWindow(QMainWindow):
         header_label.setStyleSheet("font-weight: bold;")
         header.addWidget(header_label)
         header.addStretch()
-        refresh_button = QPushButton("REFRESH")
+        refresh_button = self._new_sync_button("REFRESH")
         self._register_button(refresh_button)
         refresh_button.clicked.connect(lambda: self._refresh_diff_view(self._last_run_ui_state))
         header.addWidget(refresh_button)
@@ -1184,10 +1293,10 @@ class MainWindow(QMainWindow):
         layout.setSpacing(6)
         controls = QHBoxLayout()
         controls.setContentsMargins(0, 0, 0, 0)
-        add_button = QPushButton("PŘIDEJ")
+        add_button = self._new_sync_button("PŘIDEJ")
         self._register_button(add_button)
         add_button.clicked.connect(self._add_attachment)
-        remove_button = QPushButton("ODSTRAŇ")
+        remove_button = self._new_sync_button("ODSTRAŇ")
         self._register_button(remove_button)
         remove_button.clicked.connect(self._remove_attachment)
         controls.addWidget(add_button)
@@ -1204,16 +1313,16 @@ class MainWindow(QMainWindow):
         layout.setSpacing(6)
         controls = QHBoxLayout()
         controls.setContentsMargins(0, 0, 0, 0)
-        refresh_button = QPushButton("REFRESH")
+        refresh_button = self._new_sync_button("REFRESH")
         self._register_button(refresh_button)
         refresh_button.clicked.connect(self._on_refresh_file_api)
-        attach_button = QPushButton("PŘIPOJ")
+        attach_button = self._new_sync_button("PŘIPOJ")
         self._register_button(attach_button)
         attach_button.clicked.connect(self._attach_selected_file_api)
-        delete_button = QPushButton("SMAŽ")
+        delete_button = self._new_sync_button("SMAŽ")
         self._register_button(delete_button)
         delete_button.clicked.connect(self._delete_selected_file_api)
-        delete_all_button = QPushButton("DEL ALL")
+        delete_all_button = self._new_sync_button("DEL ALL")
         self._register_button(delete_all_button)
         delete_all_button.clicked.connect(self._delete_all_file_api)
         controls.addWidget(refresh_button)
@@ -1233,19 +1342,19 @@ class MainWindow(QMainWindow):
         self._vector_store_controls = []
         if self._vector_store_status_label:
             layout.addWidget(self._vector_store_status_label)
-        refresh_button = QPushButton("REFRESH")
+        refresh_button = self._new_sync_button("REFRESH")
         self._register_button(refresh_button)
         refresh_button.clicked.connect(self._refresh_vector_store_view)
-        add_file_button = QPushButton("PŘIDEJ SOUBOR")
+        add_file_button = self._new_sync_button("PŘIDEJ SOUBOR")
         self._register_button(add_file_button)
         add_file_button.clicked.connect(self._add_file_to_vector_store)
-        remove_button = QPushButton("ODSTRAŇ SOUBOR")
+        remove_button = self._new_sync_button("ODSTRAŇ SOUBOR")
         self._register_button(remove_button)
         remove_button.clicked.connect(self._remove_file_from_vector_store)
         expiry_layout = QHBoxLayout()
         expiry_layout.setContentsMargins(0, 0, 0, 0)
         self._expiry_edit = QLineEdit()
-        expiry_button = QPushButton("SET EXPIRY")
+        expiry_button = self._new_sync_button("SET EXPIRY")
         self._register_button(expiry_button)
         expiry_button.clicked.connect(self._set_vector_expiry)
         expiry_layout.addWidget(self._expiry_edit)
@@ -1272,13 +1381,13 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(group)
         self._answare_view.setReadOnly(True)
         button_layout = QHBoxLayout()
-        copy_button = QPushButton("CTRL+C")
+        copy_button = self._new_sync_button("CTRL+C")
         self._register_button(copy_button)
         copy_button.clicked.connect(self._copy_answare)
-        response_button = QPushButton("RESPONSE")
+        response_button = self._new_sync_button("RESPONSE")
         self._register_button(response_button)
         response_button.clicked.connect(self._copy_response_id)
-        script_button = QPushButton("SCRIPT")
+        script_button = self._new_sync_button("SCRIPT")
         self._register_button(script_button)
         script_button.clicked.connect(self._run_script_workflow)
         button_layout.addWidget(copy_button)
@@ -1297,6 +1406,7 @@ class MainWindow(QMainWindow):
         table.horizontalHeader().setMinimumSectionSize(0)
         table.setMinimumSize(0, 0)
         table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self._apply_table_style(table)
         return table
 
     def _create_file_table(self, headers: List[str]) -> QTableWidget:
@@ -1310,6 +1420,7 @@ class MainWindow(QMainWindow):
         table.verticalHeader().hide()
         table.setMinimumSize(0, 0)
         table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self._apply_table_style(table)
         return table
 
     def _refresh_local_files_table(self) -> None:
@@ -1320,7 +1431,7 @@ class MainWindow(QMainWindow):
             table.insertRow(row)
             table.setItem(row, 0, QTableWidgetItem(path.name))
             table.setItem(row, 1, QTableWidgetItem(str(path)))
-            remove_button = QPushButton("X")
+            remove_button = self._new_sync_button("X")
             self._register_button(remove_button)
             remove_button.clicked.connect(lambda _, p=path: self._remove_local_file(p))
             table.setCellWidget(row, 2, remove_button)
@@ -1343,7 +1454,7 @@ class MainWindow(QMainWindow):
         if not self._local_files:
             self._append_log("LOCAL FILES: žádné soubory k uploadu.")
             return
-        key = os.environ.get("OPENAI_API_KEY") or self.api_key_edit.text().strip()
+        key = os.environ.get("OPENAI_API_KEY", "").strip()
         if not key:
             QMessageBox.warning(self, "API key", "API key je povinný pro upload.")
             return
@@ -1402,13 +1513,42 @@ class MainWindow(QMainWindow):
         self._refresh_attached_table()
 
     def _delete_selected_file_api(self) -> None:
+        client = self._ensure_openai_client()
+        if not client:
+            return
         selected_rows = sorted({item.row() for item in self._file_api_table.selectedItems()}, reverse=True)
+        if not selected_rows:
+            return
+        removed_ids: List[str] = []
         for row in selected_rows:
-            if row < len(self._file_api_records):
-                self._file_api_records.pop(row)
-        self._refresh_file_api_table()
+            if row >= len(self._file_api_records):
+                continue
+            record = self._file_api_records[row]
+            try:
+                client.delete_file(record.file_id)
+                removed_ids.append(record.file_id)
+            except Exception as exc:
+                self._append_log(f"FILES API: mazání {record.file_id} selhalo: {exc}")
+        if removed_ids:
+            self._file_api_records = [rec for rec in self._file_api_records if rec.file_id not in removed_ids]
+            self._append_log(f"FILES API: smazáno {len(removed_ids)} souborů.")
+            self._refresh_file_api_table()
 
     def _delete_all_file_api(self) -> None:
+        if not self._file_api_records:
+            return
+        client = self._ensure_openai_client()
+        if not client:
+            return
+        removed = 0
+        for record in list(self._file_api_records):
+            try:
+                client.delete_file(record.file_id)
+                removed += 1
+            except Exception as exc:
+                self._append_log(f"FILES API: mazání {record.file_id} selhalo: {exc}")
+        if removed:
+            self._append_log(f"FILES API: smazáno {removed} souborů.")
         self._file_api_records.clear()
         self._refresh_file_api_table()
 
@@ -1434,12 +1574,15 @@ class MainWindow(QMainWindow):
             self._batch_table.setItem(row, 3, QTableWidgetItem(f"{duration:.2f}s"))
             actions = QWidget()
             actions_layout = QHBoxLayout(actions)
-            download = QPushButton("DOWNLOAD")
+            download = self._new_sync_button("DOWNLOAD")
             download.clicked.connect(lambda _, entry=job: self._on_batch_download(entry))
-            open_log = QPushButton("OPEN LOG")
+            self._register_button(download)
+            open_log = self._new_sync_button("OPEN LOG")
             open_log.clicked.connect(lambda _, entry=job: self._on_batch_open_log(entry))
-            cancel = QPushButton("CANCEL")
+            self._register_button(open_log)
+            cancel = self._new_sync_button("CANCEL")
             cancel.clicked.connect(lambda _, entry=job: self._on_batch_cancel(entry))
+            self._register_button(cancel)
             for widget in (download, open_log, cancel):
                 widget.setCursor(QCursor(Qt.PointingHandCursor))
                 actions_layout.addWidget(widget)
@@ -1525,7 +1668,7 @@ class MainWindow(QMainWindow):
         return records
 
     def _on_refresh_file_api(self) -> None:
-        self._append_log("FILE API: refresh spuštěn")
+        self._append_log("FILES API: refresh spuštěn")
         self._status_bar.start_progress("Načítám Files API")
         client = self._ensure_openai_client()
         if not client:
@@ -1538,13 +1681,13 @@ class MainWindow(QMainWindow):
             hint = ""
             if "getaddrinfo" in str(exc).lower():
                 hint = "\nDNS chyba: nastavte DNS např. na 1.1.1.1 nebo 8.8.8.8."
-            self._append_log(f"FILE API refresh selhal: {exc}{(' '+hint).strip()}")
-            QMessageBox.warning(self, "FILE API", f"Nelze načíst soubory: {exc}{hint}")
+            self._append_log(f"FILES API refresh selhal: {exc}{(' '+hint).strip()}")
+            QMessageBox.warning(self, "FILES API", f"Nelze načíst soubory: {exc}{hint}")
             self._status_bar.mark_idle()
             return
         self._file_api_records = self._build_file_api_records(files)
         self._refresh_file_api_table()
-        self._append_log(f"FILE API: aktualizováno ({len(self._file_api_records)})")
+        self._append_log(f"FILES API: aktualizováno ({len(self._file_api_records)})")
         self._status_bar.update_progress("Files API aktualizováno", 1.0)
         self._status_bar.mark_idle()
 
@@ -1645,7 +1788,7 @@ class MainWindow(QMainWindow):
 
 
     def _on_go_clicked(self) -> None:
-        mode = "C" if self.send_as_c_checkbox.isChecked() else self.mode_combo.currentText()
+        mode = "C" if self.send_as_batch_switch.is_checked() else self.mode_combo.currentText()
         validation = self._validate_inputs(mode)
         if validation:
             QMessageBox.warning(self, "Chyba validace", "\n".join(validation))
@@ -1654,7 +1797,7 @@ class MainWindow(QMainWindow):
             return
         ui_state = self._build_ui_state(mode)
         self._last_run_ui_state = ui_state
-        if not self.api_key_edit.text().strip():
+        if not os.environ.get("OPENAI_API_KEY"):
             QMessageBox.warning(self, "Chyba", "API key je povinný")
             return
         client = self._ensure_openai_client()
@@ -1662,11 +1805,13 @@ class MainWindow(QMainWindow):
             return
         request_snapshot = self._build_request_snapshot(ui_state)
         run_artifacts = init_run(self._root_dir)
-        response_id = PipelineExecutor.generate_response_id(mode)
+        response_id = self.response_id_edit.text().strip() or PipelineExecutor.generate_response_id(mode)
         self._active_run_artifacts = run_artifacts
         self._active_response_id = response_id
         self._ui_audit_sequence = 0
         ui_state_log = log_ui_state(run_artifacts, ui_state, response_id=response_id)
+        continue_context = self._continue_context
+        self._continue_context = None
         executor = PipelineExecutor(
             self._root_dir,
             run_artifacts,
@@ -1674,9 +1819,10 @@ class MainWindow(QMainWindow):
             settings=self._settings,
             client=client,
             initial_logs=[(ui_state_log, "ui_state")],
-            security_policy=self._security_policy_for("diagnostics"),
+            security_policy=self._security_policy_for("diagnostics"),     
             dry_run_confirmation=self._on_dry_run_summary,
         )
+        executor._continue_context = continue_context
         attachments = list(self._attached_files)
         vector_ids = [store.store_id for store in self._vector_stores]
         self._progress_dialog = ProgressDialog(self)
@@ -1693,10 +1839,10 @@ class MainWindow(QMainWindow):
                 attachments=attachments,
                 vector_store_ids=vector_ids,
                 response_id=response_id,
-                progress_callback=self._on_pipeline_progress,
-                stop_check=lambda: self._progress_dialog.stop_requested if self._progress_dialog else False,
-                request_snapshot=request_snapshot,
-            )
+            progress_callback=self._on_pipeline_progress,
+            stop_check=lambda: self._progress_dialog.stop_requested if self._progress_dialog else False,
+            request_snapshot=request_snapshot,
+        )
             self._handle_pipeline_result(result)
         except PipelineCancelled:
             self._append_log("Pipeline přerušena")
@@ -1706,9 +1852,13 @@ class MainWindow(QMainWindow):
             self._append_log(f"Chyba běhu: {exc}")
             idle_message = "CHYBA BĚHU"
         finally:
+            active_id = self._active_response_id
             if self._progress_dialog:
                 self._progress_dialog.close()
                 self._progress_dialog = None
+            if active_id:
+                self.response_id_edit.setText(active_id)
+                self._last_response_id = active_id
             self._active_run_artifacts = None
             self._active_response_id = ""
             self._status_bar.mark_idle(idle_message)
@@ -1884,6 +2034,9 @@ class MainWindow(QMainWindow):
             return
         self._safe_open_path(self._last_timeline_log, "TIMELINE")
 
+    def _on_run_timeline_clicked(self) -> None:
+        self._append_log("RUN TIMELINE tlačítko: aktualizace timeline není implementována.")
+
     def _copy_answare(self) -> None:
         payload = f"{self._last_response_id}\n{self._last_response_text}"
         QGuiApplication.clipboard().setText(payload)
@@ -2003,21 +2156,21 @@ class MainWindow(QMainWindow):
 
     def _selected_diagnostic_scopes(self) -> List[str]:
         scopes: List[str] = []
-        if self.windows_in_checkbox.isChecked() or self.windows_out_checkbox.isChecked():
+        if self.windows_in_switch.is_checked() or self.windows_out_switch.is_checked():
             scopes.append("windows")
-        if self.ssh_in_checkbox.isChecked() or self.ssh_out_checkbox.isChecked():
+        if self.ssh_in_switch.is_checked() or self.ssh_out_switch.is_checked():
             scopes.append("ssh")
         return scopes
 
     def _selected_diagnostic_codes(self) -> List[str]:
         codes: List[str] = []
-        if self.windows_in_checkbox.isChecked():
+        if self.windows_in_switch.is_checked():
             codes.append("WINDOWS_IN")
-        if self.windows_out_checkbox.isChecked():
+        if self.windows_out_switch.is_checked():
             codes.append("WINDOWS_OUT")
-        if self.ssh_in_checkbox.isChecked():
+        if self.ssh_in_switch.is_checked():
             codes.append("SSH_IN")
-        if self.ssh_out_checkbox.isChecked():
+        if self.ssh_out_switch.is_checked():
             codes.append("SSH_OUT")
         return codes
 
@@ -2247,7 +2400,6 @@ class MainWindow(QMainWindow):
     def _open_api_key_dialog(self) -> None:
         dialog = ApiKeyDialog(self)
         dialog.exec()
-        self.api_key_edit.setText(os.environ.get("OPENAI_API_KEY", ""))
         self._on_api_key_changed()
 
     def _on_save_state(self) -> None:
@@ -2309,6 +2461,18 @@ class MainWindow(QMainWindow):
         except Exception as exc:
             QMessageBox.warning(self, "LOAD REQUEST", f"Nepodařilo se načíst request: {exc}")
 
+    def _on_continue_clicked(self) -> None:
+        response_id = self.response_id_edit.text().strip()
+        if not response_id:
+            QMessageBox.warning(self, "CONTINUE", "Vyplňte Response ID pro navázání.")
+            return
+        loaded = self._load_state_from_response_id(response_id)
+        if not loaded:
+            QMessageBox.warning(self, "CONTINUE", f"Nepodařilo se najít stav pro Response ID {response_id}.")
+            return
+        self._append_log(f"KÁJA CONTINUE: navazuji na Response ID {response_id}")
+        self._on_go_clicked()
+
     def _serialize_run_state(self, ui_state: UiState) -> Dict[str, Any]:
         return {
             "ui_state": asdict(ui_state),
@@ -2329,21 +2493,21 @@ class MainWindow(QMainWindow):
         self.project_name_edit.setText(ui_state.get("project_name", ""))
         self.prompt_edit.setPlainText(ui_state.get("prompt_text", ""))
         self.mode_combo.setCurrentText(ui_state.get("mode", self.mode_combo.currentText()))
-        self.send_as_c_checkbox.setChecked(bool(ui_state.get("send_as_c")))
+        self.send_as_batch_switch.set_checked(bool(ui_state.get("send_as_c")))
         self.in_dir_edit.setText(ui_state.get("in_dir", ""))
         self.out_dir_edit.setText(ui_state.get("out_dir", ""))
         self.response_id_edit.clear()
         self.model_combo.setCurrentText(ui_state.get("model", self.model_combo.currentText()))
-        self.windows_in_checkbox.setChecked(bool(diagnostics.get("windows_in")))
-        self.windows_out_checkbox.setChecked(bool(diagnostics.get("windows_out")))
-        self.ssh_in_checkbox.setChecked(bool(diagnostics.get("ssh_in")))
-        self.ssh_out_checkbox.setChecked(bool(diagnostics.get("ssh_out")))
+        self.windows_in_switch.set_checked(bool(diagnostics.get("windows_in")))
+        self.windows_out_switch.set_checked(bool(diagnostics.get("windows_out")))
+        self.ssh_in_switch.set_checked(bool(diagnostics.get("ssh_in")))
+        self.ssh_out_switch.set_checked(bool(diagnostics.get("ssh_out")))
         self.ssh_host_edit.setText(ssh.get("host", self.ssh_host_edit.text()))
         self.ssh_port_spin.setValue(int(ssh.get("port", self.ssh_port_spin.value())))
         self.ssh_user_edit.setText(ssh.get("user", self.ssh_user_edit.text()))
         self.ssh_key_edit.setText(ssh.get("key_path", self.ssh_key_edit.text()))
         self.ssh_password_edit.setText(ssh.get("password", self.ssh_password_edit.text()))
-        self.versing_button.setChecked(bool(ui_state.get("versing_enabled")))
+        self.versing_button.set_on(bool(ui_state.get("versing_enabled")))
         self._update_versing_button_state()
         self._attached_files = self._file_records_from_list(state.get("attached_files", []))
         self._file_api_records = self._file_records_from_list(state.get("file_api_records", []))
@@ -2357,6 +2521,168 @@ class MainWindow(QMainWindow):
         self._refresh_batch_monitor()
         self._update_model_capabilities()
         self._append_log("Stav obnoven ze souboru.")
+
+    def _load_state_from_response_id(self, response_id: str) -> bool:
+        response_id = response_id.strip()
+        if not response_id:
+            return False
+        self._continue_context = None
+        state_result = self._locate_state_path_for_response(response_id)
+        if state_result:
+            state_path, context = state_result
+            if self._apply_state_from_path(state_path, response_id):
+                self._continue_context = context
+                return True
+
+        log_root = self._root_dir / "LOG"
+        if not log_root.exists():
+            return False
+        # Fallback: projít všechny RUN_ adresáře (starší logy)
+        candidate_dirs = sorted(log_root.glob("RUN_*"), key=lambda p: p.stat().st_mtime, reverse=True)
+        for run_dir in candidate_dirs:
+            if not run_dir.exists():
+                continue
+            matches = list(run_dir.glob(f"*{response_id}*ui_state*.json"))
+            if not matches:
+                matches = list(run_dir.glob("*.json"))
+                matches = [p for p in matches if response_id in p.name and "ui_state" in p.name]
+            if not matches:
+                continue
+            if self._apply_state_from_path(matches[0], response_id):
+                return True
+        return False
+
+    def _locate_state_path_for_response(
+        self, response_id: str
+    ) -> Optional[Tuple[Path, PipelineContinueContext | None]]:
+        log_root = self._root_dir / "LOG"
+        if not log_root.exists():
+            return None
+        manifest_info = self._find_manifest_for_response(response_id, log_root)
+        if not manifest_info:
+            return None
+        run_dir, manifest_path, manifest = manifest_info
+        allowed_stages = {"A1", "A2", "A2X", "A3"}
+        stage_response_paths: Dict[str, Path] = {}
+        detected_stage = ""
+        for entry in manifest.get("log_files", []):
+            if entry.get("category") != "response":
+                continue
+            path_value = entry.get("path")
+            meta = entry.get("meta") or {}
+            stage_name = meta.get("stage")
+            if isinstance(stage_name, str) and stage_name:
+                if isinstance(path_value, str) and path_value:
+                    stage_response_paths[stage_name] = (run_dir / path_value).resolve()
+                response_id_value = meta.get("response_id")
+                if not detected_stage and response_id_value == response_id:
+                    detected_stage = stage_name
+        if not detected_stage:
+            for step in reversed(manifest.get("steps", [])):
+                if step in allowed_stages:
+                    detected_stage = step
+                    break
+        state_path = self._ui_state_path_from_manifest(run_dir, manifest)
+        context = (
+            PipelineContinueContext(run_dir=run_dir, stage_for_response_id=detected_stage, stage_response_paths=stage_response_paths)
+            if detected_stage
+            else None
+        )
+        if state_path:
+            return state_path, context
+        fallback_path = self._find_ui_state_by_scanning(run_dir, response_id)
+        if fallback_path:
+            return fallback_path, context
+        return None
+
+    def _apply_state_from_path(self, path: Path, response_id: str) -> bool:
+        if not path.exists():
+            return False
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            self._apply_loaded_state(payload)
+            self.response_id_edit.setText(response_id)
+            self._append_log(f"Načten stav z {path.name} pro Response ID {response_id}")
+            return True
+        except Exception as exc:
+            self._append_log(f"Načtení stavu pro {response_id} selhalo: {exc}")
+        return False
+
+    def _find_manifest_for_response(
+        self, response_id: str, log_root: Path
+    ) -> Optional[Tuple[Path, Path, Dict[str, Any]]]:
+        index_path = log_root / "run_index.json"
+        if index_path.exists():
+            try:
+                entries = json.loads(index_path.read_text(encoding="utf-8"))
+            except Exception:
+                entries = []
+            else:
+                for entry in reversed(entries if isinstance(entries, list) else []):
+                    if str(entry.get("response_id")) == response_id:
+                        log_dir = entry.get("log_dir")
+                        manifest_name = entry.get("manifest")
+                        if log_dir:
+                            dir_path = (self._root_dir / log_dir).resolve()
+                            manifest_path = (dir_path / manifest_name) if manifest_name else None
+                            result = self._manifest_for_run(dir_path, manifest_path, response_id)
+                            if result:
+                                return result
+        for run_dir in sorted(log_root.glob("RUN_*"), key=lambda p: p.stat().st_mtime, reverse=True):
+            result = self._manifest_for_run(run_dir, None, response_id)
+            if result:
+                return result
+        return None
+
+    def _manifest_for_run(
+        self, run_dir: Path, manifest_path: Optional[Path], response_id: str
+    ) -> Optional[Tuple[Path, Path, Dict[str, Any]]]:
+        candidates = []
+        if manifest_path:
+            candidates.append(manifest_path)
+        else:
+            candidates.extend(sorted(run_dir.glob("*_run_manifest_*.json")))
+        for candidate in candidates:
+            if not candidate or not candidate.exists():
+                continue
+            try:
+                manifest = json.loads(candidate.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            if self._manifest_contains_response(manifest, response_id):
+                return run_dir, candidate, manifest
+        return None
+
+    def _manifest_contains_response(self, manifest: Dict[str, Any], response_id: str) -> bool:
+        if manifest.get("response_id") == response_id:
+            return True
+        for entry in manifest.get("log_files", []):
+            meta = entry.get("meta") or {}
+            if entry.get("category") == "response" and meta.get("response_id") == response_id:
+                return True
+        return False
+
+    def _ui_state_path_from_manifest(self, run_dir: Path, manifest: Dict[str, Any]) -> Optional[Path]:
+        path = manifest.get("ui_state_log")
+        if path:
+            candidate = run_dir / path
+            if candidate.exists():
+                return candidate
+        for entry in manifest.get("log_files", []):
+            if entry.get("category") == "ui_state":
+                candidate = run_dir / entry.get("path", "")
+                if candidate.exists():
+                    return candidate
+        return None
+
+    def _find_ui_state_by_scanning(self, run_dir: Path, response_id: str) -> Optional[Path]:
+        matches = list(run_dir.glob(f"*{response_id}*ui_state*.json"))
+        if matches:
+            return matches[0]
+        matches = [p for p in run_dir.glob("*.json") if response_id in p.name and "ui_state" in p.name]
+        if matches:
+            return matches[0]
+        return None
 
     def _file_records_from_list(self, data: List[Dict[str, Any]]) -> List[FileRecord]:
         records: List[FileRecord] = []
@@ -2425,8 +2751,8 @@ class MainWindow(QMainWindow):
     def _update_versing_button_state(self) -> None:
         same = bool(self.in_dir_edit.text().strip() and self.out_dir_edit.text().strip() and self.in_dir_edit.text().strip() == self.out_dir_edit.text().strip())
         self.versing_button.setEnabled(same)
-        if not same and self.versing_button.isChecked():
-            self.versing_button.setChecked(False)
+        if not same and self.versing_button.is_on():
+            self.versing_button.set_on(False)
 
     def _on_versing_toggled(self, checked: bool) -> None:
         state = "aktivní" if checked else "vypnutý"
@@ -2434,10 +2760,10 @@ class MainWindow(QMainWindow):
 
     def _build_ui_state(self, mode: str) -> UiState:
         diagnostics = DiagnosticsOptions(
-            windows_in=self.windows_in_checkbox.isChecked(),
-            windows_out=self.windows_out_checkbox.isChecked(),
-            ssh_in=self.ssh_in_checkbox.isChecked(),
-            ssh_out=self.ssh_out_checkbox.isChecked(),
+            windows_in=self.windows_in_switch.is_checked(),
+            windows_out=self.windows_out_switch.is_checked(),
+            ssh_in=self.ssh_in_switch.is_checked(),
+            ssh_out=self.ssh_out_switch.is_checked(),
         )
         ssh_options = SshOptions(
             host=self.ssh_host_edit.text().strip(),
@@ -2452,11 +2778,11 @@ class MainWindow(QMainWindow):
             in_dir=self.in_dir_edit.text().strip(),
             out_dir=self.out_dir_edit.text().strip(),
             mode=mode,
-            send_as_c=self.send_as_c_checkbox.isChecked(),
+            send_as_c=self.send_as_batch_switch.is_checked(),
             model=self.model_combo.currentText(),
             response_id=self.response_id_edit.text().strip(),
             diagnostics=diagnostics,
-            versing_enabled=self.versing_button.isChecked(),
+            versing_enabled=self.versing_button.is_on(),
             attached_file_ids=[record.file_id for record in self._attached_files],
             ssh=ssh_options,
         )
@@ -2484,19 +2810,19 @@ class MainWindow(QMainWindow):
             if self._attached_files:
                 errors.append("SEND AS C musí mít prázdné připojené soubory")
 
-        diag = [self.windows_in_checkbox.isChecked(), self.windows_out_checkbox.isChecked()]
-        diag += [self.ssh_in_checkbox.isChecked(), self.ssh_out_checkbox.isChecked()]
+        diag = [self.windows_in_switch.is_checked(), self.windows_out_switch.is_checked()]
+        diag += [self.ssh_in_switch.is_checked(), self.ssh_out_switch.is_checked()]
         if sum(diag[:2]) and sum(diag[2:]):
             errors.append("Nelze kombinovat WINDOWS a SSH diagnostiku")
-        if self.windows_in_checkbox.isChecked() and not has_in:
+        if self.windows_in_switch.is_checked() and not has_in:
             errors.append("WINDOWS IN vyžaduje IN adresář")
-        if self.windows_out_checkbox.isChecked() and not has_out:
+        if self.windows_out_switch.is_checked() and not has_out:
             errors.append("WINDOWS OUT vyžaduje OUT adresář")
-        if self.ssh_in_checkbox.isChecked() and not has_in:
+        if self.ssh_in_switch.is_checked() and not has_in:
             errors.append("SSH IN vyžaduje IN adresář")
-        if self.ssh_out_checkbox.isChecked() and not has_out:
+        if self.ssh_out_switch.is_checked() and not has_out:
             errors.append("SSH OUT vyžaduje OUT adresář")
-        if self.ssh_in_checkbox.isChecked() or self.ssh_out_checkbox.isChecked():
+        if self.ssh_in_switch.is_checked() or self.ssh_out_switch.is_checked():
             if not self.ssh_host_edit.text().strip():
                 errors.append("SSH diagnostika vyžaduje hostitel/IP")
             if not (
@@ -2778,8 +3104,8 @@ QProgressBar::chunk {{
     background: {PALETTE_WHITE};
 }}
 QFrame#status_bar, QStatusBar {{
-    border: {KJA_BORDER_PX}px solid {PALETTE_WHITE};
-    border-radius: {KJA_RADIUS}px;
+    border: none;
+    border-radius: 0;
     background: {PALETTE_BLACK};
 }}
 QFrame#status_bar QLabel {{
@@ -2853,37 +3179,38 @@ QScrollBar::add-page, QScrollBar::sub-page {{
                 self._append_log(f"Panic wipe: nelze odstranit {target}: {exc}")
         self._append_log(f"Panic wipe dokončen. Odstraněno: {', '.join(deleted)}")
 
-    def _on_windows_in_state_changed(self, state: int) -> None:
-        if not self.windows_in_checkbox.isChecked() and self.windows_out_checkbox.isChecked():
+
+    def _on_windows_in_toggled(self, checked: bool) -> None:
+        if not checked and self.windows_out_switch.is_checked():
             self._append_log("WINDOWS OUT závisí na WINDOWS IN; WINDOWS OUT vypnuto.")
-            self.windows_out_checkbox.setChecked(False)
+            self.windows_out_switch.set_checked(False)
         self._refresh_diag_warning_label()
 
-    def _on_windows_out_state_changed(self, state: int) -> None:
-        if self.windows_out_checkbox.isChecked() and not self.windows_in_checkbox.isChecked():
-            self.windows_in_checkbox.setChecked(True)
+    def _on_windows_out_toggled(self, checked: bool) -> None:
+        if checked and not self.windows_in_switch.is_checked():
+            self.windows_in_switch.set_checked(True)
             self._append_log("WINDOWS OUT vyžaduje WINDOWS IN; WINDOWS IN aktivováno.")
         self._refresh_diag_warning_label()
 
-    def _on_ssh_in_state_changed(self, state: int) -> None:
-        if not self.ssh_in_checkbox.isChecked() and self.ssh_out_checkbox.isChecked():
+    def _on_ssh_in_toggled(self, checked: bool) -> None:
+        if not checked and self.ssh_out_switch.is_checked():
             self._append_log("SSH OUT závisí na SSH IN; SSH OUT vypnuto.")
-            self.ssh_out_checkbox.setChecked(False)
+            self.ssh_out_switch.set_checked(False)
         self._refresh_diag_warning_label()
 
-    def _on_ssh_out_state_changed(self, state: int) -> None:
-        if self.ssh_out_checkbox.isChecked() and not self.ssh_in_checkbox.isChecked():
-            self.ssh_in_checkbox.setChecked(True)
+    def _on_ssh_out_toggled(self, checked: bool) -> None:
+        if checked and not self.ssh_in_switch.is_checked():
+            self.ssh_in_switch.set_checked(True)
             self._append_log("SSH OUT vyžaduje SSH IN; SSH IN aktivováno.")
         self._refresh_diag_warning_label()
 
     def _ensure_diagnostics_prereq(self) -> bool:
         diag_active = any(
             [
-                self.windows_in_checkbox.isChecked(),
-                self.windows_out_checkbox.isChecked(),
-                self.ssh_in_checkbox.isChecked(),
-                self.ssh_out_checkbox.isChecked(),
+                self.windows_in_switch.is_checked(),
+                self.windows_out_switch.is_checked(),
+                self.ssh_in_switch.is_checked(),
+                self.ssh_out_switch.is_checked(),
             ]
         )
         if not diag_active:
@@ -2891,7 +3218,7 @@ QScrollBar::add-page, QScrollBar::sub-page {{
         if not self._settings.diagnostics_acknowledged:
             if not self._prompt_diagnostics_ack():
                 return False
-        if (self.windows_in_checkbox.isChecked() or self.windows_out_checkbox.isChecked()) and (
+        if (self.windows_in_switch.is_checked() or self.windows_out_switch.is_checked()) and (
             not self._settings.admin_username or not self._settings.admin_password
         ):
             QMessageBox.warning(
@@ -3045,40 +3372,6 @@ class SectionWidget(QFrame):
 
     def paintEvent(self, event) -> None:
         super().paintEvent(event)
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        title_mid = self._title_band // 2
-        rect = QRect(0, title_mid, self.width() - 1, self.height() - title_mid - 1)
-        pen = QPen(QColor(PALETTE_WHITE))
-        pen.setWidth(KJA_BORDER_PX)
-        painter.setPen(pen)
-        painter.setBrush(Qt.NoBrush)
-        painter.drawRoundedRect(rect, self._border_radius, self._border_radius)
-        inner_rect = rect.adjusted(1, 1, -1, -1)
-        inner_radius = max(0, self._border_radius - 1)
-        inner_pen = QPen(QColor(PALETTE_BLACK))
-        inner_pen.setWidth(KJA_BORDER_PX)
-        painter.setPen(inner_pen)
-        painter.drawRoundedRect(inner_rect, inner_radius, inner_radius)
-
-        if not self._drag_handle:
-            return
-        gap = self._gap_width()
-        label_pos = self._drag_handle.pos()
-        label_left = label_pos.x()
-        label_right = label_left + self._drag_handle.width()
-        gap_start = max(rect.left() + self._border_radius, label_left - gap)
-        gap_end = min(rect.right() - self._border_radius, label_right + gap)
-
-        if gap_end > gap_start:
-            fill_rect = QRect(gap_start, rect.top(), max(1, gap_end - gap_start), self._border_radius)
-            painter.fillRect(fill_rect, QColor(PALETTE_BLACK))
-        left_end = gap_start
-        right_start = gap_end
-        if left_end > rect.left() + self._border_radius:
-            painter.drawLine(rect.left() + self._border_radius, rect.top(), left_end, rect.top())
-        if right_start < rect.right() - self._border_radius:
-            painter.drawLine(right_start, rect.top(), rect.right() - self._border_radius, rect.top())
 
     def _gap_width(self) -> int:
         font = self._drag_handle.font()
@@ -3285,12 +3578,13 @@ class ColumnArea(QFrame):
             f"border-radius:{KJA_RADIUS}px;"
         )
         self.setMinimumSize(0, 0)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)        
         self._layout = QVBoxLayout(self)
-        self._base_margin = 10
+        self._base_margin = 0
         self._layout.setSpacing(0)
         self._layout.setSizeConstraint(QLayout.SetNoConstraint)
         self._splitter = QSplitter(Qt.Vertical)
+        self._splitter.setFrameShape(QFrame.NoFrame)
         self._splitter.setChildrenCollapsible(True)
         self._splitter.setHandleWidth(1)
         self._splitter.setMinimumSize(0, 0)
@@ -3425,6 +3719,7 @@ class WorkspacePane(QWidget):
         layout.setSpacing(0)
 
         self._columns_splitter = QSplitter(Qt.Horizontal)
+        self._columns_splitter.setFrameShape(QFrame.NoFrame)
         self._columns_splitter.setHandleWidth(1)
         self._columns_splitter.setChildrenCollapsible(True)
         self._columns_splitter.setStyleSheet(
@@ -3459,10 +3754,11 @@ class WorkspacePane(QWidget):
         self._control_layout = QHBoxLayout(control_holder)
         self._control_layout.setContentsMargins(0, 0, 0, 0)
         self._control_layout.setSpacing(6)
-        self._column_buttons: List[QPushButton] = []
+        self._column_buttons: List[SyncButton] = []
         for number in range(1, 5):
-            button = QPushButton(str(number))
-            button.setCheckable(True)
+            button = SyncButton()
+            button.set_text(str(number))
+            button.set_mode(SyncButton.MODE_TOGGLE)
             button.setMinimumSize(0, 0)
             button.setCursor(QCursor(Qt.PointingHandCursor))
             button.clicked.connect(partial(self._set_column_count, number))
@@ -3635,7 +3931,7 @@ class WorkspacePane(QWidget):
     def _sync_column_buttons(self) -> None:
         for index, button in enumerate(self._column_buttons, start=1):
             active = index <= self._active_columns
-            button.setChecked(active)
+            button.set_on(active)
             button.setProperty("active", active)
             button.style().unpolish(button)
             button.style().polish(button)

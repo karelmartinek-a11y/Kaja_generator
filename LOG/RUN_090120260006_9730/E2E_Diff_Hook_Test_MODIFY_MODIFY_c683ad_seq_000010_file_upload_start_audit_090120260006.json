@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "MODIFY",
+    "response_id": "MODIFY_c683ad",
+    "event": "file_upload_start",
+    "sequence": 10,
+    "logged_at": "2026-01-08T23:06:44.956895"
+  },
+  "details": {
+    "event": "file_upload_start",
+    "level": "info",
+    "details": {
+      "path": "C:\\Kaja_generator\\IN\\seed.txt",
+      "purpose": "in mirror",
+      "scope": "in_mirror",
+      "size": 18
+    },
+    "timestamp": "2026-01-08T23:06:44.956888"
+  }
+}

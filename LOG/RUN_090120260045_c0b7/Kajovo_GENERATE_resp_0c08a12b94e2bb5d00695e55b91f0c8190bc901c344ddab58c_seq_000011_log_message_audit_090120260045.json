@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260045_c0b7",
+    "project": "Kajovo",
+    "stage": "GENERATE",
+    "response_id": "resp_0c08a12b94e2bb5d00695e55b91f0c8190bc901c344ddab58c",
+    "event": "log_message",
+    "sequence": 11,
+    "logged_at": "2026-01-08T23:45:52.792864"
+  },
+  "details": {
+    "event": "log_message",
+    "level": "info",
+    "details": {
+      "message": "A1: zadání je příliš dlouhé (146906 tokenů > 128000); komprimuji instructions/input_text po chunkech."
+    },
+    "timestamp": "2026-01-08T23:45:52.792833"
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A3",
+    "response_id": "GENERATE_53998c",
+    "logged_at": "2026-01-08T20:34:19.184001",
+    "request_id": "1dc06317"
+  },
+  "payload": {
+    "id": "resp_091a5e218c34ed8700696014c7debc81a39d9d04f9678e09f8",
+    "created_at": 1767904455.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Pokračování normativního dokumentu „Kájovo UI Design Standard (MASTER v1.0)“ – dokončení sekce 6.8, definice 6.9 a příloh A–C.\n\n6.8 Dropdown (needitovatelný) – doplnění\n\nRoletka (otevřený seznam položek dropdownu):\n- Vzhled roletky:\n  - pozadí: černé,\n  - okraj: bílý,\n  - oddělovače řádků: bílá linka 1 px,\n  - text položek: bílý, Montserrat Regular.\n- Hover uvnitř roletky:\n  - při najetí kurzorem na řádek se daný řádek barevně invertuje: pozadí řádku je bílé, text černý,\n  - tento invertovaný stav platí pouze uvnitř roletky, neovlivňuje ostatní prvky.\n\nKlávesnice pro dropdown:\n- ŠIPKA DOLŮ:\n  - otevře roletku,\n  - následně posouvá výběr mezi položkami.\n- MEZERNÍK:\n  - potvrdí aktuálně vybranou položku,\n  - zavře roletku.\n- ESC:\n  - zavře roletku bez změny aktuálně zvolené hodnoty.\n- Tooltip na položce:\n  - zobrazí se po 2 sekundách nečinnosti kurzoru nad položkou,\n  - pouze pokud dochází k overflow textu položky (text přesahuje obsahovou plochu),\n  - tooltip zobrazuje celý text položky u kurzoru,\n  - vzhled tooltipu se řídí globální specifikací tooltipu (sekce 6.3).\n\n6.9 Combobox (editovatelný)\n\nDefinice:\n- Combobox = kombinace zadávacího textového pole a roletky (dropdownu).\n- Umožňuje jak přímý textový vstup, tak výběr z nabízených položek.\n\nVzhled pole comboboxu:\n- Pole se chová jako zadávací textové pole dle sekce 6.5:\n  - lem: bílý 2 px,\n  - okraj: černý 1 px,\n  - pozadí: černé,\n  - text: bílý, Montserrat Regular,\n  - placeholder: šedivý, Montserrat Regular (typicky „Zde pište...“, pokud není definováno jinak),\n  - caret: blikající svislá čára střídající bílou a černou barvu při focusu.\n- Vpravo uvnitř pole je šipka dolů (referenční ikona z Přílohy A.1),\n  - barva šipky se řídí stavem prvku (NORMAL/ACTIVE/DISABLED dle nečerveného kontraktu stavů z 5.1).\n\nRoletka comboboxu:\n- Chová se jako roletka dropdownu (sekce 6.8):\n  - overlay, může překrývat ostatní UI prvky,\n  - zobrazuje typicky 5 položek, při větším počtu se použije overlay scrollbar (6.7),\n  - barvy a hover chování stejné jako u dropdownu.\n\nFiltrování (deterministické):\n- Během psaní do textového pole comboboxu se roletka automaticky otevře.\n- Položky v roletce se filtrují podle case-insensitive prefix match:\n  - porovnání ignoruje rozdíl mezi velkými a malými písmeny,\n  - ale diakritika se porovnává přesně (žádné normalizace typu „č“ = „c“),\n  - cílem je deterministické chování bez „chytrého“ fuzzy vyhledávání.\n- Výsledný seznam položek v roletce obsahuje pouze ty položky, jejichž začátek (prefix) odpovídá zadanému textu podle výše uvedených pravidel.\n\nKlávesnice pro combobox:\n- ŠIPKA DOLŮ:\n  - pokud je roletka zavřená, otevře ji a nastaví výběr na první relevantní položku (např. první filtrovanou),\n  - pokud je roletka otevřená, posouvá výběr mezi položkami.\n- ENTER:\n  - pokud je roletka otevřená, vloží aktuálně vybranou položku do textového pole a roletku zavře,\n  - pokud je roletka zavřená, chová se jako potvrzení textu (konkrétní význam závisí na kontextu formuláře/dialogu, ale combobox sám ENTERem roletku neotevírá).\n- MEZERNÍK:\n  - v režimu editace textu vkládá znak mezery do textu,\n  - pokud je roletka v režimu výběru (fokus je na položkách), MEZERNÍK se chová jako potvrzení výběru (analogicky k dropdownu), pokud to implementace dovolí; základní kontrakt explicitně říká, že v editaci MEZERNÍK nesmí být přemapován na potvrzení.\n- ESC:\n  - zavře roletku bez změny aktuálně potvrzené hodnoty v poli,\n  - text v poli se může řídit standardním chováním textového pole (např. ESC nemusí mazat text, pokud to není jinde definováno).\n\nTooltip na položce v comboboxu:\n- Stejný princip jako u dropdownu:\n  - zobrazí se po 2 sekundách nečinnosti kurzoru nad položkou,\n  - pouze při overflow textu položky,\n  - zobrazuje celý text položky u kurzoru,\n  - vzhled tooltipu dle globální specifikace tooltipu (sekce 6.3).\n\nPŘÍLOHA A – IKONY (REFERENČNÍ TVARY)\n\nObecný kontrakt pro všechny referenční ikony:\n- Formát: SVG.\n- `viewBox=\"0 0 24 24\"` – všechny ikony používají stejný souřadnicový systém 24×24.\n- `stroke-width = STROKE` – tloušťka čáry je definována globálním tokenem STROKE.\n- `stroke-linecap=\"round\"`, `stroke-linejoin=\"round\"` – zaoblené konce a spoje čar.\n- `fill=\"none\"` – ikony jsou kresleny jako outline.\n- Barvu (stroke) neurčuje SVG, ale komponenta, která ikonu používá:\n  - barva se řídí stavem prvku (bílá/černá/šedivá/červená dle kontraktů stavů a významu).\n- Tvar ikon je fixní a závazný; měnit se smí pouze měřítko (v rámci UI_scale) a barva.\n\nA.1 Šipka dolů (dropdown)\n- Referenční SVG tvar:\n  - trojúhelníková šipka tvořená jednou lomenou čarou:\n    - `M6 9 L12 15 L18 9` – šipka směřující dolů.\n- Použití:\n  - vpravo v poli dropdownu a comboboxu,\n  - barva dle stavu prvku (např. bílá v NORMAL, černá v ACTIVE, šedivá v DISABLED).\n\nA.2 CLOSE (X)\n- Referenční SVG tvar:\n  - dvě křížící se úhlopříčky:\n    - `M7 7 L17 17`,\n    - `M17 7 L7 17`.\n- Použití:\n  - tlačítko zavření (např. v záhlaví programu, dialogu, kritické akce),\n  - barva dle stavu a významu (často červená/černá podle kontraktu červených prvků nebo nečervených prvků).\n\nA.3 Kalendář (datum ve status baru)\n- Referenční SVG tvar:\n  - obdélník kalendáře se zaoblenými rohy:\n    - `rect x=\"5\" y=\"6\" width=\"14\" height=\"14\" rx=\"2\" ry=\"2\"`,\n  - horizontální linka oddělující horní lištu kalendáře:\n    - `M5 10 H19`,\n  - dvě svislé čáry reprezentující kroužky/úchyty kalendáře:\n    - `M8 4 V8`,\n    - `M16 4 V8`.\n- Poznámka:\n  - text data `DD.MM.YYYY` se nekreslí jako součást SVG,\n  - je to UI text renderovaný uvnitř modulu kalendáře (pod horní lištou),\n  - typografie a barva textu se řídí pravidly pro status bar (bílý Bold text na černém pozadí modulu).\n\nA.4 INFO (volitelně)\n- Referenční SVG tvar:\n  - svislá čára pro „i“:\n    - `M12 10 V17`,\n  - tečka nad „i“:\n    - `M12 7 H12.01` (krátká horizontální čára reprezentující bod).\n- Použití:\n  - volitelná informační ikona (např. u tooltipů, nápovědy, info dialogů),\n  - barva dle stavu a významu (typicky nečervený kontrakt, pokud nejde o chybu).\n\nPŘÍLOHA B – PÍSMO (MONTSERRAT) – DISTRIBUCE\n\nCíl:\n- Zajistit, aby UI vždy používalo stejný font Montserrat bez závislosti na systému nebo internetu.\n- Důraz na determinismus: žádné automatické fallbacky na jiné fonty.\n\nMinimální kontrakt pro práci s fontem:\n1) Distribuce fontu s aplikací:\n   - Přibalit soubory `Montserrat-Regular` a `Montserrat-Bold` (TTF nebo OTF) přímo do aplikace jako lokální assety.\n2) Registrace fontu při startu:\n   - Při spuštění aplikace fonty explicitně zaregistrovat v dané technologii (web/desktop/mobile),\n   - následně je použít jako výchozí font pro celé UI (všechny textové prvky).\n3) Zákaz fallbacku:\n   - Pokud registrace fontů selže (soubor chybí, je poškozený, hash nesouhlasí apod.),\n   - aplikace NESMÍ tiše přepnout na systémový nebo jiný fallback font,\n   - místo toho MUSÍ zobrazit chybový dialog a ukončit se,\n   - cílem je zabránit nekonzistentnímu vzhledu UI.\n4) Bezpečnost a integrita:\n   - Soubory fontů musí být „pinované“ – v build pipeline se kontroluje jejich hash,\n   - změna fontu (např. jiná verze Montserrat) musí být vědomý krok, ne náhodná změna.\n\nImplementační poznámka:\n- Konkrétní API pro registraci a použití fontu závisí na platformě (např. @font-face na webu, registrace fontu v OS pro desktop, asset fonty na mobilech),\n- pro generování programu je podstatný výsledek: Montserrat-Regular a Montserrat-Bold jsou lokální assety, úspěšně zaregistrované a aktivně použité pro celé UI.\n\nPŘÍLOHA C – KONTROLA SHODY (pro automatické testy)\n\nCíl:\n- Udržet vizuální identitu a konzistenci napříč projekty a buildy.\n- Umožnit automatizovanou kontrolu, že implementace odpovídá standardu.\n\nDoporučené automatické testy:\n1) Golden screenshots:\n   - Vytvořit referenční (golden) screenshoty hlavních částí UI:\n     - hlavní obrazovky,\n     - dialogu,\n     - tabulky,\n     - dropdownu,\n     - comboboxu.\n   - Screenshoty pořídit minimálně ve 3 velikostech okna (např. 800×600, 1280×720, 1920×1080),\n   - v CI porovnávat aktuální screenshoty s golden verzemi (pixel-perfect nebo s definovanou tolerancí),\n   - odchylky indikují porušení vizuálního standardu.\n2) Kontrola hash font souborů v CI:\n   - V CI pipeline ověřovat, že hash souborů Montserrat-Regular a Montserrat-Bold odpovídá očekávaným hodnotám,\n   - změna hash znamená změnu fontu a musí být explicitně schválena.\n3) Statická kontrola tokenů:\n   - Automaticky kontrolovat, že v kódu/stylesheetu jsou použity pouze povolené tokeny:\n     - barvy (černá/bílá/šedivá/červená dle definice),\n     - tloušťky čar (STROKE, lemy, okraje),\n     - radius (R),\n     - paddingy (PAD_X, PAD_Y),\n     - další globální tokeny (LH, FS, ROW_H, STATUS_H, TIME_H, UI_scale atd.).\n   - Cílem je zabránit „divokým“ úpravám stylů mimo standard.\n\nTento chunk doplňuje standard o:\n- detailní chování dropdownu a comboboxu (včetně klávesnice, hoveru, tooltipů a deterministického filtrování),\n- závazné referenční tvary ikon v SVG (šipka dolů, CLOSE, kalendář, INFO) s jednotným viewBoxem a stroke parametry,\n- striktní pravidla pro distribuci a použití fontu Montserrat (bez fallbacku, s kontrolou hash),\n- doporučené automatizované testy (golden screenshots, kontrola hash fontů, statická kontrola tokenů) pro udržení shody implementací s vizuálním standardem.\nVšechna zde uvedená pravidla jsou závazná a musí být konzistentní s předchozími částmi standardu (barvy, typografie, UI_scale, radius, vrstvy LEM/OKRAJ/POZADÍ/OBSAH, focus overlay, zákaz dekorativních efektů a překryvů mimo povolené overlay prvky).\n\nKONTRAKT: A3_FILE. VRAŤ POUZE JSON dle kontraktu.",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_091a5e218c34ed8700696014c92ce081a3bea13a18895a5264",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\n  \"contract\": \"A3_FILE\",\n  \"path\": \"core/__init__.py\",\n  \"language\": \"python\",\n  \"content\": \"'''Core package initializer.\\n\\nThis module intentionally does not expose any public API. All public\\nsymbols are defined in the concrete modules within the core package\\n(e.g. core.config, core.paths, core.logging, core.manifest, core.exec,\\ncore.errors) as specified by the A2X_FILE_MAP contract.\\n'''\\n\"\n}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": "resp_091a5e218c34ed87006960125084c881a38142a84fff0a596c",
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 30736,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 115,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 30851
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767904458,
+    "store": true
+  }
+}

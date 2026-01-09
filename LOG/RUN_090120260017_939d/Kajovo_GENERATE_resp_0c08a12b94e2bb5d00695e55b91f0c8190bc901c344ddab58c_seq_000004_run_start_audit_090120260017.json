@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260017_939d",
+    "project": "Kajovo",
+    "stage": "GENERATE",
+    "response_id": "resp_0c08a12b94e2bb5d00695e55b91f0c8190bc901c344ddab58c",
+    "event": "run_start",
+    "sequence": 4,
+    "logged_at": "2026-01-08T23:17:26.252215"
+  },
+  "details": {
+    "event": "run_start",
+    "level": "info",
+    "details": {
+      "mode": "GENERATE",
+      "model": "gpt-4o",
+      "project": "Kajovo",
+      "response_id": "resp_0c08a12b94e2bb5d00695e55b91f0c8190bc901c344ddab58c",
+      "user_spec_chars": 190000,
+      "attachments": 0,
+      "attachments_bytes": 0,
+      "vector_store_requested": [],
+      "diagnostics": [],
+      "out_dir": "C:/KAJOVO",
+      "in_dir": ""
+    },
+    "timestamp": "2026-01-08T23:17:26.252209"
+  }
+}

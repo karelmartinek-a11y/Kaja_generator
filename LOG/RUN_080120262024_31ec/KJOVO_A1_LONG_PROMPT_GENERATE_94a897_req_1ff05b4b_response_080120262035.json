@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262024_31ec",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "GENERATE_94a897",
+    "logged_at": "2026-01-08T19:35:45.090090",
+    "request_id": "1ff05b4b"
+  },
+  "payload": {
+    "id": "resp_0192f49d6974231500696006e208ec819caa1a03e7275295b9",
+    "created_at": 1767900898.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 3277 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0192f49d6974231500696006e289c8819c9aa003c7d7a95090",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk dokončuje šablonu MANIFEST.md pro linuxovou diagnostiku a začíná novou velkou sekci pro FULL Windows diagnostiku.\\n\\n1) Dokončení MANIFEST.md pro Linux diagnostiku\\n\\nNavazuje na předchozí popis složek v MANIFEST.md a doplňuje zbývající podsložky diagnostiky pro Ubuntu/web server:\\n\\n- `nginx/` – obsahuje:\\n  - `nginx -V` (verze + build parametry),\\n  - `nginx -t` (test konfigurace),\\n  - `nginx -T` (úplný dump konfigurace, pokud je povolen),\\n  - strom konfiguračních souborů,\\n  - log tail výpisy.\\n- `app/` – přehled aplikačních adresářů, systemd unit souborů pro app/worker služby a discovery env/config souborů (jen metadata, ne obsah).\\n- `python/` – inventář interpreterů, konfigurace pipu, discovery virtualenv/venv a per-venv reporty.\\n- `database/` – stav a metadata konfigurace pro PostgreSQL/MySQL/Redis, plus log tail výpisy.\\n- `certs/` – inventář certbot/Let’s Encrypt certifikátů, report expirací; explicitně bez privátních klíčů.\\n- `cron_webhooks/` – crony a inventář webhooků (jen metadata, ne payloady).\\n- `logs/` – tail výpisy z journald/syslog/auth/kernel.\\n- `virtualization_containers/` – inventář Dockeru a metadata docker-compose.\\n\\nDále je v MANIFEST.md sekce **File Index** (tabulka), která ukazuje příklady klíčových souborů a jejich význam:\\n\\n| Path | Description |\\n|------|-------------|\\n| `README_problem.md` – kroky k reprodukci problému + časová osa.\\n| `system/journal_boot_errors.txt` – chyby při bootu z journald.\\n| `network/ss_listen.txt` – seznam naslouchajících socketů.\\n| `nginx/nginx_test.txt` – výstup `nginx -t`.\\n| `python/venv_candidates_found.txt` – detekované kořeny venv.\\n| `python/venv_reports/venv_*__report.json` – per-venv snapshot (sys/pip).\\n| `certs/cert_expiry_report.txt` – expirace certifikátů.\\n| `logs/journal_nginx_last500.txt` – posledních 500 záznamů pro nginx.\\n| `logs/journal_app_last500.txt` – posledních 500 záznamů pro aplikaci.\\n\\nSekce **Notes**:\\n- upozornění, že tajemství musí být před sdílením začerněna,\\n- chybějící subsystémy jsou zaznamenány jako `NOT PRESENT`.\\n\\nSekce **Integrity**:\\n- `Total files: {{file_count}}` – celkový počet souborů v diagnostice,\\n- `Total size: {{total_size_human}}` – celková velikost v lidsky čitelné formě,\\n- volitelné checksumy v `checksums/sha256.txt`.\\n\\nTím je linuxová šablona MANIFEST.md uzavřena a následuje oddělovač `---`.\\n\\n2) Začátek návrhu FULL Windows Diagnostics\\n\\nNová velká kapitola **29) FULL Windows Diagnostics** definuje samostatný, detailní návrh diagnostiky pro Windows. Cíle:\\n- úplná rekonstrukce systému bez ZIP archivace (výstup je adresář se soubory),\\n- rozlišení výchozích vs. runtime hodnot,\\n- detailní rozbor více instalací Pythonu a všech virtual envs,\\n- transparentní analýza PATH, registru, aliasů a asociací.\\n\\n### 29.1 Struktura kořenového adresáře\\n\\nAdresářová struktura Windows diagnostiky (příklad názvu):\\n\\n`Diag_YYYYMMDD-HHMMSS/`\\n- `MANIFEST.md` – manifest diagnostiky,\\n- `README_problem.md` – popis problému,\\n- `CHANGELOG_last_actions.txt` – poslední zásahy/změny,\\n- podsložky:\\n  - `system/`\\n  - `registry/`\\n  - `filesystem/`\\n  - `hardware/`\\n  - `storage/`\\n  - `drivers/`\\n  - `processes_services/`\\n  - `network/`\\n  - `security/`\\n  - `python/`\\n  - `devtools/`\\n  - `virtualization/`\\n  - `wsl/`\\n  - `logs/`\\n\\n### 29.2 MANIFEST.md (automaticky generovaný)\\n\\nUkázková šablona MANIFEST.md pro Windows (Markdown):\\n\\n- Hlavička:\\n  - `Generated at: YYYY-MM-DD HH:MM:SS` – čas generování,\\n  - `Machine: <COMPUTERNAME>` – název stroje,\\n  - `User: <USERNAME>` – uživatel,\\n  - `PowerShell: 5.1 / 7.x` – verze PowerShellu,\\n  - `Run as Administrator: YES / NO` – zda běželo jako admin.\\n\\n- **Folder Overview** – stručný popis složek:\\n  - `system/` – OS, build, PATH, environment,\\n  - `registry/` – autoritativní konfigurace Windows (registry),\\n  - `filesystem/` – skutečné soubory, instalace Pythonu, venvs,\\n  - `python/` – runtime diagnostika Pythonu,\\n  - `network/` – adaptéry, DNS, proxy, firewall,\\n  - `logs/` – pády a event logy,\\n  - `...` – další složky.\\n\\n- **Files** – tabulka příkladů:\\n  - `system/systeminfo.txt` – souhrn OS + HW,\\n  - `registry/env_machine.reg` – systémový PATH a proměnné prostředí,\\n  - `python/venv_reports/venv_projA.json` – plný report konkrétního venv.\\n\\n- **Notes**:\\n  - `ACCESS DENIED = requires Administrator` – některé výstupy vyžadují admin práva,\\n  - chybějící subsystémy jsou explicitně označeny.\\n\\n### 29.3 system/\\n\\nObsah složky `system/` pro Windows:\\n- `systeminfo.txt` – OS, build, hotfixy, základní HW,\\n- `os_build.txt` – edice, build, UBR (update build revision),\\n- `windows_updates_hotfixes.txt` – seznam aktualizací/hotfixů,\\n- `timezone_locale.txt` – časové pásmo a locale,\\n- `uptime_boot.txt` – uptime a čas posledního bootu,\\n- `power_settings.txt` – nastavení napájení,\\n- `group_policy_summary.html` – shrnutí Group Policy (HTML),\\n- `run_context.txt` – informace o kontextu běhu (uživatel, admin, session).\\n\\nEnvironment & PATH:\\n- `env_machine.txt` – rozparsované proměnné prostředí z HKLM,\\n- `env_user.txt` – proměnné prostředí z HKCU,\\n- `path_effective_process.txt` – PATH, jak ho vidí běžící proces diagnostiky,\\n- `path_diff_analysis.txt` – diff Machine vs User vs Runtime PATH.\\n\\n### 29.4 registry/\\n\\nSložka `registry/` obsahuje exporty a textové výpisy z registru:\\n\\nEnvironment / PATH:\\n- `env_machine.reg` – export `HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment`,\\n- `env_user.reg` – export `HKCU\\\\Environment`.\\n\\nPython – instalace & launcher:\\n- `python_core_hklm.reg` – klíče PythonCore v HKLM,\\n- `python_core_hklm_wow6432.reg` – 32bit varianty v HKLM (Wow6432Node),\\n- `python_core_hkcu.reg` – PythonCore v HKCU,\\n- `pylauncher_hklm.reg` – konfigurace `py` launcheru v HKLM,\\n- `pylauncher_hkcu.reg` – konfigurace `py` launcheru v HKCU.\\n\\nApp Execution:\\n- `app_paths_python_hklm.reg` – App Paths pro python v HKLM,\\n- `app_paths_python_hkcu.reg` – App Paths pro python v HKCU,\\n- `windowsapps_execution_aliases.txt` – aliasy spouštění z WindowsApps (např. python aliasy z MS Store).\\n\\nAsociace:\\n- `file_associations_python.reg` – asociace souborů pro Python (např. .py, .pyw).\\n\\nInstalovaný software:\\n- `uninstall_inventory.txt` – inventář odinstalovatelných programů se zaměřením na Python, Conda, VC++ runtimes.\\n\\n### 29.5 filesystem/\\n\\nSložka `filesystem/` mapuje skutečné soubory a struktury:\\n\\nPython & interpreters:\\n- `python_executables_found.txt` – seznam nalezených python.exe a příbuzných binárek,\\n- `python_install_dirs_tree.txt` – strom adresářů instalací Pythonu.\\n\\nVirtual environments:\\n- `venv_candidates_found.txt` – kandidátní adresáře venv/virtualenv/conda envs,\\n- `venv_tree_summaries/venv_<name>.txt` – souhrn stromu pro každý venv.\\n\\nProjekty:\\n- `project_requirements_found.txt` – nalezené `requirements.txt` a podobné soubory.\\n\\nUser data & AppData overview:\\n- `userprofile_tree_depth3.txt` – strom `%USERPROFILE%` do hloubky 3 (bez binárního obsahu),\\n- `userprofile_top_sizes.csv` – top složky v `%USERPROFILE%` podle velikosti,\\n- `appdata_roaming_tree_depth4.txt` – strom `%APPDATA%` do hloubky 4,\\n- `appdata_local_tree_depth4.txt` – strom `%LOCALAPPDATA%` do hloubky 4,\\n- `appdata_locallow_tree_depth4.txt` – strom `%USERPROFILE%\\\\AppData\\\\LocalLow` do hloubky 4 (pokud existuje),\\n- `appdata_top_sizes.csv` – top složky v AppData podle velikosti,\\n- `known_folders_locations.txt` – skutečné cesty pro Documents/Downloads/Desktop atd. (včetně redirectů/OneDrive),\\n- `onedrive_status_hint.txt` – indikace, zda je OneDrive používán pro přesměrování.\\n\\n### 29.6 python/\\n\\nSložka `python/` pro Windows runtime diagnostiku:\\n\\nInterpreters:\\n- `where_python.txt` – výstup `where python` / `where python3`,\\n- `py_launcher_list.txt` – informace o `py` launcheru,\\n- `interpreters_inventory.csv` – inventář interpreterů (cesty, verze, vazby na registry/instalace).\\n\\nDefault runtime:\\n- `python_version_default.txt` – `python --version` (výchozí interpreter),\\n- `pip_version_default.txt` – `pip --version`,\\n- `pip_list_default.txt` – `pip list`,\\n- `pip_freeze_default.txt` – `pip freeze`,\\n- `pip_debug_default.txt` – `pip debug` (diagnostika pipu),\\n- `pip_config_all.txt` – konfigurace pipu ze všech úrovní.\\n\\nRuntime internals:\\n- `python_sys_path.json` – `sys.path` a související informace,\\n- `python_site_packages.txt` – seznam site-packages,\\n- `python_platform.json` – informace o platformě (OS, architektura, verze Pythonu).\\n\\nVirtual env reports:\\n- `python/venv_reports/venv_<name>__report.json` – detailní report pro každý venv (sys, pip, balíčky, konfigurace).\\n\\n### 29.7 processes_services/\\n\\nSložka `processes_services/` pro Windows:\\n- `process_list.txt` – seznam běžících procesů,\\n- `services_state.txt` – stav služeb (Service Control Manager / systemd ekvivalent),\\n- `startup_items.txt` – položky spouštěné po startu (Run klíče, Startup složky apod.),\\n- `scheduled_tasks_summary.txt` – shrnutí naplánovaných úloh (Task Scheduler).\\n\\n### 29.8 network/\\n\\nSíťová diagnostika:\\n- `ipconfig_all.txt` – výstup `ipconfig /all`,\\n- `adapters_details.txt` – detailní info o adaptérech,\\n- `dns_client_config.txt` – konfigurace DNS klienta,\\n- `hosts_file.txt` – obsah `C:\\\\Windows\\\\System32\\\\drivers\\\\etc\\\\hosts`,\\n- `routes.txt` – směrovací tabulka,\\n- `netstat_ano.txt` – `netstat -ano` (porty + PID),\\n- `firewall_profiles.txt` – stav profilů firewallu,\\n- `firewall_rules_export.wfw` – export pravidel firewallu (Windows Firewall / Defender Firewall),\\n- `winhttp_proxy.txt` – WinHTTP proxy nastavení,\\n- `internet_proxy_user.txt` – uživatelská proxy (Internet Options),\\n- `wifi_profiles.txt` – seznam Wi-Fi profilů (bez hesel).\\n\\n### 29.9 security/\\n\\nBezpečnostní nastavení:\\n- `defender_status.txt` – stav Microsoft Defenderu,\\n- `applocker_effective.txt` – efektivní pravidla AppLocker (pokud používán),\\n- `uac_settings.txt` – nastavení UAC,\\n- `certificates_machine_summary.txt` – shrnutí strojových certifikátů (bez privátních klíčů).\\n\\n### 29.10 hardware/\\n\\nHW inventář:\\n- `cpu.txt` – informace o CPU,\\n- `memory_modules.txt` – moduly RAM,\\n- `memory_summary.txt` – souhrn paměti,\\n- `motherboard_bios.txt` – základní deska a BIOS/UEFI,\\n- `gpu_adapters.txt` – grafické adaptéry,\\n- `monitors_displays.txt` – monitory/displeje.\\n\\n### 29.11 storage/\\n\\nÚložiště:\\n- `volumes.txt` – seznam svazků,\\n- `mount_points.txt` – přípojné body a písmena jednotek,\\n- `smart_status.txt` – S.M.A.R.T. stav disků (pokud dostupné),\\n- `disk_performance_counters.txt` – výkonové čítače disků.\\n\\n### 29.12 drivers/\\n\\nOvladače:\\n- `driverquery_verbose.txt` – výstup `driverquery /v`,\\n- `pnp_devices.txt` – Plug and Play zařízení,\\n- `problem_devices.txt` – zařízení s problémy,\\n- `signed_drivers.txt` – podepsané ovladače.\\n\\n### 29.13 devtools/\\n\\nVývojářské nástroje:\\n- `git_version.txt` – verze Git,\\n- `node_version.txt` – verze Node.js,\\n- `dotnet_info.txt` – informace o .NET instalacích,\\n- `vcpp_runtimes.txt` – inventář VC++ runtime knihoven.\\n\\n### 29.14 virtualization/\\n\\nVirtualizační funkce:\\n- `hyperv_state.txt` – stav Hyper-V,\\n- `virtual_machine_platform.txt` – stav Virtual Machine Platform,\\n- `windows_features.txt` – seznam zapnutých/vypnutých Windows Features.\\n\\n### 29.15 wsl/\\n\\nWSL diagnostika:\\n- `wsl_status.txt` – globální stav WSL,\\n- `wsl_list_verbose.txt` – seznam distribucí s detaily,\\n- `wsl_versions.txt` – verze WSL (1/2) pro jednotlivé distribuce.\\n\\n### 29.16 logs/\\n\\nLogy a spolehlivost:\\n- `eventlog_system_last200.txt` – posledních 200 záznamů System event logu,\\n- `eventlog_application_last200.txt` – posledních 200 záznamů Application logu,\\n- `eventlog_security_last50.txt` – posledních 50 záznamů Security logu,\\n- `wer_crash_list.txt` – seznam WER crash reportů,\\n- `reliability_monitor_summary.txt` – shrnutí Reliability Monitoru,\\n- `windows_setup_logs_hint.txt` – hinty/umístění setup logů Windows.\\n\\nTento chunk tak uzavírá linuxovou MANIFEST šablonu a kompletně definuje strukturu a obsah FULL Windows diagnostiky, včetně důrazu na Python, PATH, registry, bezpečnost a logy.\",\"chunk_index\":14,\"chunk_count\":15,\"notes\":[\"Zachována struktura a význam všech složek a souborů v MANIFEST.md pro Linux i ve Windows diagnostice.\",\"Explicitně popsány cíle Windows diagnostiky (rekonstrukce systému, rozlišení default vs runtime, detailní Python/venv analýza, PATH/registry/aliasy/asociace).\",\"Uvedeny všechny podsložky Windows diagnostiky (system, registry, filesystem, hardware, storage, drivers, processes_services, network, security, python, devtools, virtualization, wsl, logs) a jejich klíčové soubory.\",\"Zdůrazněno, že výstupem je adresář se soubory, ne archiv, a že některé části mohou vyžadovat administrátorská oprávnění.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 5077,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 4134,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 9211
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767900944,
+    "store": true
+  }
+}

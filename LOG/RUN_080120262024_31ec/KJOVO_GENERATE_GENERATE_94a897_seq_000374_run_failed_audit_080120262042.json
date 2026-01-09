@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262024_31ec",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_94a897",
+    "event": "run_failed",
+    "sequence": 374,
+    "logged_at": "2026-01-08T19:42:13.790770"
+  },
+  "details": {
+    "event": "run_failed",
+    "level": "error",
+    "details": {
+      "error": "A2X_FILE_MAP.imports.symbols musí být neprázdný list.",
+      "type": "ValueError",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3540, in execute\n    files = self._run_generate(user_spec, assets, ui_state, progress_callback, stop_check)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3907, in _run_generate\n    a2x_data = self._parse_json_response(a2x_response, FILE_MAP_CONTRACT, assets=assets)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2905, in _parse_json_response\n    self._validate_contract(payload, expected_contract, assets)\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2950, in _validate_contract\n    self._validate_a2x_file_map(payload)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3191, in _validate_a2x_file_map\n    raise ValueError(\"A2X_FILE_MAP.imports.symbols musí být neprázdný list.\")\nValueError: A2X_FILE_MAP.imports.symbols musí být neprázdný list.\n"
+    },
+    "timestamp": "2026-01-08T19:42:13.790759"
+  }
+}

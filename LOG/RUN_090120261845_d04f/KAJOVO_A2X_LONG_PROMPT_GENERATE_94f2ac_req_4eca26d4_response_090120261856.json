@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_94f2ac",
+    "logged_at": "2026-01-09T17:56:49.727259",
+    "request_id": "4eca26d4"
+  },
+  "payload": {
+    "id": "resp_003420ab07ec1309006961414859048197b525a14f43071ac9",
+    "created_at": 1767981384.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_003420ab07ec13090069614149d0b48197bdab80d39789fdcd",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk pokračuje ve specifikaci A2_STRUCTURE pro podbalík `src/kaja/ui` (dialogy, komponenty, styl, UI modely) a začíná podbalík `src/kaja/core`. Všechny soubory mají jazyk `python` a budou generovány ve fázi A3. Důležité je zachovat přesné názvy souborů, tříd, funkcí a importů, protože na ně navazují jiné části systému.\\n\\nDefinované soubory a jejich role:\\n\\n1) `src/kaja/ui/dialogs_api_key.py`\\n- Purpose: Dialog „API-KEY“ – správa OpenAI API klíče.\\n- EXPORTS: `class ApiKeyDialog(QDialog)`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QDialog, QLineEdit, QPushButton, QLabel`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_dialog_frame`\\n  - `from ..services.api_key_manager import ApiKeyManager`\\n- Dialog bude pravděpodobně obsahovat textové pole pro API klíč, tlačítka ULOŽ/ZRUŠIT apod., ale konkrétní chování bude určeno v A3; zde je důležitý kontrakt tříd a importů.\\n\\n2) `src/kaja/ui/dialogs_settings.py`\\n- Purpose: Okno „SETTINGS“ – konfigurace chodu programu.\\n- EXPORTS: `class SettingsDialog(QDialog)`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QDialog, QTabWidget, QWidget, QLineEdit, QCheckBox, QSpinBox, QPushButton`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_dialog_frame`\\n  - `from ..services.settings_manager import SettingsManager`\\n  - `from ..models.domain_models import Settings`\\n- Má jít o vícetabulkové nastavení (QTabWidget) s různými typy vstupů (text, checkbox, spinbox). `SettingsManager` a doménový model `Settings` zajišťují načítání/ukládání konfigurace.\\n\\n3) `src/kaja/ui/dialogs_pricing.py`\\n- Purpose: Obrazovka „$ (CENY)“ – přehled ceníku a účtenek.\\n- EXPORTS: `class PricingWindow(QMainWindow)`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QMainWindow, QWidget, QTableView, QPushButton, QLineEdit, QComboBox, QDateEdit`\\n  - `from PySide6.QtCore import QAbstractTableModel`\\n  - `from ..models.ui_models import PriceTableModel, ReceiptsTableModel`\\n  - `from ..models.domain_models import PriceTable, ReceiptSummary, ReceiptFilter`\\n  - `from ..services.pricing_manager import PricingManager`\\n  - `from ..persistence.receipts_repository import ReceiptsRepository`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_section_frame`\\n- Slouží jako samostatné hlavní okno pro práci s cenami a účtenkami. Používá tabulkové modely z `ui_models` a doménové modely pro filtrování a sumarizaci účtenek.\\n\\n4) `src/kaja/ui/dialogs_progress.py`\\n- Purpose: Progress dialog pro běh „runu“ s tlačítkem STOP a exportem „Run bundle“.\\n- EXPORTS: `class ProgressDialog(QDialog)`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QDialog, QTextEdit, QPushButton, QLabel, QProgressBar`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_dialog_frame`\\n  - `from ..core.run_timeline import RunTimeline`\\n  - `from ..services.logging_manager import LoggingManager`\\n  - `from ..core.run_bundle_manager import RunBundleManager`\\n- Dialog zobrazuje průběh běhu (log, progress bar), umožňuje STOP a export „run bundle“. Závisí na core modulech `run_timeline` a `run_bundle_manager` a na `LoggingManager`.\\n\\n5) `src/kaja/ui/components_diff_viewer.py`\\n- Purpose: Diff viewer dialog pro porovnání obsahu souborů.\\n- EXPORTS: `class DiffViewerDialog(QDialog)`.\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QDialog, QTextEdit, QLabel`\\n  - `from ..style.tokens import UiTokens`\\n  - `from ..style.layout_utils import create_dialog_frame`\\n  - `from ..core.fs_utils import read_text_file`\\n- Slouží k vizuálnímu porovnání textových souborů (např. původní vs. generovaná verze). Používá utilitu `read_text_file` z core.\\n\\n6) `src/kaja/ui/style/__init__.py`\\n- Purpose: Inicializace podbalíku `kaja.ui.style`.\\n- EXPORTS: žádné.\\n- IMPORTS: žádné.\\n- Slouží jen k označení adresáře jako Python balíčku; žádná logika.\\n\\n7) `src/kaja/ui/style/tokens.py`\\n- Purpose: Definice Kájovo UI tokenů (barvy, typografie, radius, rozestupy, UI_scale).\\n- EXPORTS:\\n  - `class UiTokens`\\n  - konstanty `COLOR_WHITE`, `COLOR_BLACK`, `COLOR_RED`, `COLOR_GRAY`\\n- IMPORTS:\\n  - `from PySide6.QtGui import QFont`\\n- Tento modul centralizuje vizuální styl (barvy, fonty, velikosti, zaoblení, škálování UI). Ostatní UI moduly mají používat tyto tokeny místo „magic values“.\\n\\n8) `src/kaja/ui/style/layout_utils.py`\\n- Purpose: Pomocné funkce pro tvorbu sekčních rámů, dialogů a responsivního layoutu.\\n- EXPORTS:\\n  - `create_section_frame(title: str, content_widget: QWidget) -> QWidget`\\n  - `create_dialog_frame(title: str, content_widget: QWidget) -> QWidget`\\n  - `apply_responsive_layout(main_widget: QWidget) -> None`\\n- IMPORTS:\\n  - `from PySide6.QtWidgets import QWidget, QVBoxLayout, QGroupBox`\\n  - `from .tokens import UiTokens`\\n- Zajišťuje konzistentní vzhled sekcí a dialogů a případné přizpůsobení layoutu velikosti okna.\\n\\n9) `src/kaja/ui/style/button_group.py`\\n- Purpose: Exkluzivní skupina tlačítek pro MODE (GENERATE/MODIFY/QA) a podobné volby.\\n- EXPORTS: `class ExclusiveButtonGroup(QObject)`.\\n- IMPORTS:\\n  - `from PySide6.QtCore import QObject`\\n  - `from PySide6.QtWidgets import QPushButton`\\n- Třída obaluje skupinu QPushButton tak, aby se chovaly exkluzivně (jen jedno aktivní), podobně jako radio buttony, ale s vlastním stylem.\\n\\n10) `src/kaja/ui/style/icons.py`\\n- Purpose: Definice SVG ikon (šipka dolů, CLOSE, kalendář, INFO) dle Kájovo standardu.\\n- EXPORTS: `class Icons` se statickými metodami:\\n  - `arrow_down_icon()`\\n  - `close_icon()`\\n  - `calendar_icon()`\\n  - `info_icon()`\\n- IMPORTS:\\n  - `from PySide6.QtGui import QIcon, QPixmap`\\n- Poskytuje centralizovaný přístup k ikonám používaným v UI (např. v sekci OUT pro kalendář, v dialozích pro zavírání apod.).\\n\\n11) `src/kaja/ui/models/ui_models.py`\\n- Purpose: Qt table modely pro tabulky v UI (Files API, Local Files, Vector Stores, Batch Jobs, Receipts, Price Table).\\n- EXPORTS:\\n  - `class FileApiTableModel(QAbstractTableModel)`\\n  - `class LocalFilesTableModel(QAbstractTableModel)`\\n  - `class VectorStoresTableModel(QAbstractTableModel)`\\n  - `class VectorStoreFilesTableModel(QAbstractTableModel)`\\n  - `class BatchJobsTableModel(QAbstractTableModel)`\\n  - `class ReceiptsTableModel(QAbstractTableModel)`\\n  - `class PriceTableModel(QAbstractTableModel)`\\n- IMPORTS:\\n  - `from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt`\\n  - `from ..models.domain_models import FileApiFileInfo, LocalFile, VectorStoreInfo, VectorStoreFileInfo, BatchJobInfo, ReceiptSummary, ModelPricing`\\n- Tento modul mapuje doménové entity na Qt tabulkové modely, které používají jednotlivé UI sekce (FILE API, LOCAL FILES, VECTOR STORES, BATCH MONITOR, PRICING). Je klíčový pro propojení doménové vrstvy s prezentací.\\n\\n12) `src/kaja/core/__init__.py`\\n- Purpose: Inicializace podbalíku `kaja.core`.\\n- EXPORTS: žádné.\\n- IMPORTS: žádné.\\n- Pouze označuje `core` jako balíček; konkrétní core logika je v dalších souborech (např. `run_orchestrator.py`, který začíná v závěru chunku).\\n\\nNa konci chunku začíná další položka:\\n- `\\\"path\\\": \\\"src/kaja/core/run_orchestrator.py\\\",` – její purpose a detaily budou uvedeny v následujícím chunku.\\n\\nTento chunk tak doplňuje A2_STRUCTURE o dialogy (API key, Settings, Pricing, Progress), pomocný diff viewer, stylovací infrastrukturu (tokens, layout_utils, button_group, icons) a centrální UI tabulkové modely. Zároveň otevírá definici core vrstvy. Všechny uvedené moduly musí být v A3 implementovány přesně s danými názvy tříd, funkcí, importů a exportů, aby odpovídaly závislostem z ostatních částí aplikace (hlavní okno, sekce UI, služby).\",\"chunk_index\":3,\"chunk_count\":6,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 3709,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2388,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 6097
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767981409,
+    "store": true
+  }
+}

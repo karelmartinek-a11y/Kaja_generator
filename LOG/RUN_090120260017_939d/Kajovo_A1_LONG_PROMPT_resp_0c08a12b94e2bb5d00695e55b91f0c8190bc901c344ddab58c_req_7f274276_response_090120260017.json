@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260017_939d",
+    "project": "Kajovo",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_0c08a12b94e2bb5d00695e55b91f0c8190bc901c344ddab58c",
+    "logged_at": "2026-01-08T23:17:48.850868",
+    "request_id": "7f274276"
+  },
+  "payload": {
+    "id": "resp_066af5237d31ecdd0069603b17c6b8819db29751651fe24066",
+    "created_at": 1767914263.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 46080 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-4o-2024-08-06",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_066af5237d31ecdd0069603b1838c8819d8f6aaf2895bd129e",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"The document includes SVG icons for UI elements like a calendar and info symbol, with specific design notes. It specifies the use of the Montserrat font, requiring it to be bundled with the application, registered at startup, and used throughout the UI without fallback. If registration fails, the program should display an error and exit. Font files must be pinned and their hash checked in the build pipeline. Recommended tests include golden screenshots for UI consistency, font hash checks in CI, and static token checks for design elements.\",\"chunk_index\":3,\"chunk_count\":3,\"notes\":[\"SVG icons for UI elements are specified.\",\"Montserrat font must be bundled and used without fallback.\",\"Error handling for font registration failure is required.\",\"Golden screenshots and hash checks are recommended for testing.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": null,
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 932,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 164,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1096
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767914268,
+    "store": true
+  }
+}

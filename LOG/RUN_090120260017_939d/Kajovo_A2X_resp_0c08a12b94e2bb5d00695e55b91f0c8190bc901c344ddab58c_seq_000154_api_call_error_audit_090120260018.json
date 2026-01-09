@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260017_939d",
+    "project": "Kajovo",
+    "stage": "A2X",
+    "response_id": "resp_0c08a12b94e2bb5d00695e55b91f0c8190bc901c344ddab58c",
+    "event": "api_call_error",
+    "sequence": 154,
+    "logged_at": "2026-01-08T23:18:38.592820"
+  },
+  "details": {
+    "event": "api_call_error",
+    "level": "error",
+    "details": {
+      "error": "Error code: 400 - {'error': {'message': 'Your input exceeds the context window of this model. Please adjust your input and try again.', 'type': 'invalid_request_error', 'param': 'input', 'code': 'context_length_exceeded'}}",
+      "type": "BadRequestError",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2739, in _send_request\n    response = self._client.create_response(api_payload)\n  File \"C:\\kaja_generator\\kaja\\core\\openai_client.py\", line 57, in create_response\n    response = self._client.responses.create(**payload)\n  File \"C:\\Users\\provo\\AppData\\Roaming\\Python\\Python314\\site-packages\\openai\\resources\\responses\\responses.py\", line 866, in create\n    return self._post(\n           ~~~~~~~~~~^\n        \"/responses\",\n        ^^^^^^^^^^^^^\n    ...<40 lines>...\n        stream_cls=Stream[ResponseStreamEvent],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\Users\\provo\\AppData\\Roaming\\Python\\Python314\\site-packages\\openai\\_base_client.py\", line 1259, in post\n    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))\n                           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\provo\\AppData\\Roaming\\Python\\Python314\\site-packages\\openai\\_base_client.py\", line 1047, in request\n    raise self._make_status_error_from_response(err.response) from None\nopenai.BadRequestError: Error code: 400 - {'error': {'message': 'Your input exceeds the context window of this model. Please adjust your input and try again.', 'type': 'invalid_request_error', 'param': 'input', 'code': 'context_length_exceeded'}}\n"
+    },
+    "timestamp": "2026-01-08T23:18:38.592811"
+  }
+}

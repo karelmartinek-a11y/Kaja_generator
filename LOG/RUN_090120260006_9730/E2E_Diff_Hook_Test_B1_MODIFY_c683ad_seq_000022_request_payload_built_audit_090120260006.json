@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "B1",
+    "response_id": "MODIFY_c683ad",
+    "event": "request_payload_built",
+    "sequence": 22,
+    "logged_at": "2026-01-08T23:06:45.757287"
+  },
+  "details": {
+    "event": "request_payload_built",
+    "level": "info",
+    "details": {
+      "stage": "B1",
+      "model": "gpt-4o",
+      "instructions_chars": 16431,
+      "input_chars": 1426,
+      "input_parts": 1,
+      "previous_response_id": "",
+      "tools_enabled": true,
+      "temperature": 0.2,
+      "attachments": 0,
+      "vector_store_id": "vs_696038838ea4819191dd7dbb56a066fd",
+      "file_search_enabled": true
+    },
+    "timestamp": "2026-01-08T23:06:45.757280"
+  }
+}

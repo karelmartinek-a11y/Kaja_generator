@@ -1,0 +1,24 @@
+{
+  "metadata": {
+    "project": "E2E Diff/Hook Test",
+    "mode": "MODIFY",
+    "model": "gpt-4o",
+    "response_id": "MODIFY_c683ad",
+    "user_spec": "Modify run for diff and hook logging",
+    "attachments": [],
+    "vector_store_ids": [
+      "vs_696038838ea4819191dd7dbb56a066fd"
+    ],
+    "diagnostics": [],
+    "captured_at": "2026-01-08T23:06:45.726155",
+    "pricing_catalog": {
+      "source": "https://openai.com/pricing",
+      "last_refreshed": "2026-01-08T23:06:42.221397",
+      "verified": false,
+      "status": "Ceník offline / odhad",
+      "error": "Client error '403 Forbidden' for url 'https://openai.com/pricing'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403"
+    }
+  },
+  "captured_at": "2026-01-08T23:06:45.726179",
+  "run_id": "RUN_090120260006_9730"
+}

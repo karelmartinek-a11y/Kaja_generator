@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "GENERATE_53998c",
+    "logged_at": "2026-01-08T20:28:35.850739",
+    "request_id": "f3a4610c"
+  },
+  "payload": {
+    "id": "resp_0077e6ef261c0c18006960134444d481a28d24d2156aec5243",
+    "created_at": 1767904068.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0077e6ef261c0c180069601344d7ec81a2b4e236683cfb7502",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk doplňuje globální požadavky a začíná detailní architektonický návrh modulů `core.*` pro nástroj CrossPlatformFullDiag.\\n\\nDoplňující nefunkční požadavky na nástroj:\\n- MANIFEST a indexy musí být deterministické (stabilní, např. lexikografické pořadí položek).\\n- FULL diagnostika má doběhnout v rozumném čase (minuty, ne hodiny), s ohledem na velikost logů a FS.\\n- Chybové zprávy mají být jasné, s možnými příčinami, pokud jsou známy.\\n- Výstupy mají být navrženy tak, aby nad nimi šlo snadno stavět další nástroje (parsování MANIFESTu, automatická analýza).\\n- Pouze standardní knihovna Pythonu a vestavěné systémové nástroje; žádné externí knihovny.\\n\\nDoplňující omezení (constraints):\\n- MASTER: žádné externí soubory ani závislosti mimo standardní knihovnu a vestavěné systémové nástroje.\\n- Struktura adresářů a názvy souborů pro Linux/Windows jsou pevně dané předchozími MASTER chunky a nesmí se měnit.\\n- Diagnostika je read‑only: nesmí měnit konfiguraci systému, pouze číst a zapisovat do výstupní struktury.\\n- Nesmí ukládat/logovat citlivé informace nad rámec MASTER (např. hesla, privátní klíče).\\n- Nesmí spoléhat na nestandardní shell featury mimo /bin/sh na Linuxu a PowerShell/cmd na Windows, pokud to MASTER výslovně nepovoluje.\\n- Nesmí měnit časová razítka souborů jinak než jejich vytvořením/zápisem (žádné dodatečné `touch`).\\n- Nesmí používat databáze ani jiné perzistentní úložiště mimo generovanou diagnostickou strukturu.\\n- Pokud některý systémový nástroj chybí (např. `lsb_release`, `wmic`), musí to být zaznamenáno do logu a MANIFESTu jako částečné selhání, ale běh jako celek nesmí selhat, pokud nejde o kritickou část definovanou v MASTER.\\n- Konkrétní seznam příkazů/souborů pro sekce je dán MASTER; tento plán ho nesmí rozšiřovat o nové povinné požadavky, pouze implementačně strukturuje.\\n- Kájovo UI DESIGN STANDARD je zde jen referenční kontrakt pro budoucí GUI; aktuální implementace je čistě CLI a nesmí generovat GUI.\\n\\nZačátek architektury – přehled modulů v `core` (návrh API, odpovědnosti, závislosti):\\n\\n1) `core.config`\\n- Odpovědnost: centrální konfigurace nástroje, parsování CLI argumentů, datové modely konfigurace běhu.\\n- Exporty (návrh rozhraní):\\n  - `class DiagMode(Enum)` – hodnoty: `LINUX`, `WINDOWS`, `AUTO`.\\n  - `class DetailLevel(Enum)` – hodnoty: `FULL`, `BASIC`; pokud BASIC není v MASTER používán, mapuje se interně na FULL.\\n  - `class SectionName(Enum)` – hodnoty: `SYSTEM`, `REGISTRY`, `FILESYSTEM`, `HARDWARE`, `STORAGE`, `DRIVERS`, `PROCESSES_SERVICES`, `NETWORK`, `SECURITY`, `PYTHON`, `DEVTOOLS`, `VIRTUALIZATION`, `WSL`, `LOGS`.\\n  - `class RunConfig(dataclass)` – pole: `mode: DiagMode`, `detail: DetailLevel`, `output_dir: Path`, `selected_sections: Set[SectionName]`, `dry_run: bool`, `enable_hashes: bool`, `enable_logs: bool`.\\n  - `def parse_cli_args(argv: list[str]) -> RunConfig` – parsuje CLI přepínače (např. `--mode`, `--output-dir`, `--no-hash`, `--no-logs`, `--section`, `--dry-run`, `--detail`).\\n  - `def detect_os() -> DiagMode` – detekce aktuálního OS (Linux/Windows) pro režim AUTO.\\n- Závislosti: standardní knihovna `argparse`, `enum`, `dataclasses`, `pathlib`, `typing`, `platform`.\\n\\n2) `core.paths`\\n- Odpovědnost: generování a správa cest v diagnostické struktuře (kořen `Diag_YYYYMMDD-HHMMSS`, podsložky, klíčové soubory).\\n- Exporty:\\n  - `class DiagPaths(dataclass)` – obsahuje minimálně: `root: Path`, `manifest: Path`, `key_index: Path`, `logs_dir: Path`, plus per‑sekční adresáře a klíčové soubory podle MASTER (např. `system_dir`, `network_dir`, atd.).\\n  - `def generate_root_dir(base_dir: Path, timestamp: datetime) -> Path` – vytvoří deterministický název kořenového adresáře dle formátu `Diag_YYYYMMDD-HHMMSS` v daném `base_dir`.\\n  - `def build_paths(config: RunConfig, timestamp: datetime) -> DiagPaths` – na základě konfigurace a času sestaví všechny potřebné cesty.\\n- Závislosti: `core.config.RunConfig`, standardní knihovna `pathlib`, `datetime`.\\n\\n3) `core.logging`\\n- Odpovědnost: interní logování běhu diagnostiky do souboru v podsložce `logs` a případně na stderr/stdout.\\n- Exporty:\\n  - `class DiagLogger` – metody: `info(msg: str)`, `warn(msg: str)`, `error(msg: str)`, `exception(msg: str)` (poslední loguje traceback).\\n  - `def init_logger(paths: DiagPaths, enable_logs: bool) -> DiagLogger` – inicializuje logging podle konfigurace a cest.\\n- Závislosti: `core.paths.DiagPaths`, standardní knihovna `logging`, `pathlib`, `sys`, `traceback`.\\n\\n4) `core.manifest`\\n- Odpovědnost: model a generování `MANIFEST.md` a indexu klíčových souborů, včetně hashů a metadat běhu.\\n- Exporty:\\n  - `class ManifestEntry(dataclass)` – pole: `relative_path: str`, `description: str`, `sha256: str | None`, `size: int | None`, `section: SectionName | None`.\\n  - `class Manifest(dataclass)` – pole: `entries: list[ManifestEntry]`, `tool_version: str`, `python_version: str`, `os_info: str`, `run_timestamp: str`, `config_summary: str`.\\n  - `def create_empty_manifest(config: RunConfig, paths: DiagPaths) -> Manifest` – vytvoří prázdný manifest s vyplněnými metadaty běhu.\\n  - `def add_file(manifest: Manifest, paths: DiagPaths, abs_path: Path, description: str, section: SectionName | None = None, compute_hash: bool = True) -> None` – přidá položku do manifestu, volitelně spočítá SHA‑256 a velikost.\\n  - `def write_manifest(manifest: Manifest, paths: DiagPaths) -> None` – zapíše `MANIFEST.md` v deterministickém pořadí.\\n  - `def write_key_files_index(manifest: Manifest, paths: DiagPaths) -> None` – vygeneruje index klíčových souborů (např. `KEY_FILES_INDEX.md`).\\n- Závislosti: `core.config.RunConfig`, `core.config.SectionName`, `core.paths.DiagPaths`, standardní knihovna `dataclasses`, `hashlib`, `pathlib`, `platform`, `sys`, `textwrap`.\\n\\n5) `core.exec`\\n- Odpovědnost: bezpečné a deterministické spouštění systémových příkazů na Linuxu a Windows, sběr `stdout`/`stderr` a návratových kódů.\\n- Exporty:\\n  - `class CommandResult(dataclass)` – pole: `command: list[str]`, `returncode: int`, `stdout: str`, `stderr: str`.\\n  - `def run_command(cmd: list[str], timeout: int | None = None, shell: bool = False) -> CommandResult` – obálka nad `subprocess`, respektující omezení (standardní /bin/sh, PowerShell/cmd, žádné speciální featury mimo MASTER).\\n  - `def write_command_result(result: CommandResult, target_file: Path) -> None` – zapíše výsledek příkazu do souboru v konzistentním formátu.\\n- Závislosti: standardní knihovna `subprocess`, `dataclasses`, `pathlib`, `textwrap`.\\n\\n6) `core.errors`\\n- Odpovědnost: společná hierarchie výjimek a utility pro chybové stavy.\\n- Exporty (zatím začátek, další budou v navazujícím chunku):\\n  - `class DiagError(Exception)` – základní výjimka pro diagnostiku.\\n\\nTento chunk je součástí návrhu architektury a kontextu pro budoucí implementaci `core/__init__.py` a dalších modulů. Stále platí kontrakt, že skutečný obsah souborů se má v dalších krocích vracet jako čistý obsah (bez diff/patch formátování) a v čistém JSON dle A3_FILE, a že tento plán nesmí měnit MASTER definice struktur, pouze je implementačně rozpracovává.\",\"chunk_index\":2,\"chunk_count\":10,\"notes\":[\"Zachovat deterministické pořadí položek v MANIFESTu a indexech (např. lexikografické řazení cest).\",\"Při implementaci modulů `core.*` respektovat omezení: pouze standardní knihovna a povolené systémové nástroje, žádné změny systému ani struktury adresářů definované v MASTER.\",\"`core.config`, `core.paths`, `core.logging`, `core.manifest`, `core.exec`, `core.errors` tvoří základní architektonický rámec, na který budou navazovat sekční moduly a `core/__init__.py`.\",\"V dalších chuncích pravděpodobně následuje rozšíření hierarchie chyb v `core.errors` a popis dalších modulů; při slučování chunků je nutné tyto definice sjednotit.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 3683,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2479,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 6162
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767904115,
+    "store": true
+  }
+}

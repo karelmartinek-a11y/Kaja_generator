@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_94f2ac",
+    "logged_at": "2026-01-09T17:57:28.139687",
+    "request_id": "45d9ede2"
+  },
+  "payload": {
+    "id": "resp_0224b8efa5f4db420069614161d9d881a3b6a375616fbc4b13",
+    "created_at": 1767981409.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0224b8efa5f4db420069614162f1b881a39b08a686f484eae3",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk rozvíjí A2_STRUCTURE pro core a services vrstvy KÁJO GO'. Navazuje na předchozí definici `run_orchestrator.py` a dále specifikuje klíčové core utility a servisní moduly. Všechny soubory jsou `python`, generované ve fázi A3, a je nutné zachovat přesné názvy tříd, funkcí a importů.\\n\\n1) `src/kaja/core/run_orchestrator.py`\\n- Purpose (dokončení z předchozího chunku): Hlavní orchestrátor běhu „KÁJO GO'“.\\n- EXPORTS: `class RunOrchestrator`.\\n- IMPORTS:\\n  - `from ..services.logging_manager import LoggingManager`\\n  - `from ..services.settings_manager import SettingsManager`\\n  - `from ..services.openai_client import OpenAIClient`\\n  - `from ..services.retry_manager import RetryManager`\\n  - `from ..services.file_api_manager import FileApiManager`\\n  - `from ..services.vector_store_manager import VectorStoreManager`\\n  - `from ..diagnostics.diagnostics_windows import WindowsDiagnosticsManager`\\n  - `from ..diagnostics.diagnostics_ubuntu_ssh import UbuntuSSHDiagnosticsManager`\\n  - `from ..core.fs_mirror_manager import FSMirrorManager`\\n  - `from ..core.versing_manager import VersingManager`\\n  - `from ..core.request_builders import RequestBuilders`\\n  - `from ..core.response_parsers import ResponseParsers`\\n  - `from ..core.run_timeline import RunTimeline`\\n  - `from ..core.run_bundle_manager import RunBundleManager`\\n  - `from ..services.pricing_manager import PricingManager`\\n  - `from ..persistence.receipts_repository import ReceiptsRepository`\\n  - `from ..persistence.persistence_manager import PersistenceManager`\\n  - `from ..services.script_executor import ScriptExecutor`\\n  - `from ..core.fs_utils import FSUtils`\\n- RunOrchestrator bude centrální koordinátor celého „runu“: nastavuje služby (logging, settings, OpenAI klient, retry, file API, vector stores), spouští diagnostiku (Windows/Ubuntu SSH), zajišťuje mirror IN adresáře, VERSING snapshoty, stavovou timeline, práci s run bundle, pricing/účtenky a perzistenci. Používá request_builders/response_parsers pro komunikaci s LLM (A/B/C fáze). Konkrétní workflow se definuje v A3, ale závislosti jsou pevně dané.\\n\\n2) `src/kaja/core/fs_mirror_manager.py`\\n- Purpose: Rekurzivní mirror IN adresáře, upload kompatibilních souborů a tvorba mirror manifestu.\\n- EXPORTS:\\n  - `class FSMirrorManager`\\n  - `class MirrorResult`\\n  - `class MirrorFileEntry`\\n  - `class MirrorSkipEntry`\\n- IMPORTS:\\n  - `from ..services.file_api_manager import FileApiManager`\\n  - `from ..services.secret_scanner import SecretScanner`\\n  - `from ..services.allow_deny_filter import AllowDenyFilter`\\n  - `from ..services.logging_manager import LoggingManager`\\n  - `from .fs_utils import FSUtils`\\n- FSMirrorManager bude procházet vstupní adresář (IN), filtrovat soubory podle allow/deny, skenovat tajemství, uploadovat vhodné soubory přes FileApiManager a vytvářet manifest (MirrorResult) s položkami MirrorFileEntry (zahrnuté soubory) a MirrorSkipEntry (přeskočené soubory + důvod). FSUtils poskytuje nízkoúrovňové FS operace.\\n\\n3) `src/kaja/core/versing_manager.py`\\n- Purpose: Implementace VERSING snapshotů pracovního adresáře.\\n- EXPORTS: `class VersingManager`.\\n- IMPORTS:\\n  - `from .fs_utils import FSUtils`\\n  - `from ..services.logging_manager import LoggingManager`\\n- VersingManager spravuje verzované snapshoty (např. před/po generování), pravděpodobně kopíruje stromy adresářů, ukládá metadata a loguje operace.\\n\\n4) `src/kaja/core/fs_utils.py`\\n- Purpose: Pomocné funkce pro práci se souborovým systémem.\\n- EXPORTS: `class FSUtils` se statickými metodami:\\n  - `read_text_file()`\\n  - `write_text_file()`\\n  - `compute_sha256()`\\n  - `is_binary_file()`\\n  - `ensure_dir()`\\n  - `copy_tree_filtered()`\\n- IMPORTS:\\n  - `import os, hashlib, shutil, codecs`\\n  - `from ..services.logging_manager import LoggingManager`\\n- FSUtils centralizuje běžné FS operace (čtení/zápis textu, hashování, detekce binárních souborů, vytváření adresářů, kopírování stromu s filtrem) a loguje přes LoggingManager.\\n\\n5) `src/kaja/core/request_builders.py`\\n- Purpose: Sestavování instructions a input pro A1/A2/A3, B1/B2/B3, QA a C_FILES_ALL.\\n- EXPORTS:\\n  - `class RequestBuilders`\\n  - `class DiagnosticsContext`\\n  - `class B2FileEntry`\\n- IMPORTS:\\n  - `from ..models.domain_models import Settings, MirrorResult, DiagnosticsResult, VectorStoreInfo, AttachedFile, SSHConfig`\\n  - `from ..services.settings_manager import SettingsManager`\\n- RequestBuilders generuje prompt/request payloady pro různé fáze (A, B, QA, C_FILES_ALL) na základě Settings, výsledků mirroru, diagnostiky, vector store informací, připojených souborů a SSH konfigurace. DiagnosticsContext a B2FileEntry jsou pomocné datové struktury pro diagnostiku a B2 strukturu.\\n\\n6) `src/kaja/core/response_parsers.py`\\n- Purpose: Parsování a validace JSON odpovědí A1_PLAN, A2_STRUCTURE, A3_FILE, B1_PLAN, B2_STRUCTURE, B3_FILE, C_FILES_ALL.\\n- EXPORTS:\\n  - `class ResponseParsers`\\n  - `class A1Plan`\\n  - `class A2Structure`\\n  - `class A2FileEntry`\\n  - `class A3FileChunk`\\n  - `class B1Plan`\\n  - `class B2Structure`\\n  - `class B2FileEntry`\\n  - `class B3FileChunk`\\n  - `class CFilesAll`\\n  - `class CFileEntry`\\n- IMPORTS:\\n  - `import json`\\n  - `from ..services.logging_manager import LoggingManager`\\n- Modul zodpovídá za robustní načtení a validaci JSON odpovědí z LLM pro všechny fáze generování (A/B/C). Definuje datové třídy/struktury pro jednotlivé typy odpovědí a loguje chyby/varování.\\n\\n7) `src/kaja/core/run_timeline.py`\\n- Purpose: Evidence kroků runu a export/import timeline.\\n- EXPORTS:\\n  - `class RunTimeline`\\n  - `class TimelineStep`\\n- IMPORTS:\\n  - `from dataclasses import dataclass`\\n  - `from datetime import datetime`\\n  - `from ..services.logging_manager import LoggingManager`\\n  - `from .fs_utils import FSUtils`\\n- RunTimeline uchovává chronologický seznam kroků (TimelineStep) v průběhu runu, umožňuje export/import (pravděpodobně do souboru přes FSUtils) a loguje změny.\\n\\n8) `src/kaja/core/run_bundle_manager.py`\\n- Purpose: Vytváření Run bundle (zip) s artefakty runu.\\n- EXPORTS: `class RunBundleManager`.\\n- IMPORTS:\\n  - `import zipfile, os`\\n  - `from ..services.logging_manager import LoggingManager`\\n  - `from .fs_utils import FSUtils`\\n- RunBundleManager balí logy, timeline, mirror manifest, generované soubory a další artefakty do zip archivu (run bundle) pro snadné sdílení/archivaci.\\n\\n9) `src/kaja/services/__init__.py`\\n- Purpose: Inicializace podbalíku `kaja.services`.\\n- EXPORTS: žádné.\\n- IMPORTS: žádné.\\n- Pouze označuje adresář jako balíček; logika je v jednotlivých service modulech.\\n\\n10) `src/kaja/services/settings_manager.py`\\n- Purpose: Načítání, ukládání a poskytování `Settings`.\\n- EXPORTS: `class SettingsManager`.\\n- IMPORTS:\\n  - `import json, os`\\n  - `from ..models.domain_models import Settings, LogRotationPolicy, RetryPolicy, PricingSourceConfig, SecuritySettings, BatchPollingSettings, DefaultModelSettings, HooksConfig, AllowDenyConfig`\\n  - `from ..services.logging_manager import LoggingManager`\\n- SettingsManager spravuje konfiguraci aplikace (čtení/zápis JSON souboru se Settings a souvisejícími podtypy), poskytuje přístup k aktuálnímu nastavení a loguje změny/chyby.\\n\\n11) `src/kaja/services/logging_manager.py`\\n- Purpose: Centralizované logování, správa `LOG/` a `RunContext`.\\n- EXPORTS:\\n  - `class LoggingManager`\\n  - `class RunContext`\\n  - `class FileOperationLogEntry`\\n  - `class BatchArtifacts`\\n- IMPORTS:\\n  - `import logging, os, datetime`\\n  - `from dataclasses import dataclass`\\n  - `from ..services.encryption_manager import EncryptionManager`\\n- LoggingManager nastavuje logging (souborové logy v LOG/, případně rotace dle politiky), spravuje RunContext (identita běhu, cesty, metadata), eviduje operace se soubory (FileOperationLogEntry) a artefakty batch jobů (BatchArtifacts). EncryptionManager může sloužit k šifrování citlivých logů.\\n\\n12) `src/kaja/services/openai_client.py`\\n- Purpose: Obálka nad OpenAI Python SDK pro Responses, Files, Models, Vector Stores a Batch.\\n- EXPORTS:\\n  - `class OpenAIClient`\\n  - `class ResponseRequest`\\n  - `class ResponseResult`\\n  - `class BatchRequest`\\n  - `class ModelCapabilities`\\n- IMPORTS:\\n  - `import openai`\\n  - `from ..services.retry_manager import RetryManager`\\n  - `from ..services.logging_manager import LoggingManager`\\n  - `from ..models.domain_models import FileApiFileInfo, VectorStoreInfo, VectorStoreFileInfo, BatchJobInfo, OpenAIModelInfo`\\n- OpenAIClient sjednocuje volání OpenAI API (chat/responses, file API, vector stores, batch jobs, model listing). Používá RetryManager pro robustní retry s backoffem a LoggingManager pro audit.\\n\\n13) `src/kaja/services/retry_manager.py`\\n- Purpose: Retry politika s exponenciálním backoff + jitter a circuit breaker.\\n- EXPORTS: `class RetryManager`.\\n- IMPORTS:\\n  - `import time, random`\\n  - `from ..services.logging_manager import LoggingManager`\\n  - `from ..models.domain_models import RetryPolicy`\\n- RetryManager implementuje opakování neúspěšných operací (např. OpenAI API) podle RetryPolicy, s exponenciálním backoffem, náhodným jitterem a případným circuit breakerem. Loguje pokusy a chyby.\\n\\nChunk končí u `\\\"path\\\": \\\"src/kaja/services/file_api_manager.py\\\",` – definice tohoto modulu (purpose, exports, imports) bude pokračovat v následujícím chunku.\\n\\nCelkově tento chunk definuje jádro orchestrace runu (RunOrchestrator), souborové utility a mirror/versing (FSUtils, FSMirrorManager, VersingManager), konstrukci/parsování LLM requestů/odpovědí (RequestBuilders, ResponseParsers), časovou osu a bundlování runu (RunTimeline, RunBundleManager) a základní servisní infrastrukturu (SettingsManager, LoggingManager, OpenAIClient, RetryManager, services balíček). Všechny tyto moduly jsou klíčové pro koordinaci běhu, práci s OpenAI, konfigurací, logováním a souborovým systémem a musí být v A3 implementovány přesně dle uvedených kontraktů.\",\"chunk_index\":4,\"chunk_count\":6,\"notes\":[\"Navazuje na předchozí chunk: dokončuje definici run_orchestrator.py a otevírá services/file_api_manager.py, který bude popsán v dalším chunku.\",\"Zachovat přesné názvy tříd, funkcí a importů, protože na ně odkazují UI, diagnostika, persistence i další services moduly.\",\"FSUtils, FSMirrorManager, VersingManager, RunTimeline a RunBundleManager tvoří základní FS a run-infrastrukturu; RequestBuilders/ResponseParsers jsou kontraktní vrstva pro komunikaci s LLM fázemi A/B/C.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 3977,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3024,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 7001
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767981447,
+    "store": true
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A2X_FILE_MAP",
+    "response_id": "GENERATE_94f2ac",
+    "event": "json_coerce_fallback",
+    "sequence": 203,
+    "logged_at": "2026-01-09T18:00:10.133268"
+  },
+  "details": {
+    "event": "json_coerce_fallback",
+    "level": "warning",
+    "details": {
+      "expected_contract": "A2X_FILE_MAP",
+      "candidate_count": 4,
+      "parsed_count": 3,
+      "unescape_count": 0,
+      "response_chars": 21371
+    },
+    "timestamp": "2026-01-09T18:00:10.133262"
+  }
+}

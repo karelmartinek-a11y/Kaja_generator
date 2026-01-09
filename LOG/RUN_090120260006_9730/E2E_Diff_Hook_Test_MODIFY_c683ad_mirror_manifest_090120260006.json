@@ -1,0 +1,27 @@
+{
+  "project": "E2E Diff/Hook Test",
+  "response_id": "MODIFY_c683ad",
+  "root": "C:\\Kaja_generator\\IN",
+  "generated_at": "2026-01-08T23:06:45.528407",
+  "files": [
+    {
+      "path": "dry_seed.txt",
+      "absolute_path": "C:\\Kaja_generator\\IN\\dry_seed.txt",
+      "size_bytes": 17,
+      "uploaded": false,
+      "file_id": null,
+      "reason": null,
+      "notes": null
+    },
+    {
+      "path": "seed.txt",
+      "absolute_path": "C:\\Kaja_generator\\IN\\seed.txt",
+      "size_bytes": 18,
+      "uploaded": false,
+      "file_id": null,
+      "reason": null,
+      "notes": null
+    }
+  ],
+  "diagnostics": []
+}

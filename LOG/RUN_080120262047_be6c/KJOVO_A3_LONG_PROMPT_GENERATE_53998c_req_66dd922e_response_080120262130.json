@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "GENERATE_53998c",
+    "logged_at": "2026-01-08T20:30:15.448277",
+    "request_id": "66dd922e"
+  },
+  "payload": {
+    "id": "resp_0c74393d0f91359200696013a9cb88819fafde3af38726f191",
+    "created_at": 1767904169.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0c74393d0f91359200696013aa670c819f9abd0f8c5f27fe12",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk pokračuje v návrhu sekčních modulů (hlavně Windows) a hlavního běhového modulu runner.main, navazuje na předchozí definice core.* a sections.*.\\n\\n1) Dokončení závislostí pro dříve zmíněné Windows sekce\\n- Na začátku chunku je jen dojezd předchozí položky (pravděpodobně sections.windows.drivers) se závislostmi:\\n  - core.exec.run_command, write_command_result\\n  - core.manifest.add_file\\n  - core.paths.DiagPaths\\n  - core.logging.DiagLogger\\n- Tím se potvrzuje, že všechny Windows sekce používají stejný základní vzor: BaseSection + SectionContext + run_command/write_command_result + manifest + paths + logger.\\n\\n2) sections.windows.processes_services\\n- Odpovědnost: Implementace Windows sekce processes_services podle MASTER návrhu.\\n  - Sběr informací o běžících procesech a službách, jejich stavech a případně konfiguraci, přes standardní Windows nástroje (tasklist, sc, Get-Service apod., konkrétní seznam je v MASTER, zde není rozšiřován).\\n- Exporty:\\n  - class WindowsProcessesServicesSection(BaseSection)\\n    - Implementuje name() (SectionName.PROCESSES_SERVICES nebo ekvivalent) a run().\\n    - V run() volá core.exec.run_command pro příslušné příkazy a zapisuje výstupy do souborů v sekčním adresáři.\\n    - Každý výstupní soubor registruje do manifestu.\\n- Závislosti:\\n  - sections.base.BaseSection, SectionContext\\n  - core.exec.run_command, write_command_result\\n  - core.manifest.add_file\\n  - core.paths.DiagPaths\\n  - core.logging.DiagLogger\\n\\n3) sections.windows.network\\n- Odpovědnost: Windows sekce network podle MASTER návrhu.\\n  - Sběr síťové konfigurace a stavu: ipconfig, netsh (např. netsh interface ip show config, netsh wlan show, firewall rules), routování, DNS, atd., přesně dle MASTER.\\n- Exporty:\\n  - class WindowsNetworkSection(BaseSection)\\n    - name() vrací SectionName.NETWORK.\\n    - run() spouští síťové příkazy přes run_command, ukládá výstupy do souborů a registruje je do manifestu.\\n- Závislosti:\\n  - sections.base.BaseSection, SectionContext\\n  - core.exec.run_command, write_command_result\\n  - core.manifest.add_file\\n  - core.paths.DiagPaths\\n  - core.logging.DiagLogger\\n\\n4) sections.windows.security\\n- Odpovědnost: Windows sekce security podle MASTER návrhu.\\n  - Sběr informací o bezpečnostní konfiguraci: firewall (např. netsh advfirewall), antivir, audit policy, případně další bezpečnostní nastavení definovaná v MASTER.\\n- Exporty:\\n  - class WindowsSecuritySection(BaseSection)\\n    - name() vrací SectionName.SECURITY.\\n    - run() volá příslušné nástroje přes run_command, ukládá výstupy do souborů a registruje je do manifestu.\\n- Závislosti:\\n  - sections.base.BaseSection, SectionContext\\n  - core.exec.run_command, write_command_result\\n  - core.manifest.add_file\\n  - core.paths.DiagPaths\\n  - core.logging.DiagLogger\\n\\n5) sections.windows.python\\n- Odpovědnost: Windows sekce python podle MASTER návrhu.\\n  - Detekce instalací Pythonu, verzí, případně pip balíčků a souvisejících nástrojů, dle MASTER.\\n  - Může prohledávat PATH, typické instalační cesty, používat \\\"py -0\\\" apod., ale konkrétní příkazy jsou dány MASTERem.\\n- Exporty:\\n  - class WindowsPythonSection(BaseSection)\\n    - name() vrací SectionName.PYTHON (nebo ekvivalent).\\n    - run() používá run_command pro zjištění verzí a konfigurace Pythonu, zapisuje výstupy do souborů a registruje je do manifestu.\\n- Závislosti:\\n  - sections.base.BaseSection, SectionContext\\n  - core.exec.run_command, write_command_result\\n  - core.manifest.add_file\\n  - core.paths.DiagPaths\\n  - core.logging.DiagLogger\\n  - standard library: shutil (např. pro shutil.which k hledání binárek Pythonu)\\n\\n6) sections.windows.devtools\\n- Odpovědnost: Windows sekce devtools podle MASTER návrhu.\\n  - Sběr informací o instalovaných vývojových nástrojích, SDK, kompilátorech, IDE, atd., dle MASTER (např. Visual Studio, Build Tools, .NET SDK, atd.).\\n- Exporty:\\n  - class WindowsDevtoolsSection(BaseSection)\\n    - name() vrací SectionName.DEVTOOLS.\\n    - run() volá příslušné nástroje a příkazy přes run_command, ukládá výstupy do souborů a registruje je do manifestu.\\n- Závislosti:\\n  - sections.base.BaseSection, SectionContext\\n  - core.exec.run_command, write_command_result\\n  - core.manifest.add_file\\n  - core.paths.DiagPaths\\n  - core.logging.DiagLogger\\n\\n7) sections.windows.virtualization\\n- Odpovědnost: Windows sekce virtualization podle MASTER návrhu.\\n  - Detekce a konfigurace virtualizačních technologií: Hyper-V, VirtualBox, VMware, případně další, dle MASTER.\\n- Exporty:\\n  - class WindowsVirtualizationSection(BaseSection)\\n    - name() vrací SectionName.VIRTUALIZATION.\\n    - run() používá run_command pro dotazy na stav a konfiguraci virtualizačních komponent, ukládá výstupy do souborů a registruje je do manifestu.\\n- Závislosti:\\n  - sections.base.BaseSection, SectionContext\\n  - core.exec.run_command, write_command_result\\n  - core.manifest.add_file\\n  - core.paths.DiagPaths\\n  - core.logging.DiagLogger\\n\\n8) sections.windows.wsl\\n- Odpovědnost: Windows sekce WSL podle MASTER návrhu.\\n  - Sběr informací o Windows Subsystem for Linux: seznam distribucí, verze WSL, konfigurace, stav, atd.\\n- Exporty:\\n  - class WindowsWslSection(BaseSection)\\n    - name() vrací SectionName.WSL.\\n    - run() volá příkazy jako wsl.exe / wslconfig apod. (dle MASTER), ukládá výstupy do souborů a registruje je do manifestu.\\n- Závislosti:\\n  - sections.base.BaseSection, SectionContext\\n  - core.exec.run_command, write_command_result\\n  - core.manifest.add_file\\n  - core.paths.DiagPaths\\n  - core.logging.DiagLogger\\n\\n9) sections.windows.logs\\n- Odpovědnost: Windows sekce logs podle MASTER návrhu.\\n  - Export systémových event logů (Application, System, Security, atd.) a případných aplikačních logů definovaných v MASTER.\\n  - Musí respektovat omezení na citlivá data (neexportovat hesla, privátní klíče apod.).\\n- Exporty:\\n  - class WindowsLogsSection(BaseSection)\\n    - name() vrací SectionName.LOGS.\\n    - run() používá run_command (např. wevtutil, PowerShell Get-WinEvent/Get-EventLog) a čtení souborů z definovaných cest, ukládá výstupy do sekčního adresáře a registruje je do manifestu.\\n- Závislosti:\\n  - sections.base.BaseSection, SectionContext\\n  - core.exec.run_command, write_command_result\\n  - core.manifest.add_file\\n  - core.paths.DiagPaths\\n  - core.logging.DiagLogger\\n  - standard library: pathlib (pro práci se souborovými cestami a výstupní strukturou)\\n\\n10) runner.main\\n- Odpovědnost: Hlavní vstupní bod CLI, orchestruje celý běh diagnostiky.\\n  - Zajišťuje parsování argumentů, detekci OS, vytvoření adresářové struktury, inicializaci logování, vytvoření manifestu, sestavení SectionContextu, výběr a spuštění sekcí a zápis finálního MANIFESTu a indexu klíčových souborů.\\n- Exporty:\\n  - def main(argv: list[str] | None = None) -> int\\n    - Hlavní funkce, kterou volá CLI.\\n    - Vrací návratový kód (0 při úspěchu, nenulový při kritické chybě reprezentované např. CriticalDiagError).\\n  - if __name__ == '__main__': sys.exit(main())\\n    - Standardní Python entrypoint pro spustitelný skript.\\n- Závislosti:\\n  - core.config.parse_cli_args, detect_os, DiagMode, SectionName\\n  - core.paths.generate_root_dir, build_paths\\n  - core.logging.init_logger\\n  - core.manifest.create_empty_manifest, write_manifest, write_key_files_index\\n  - sections.base.SectionContext, run_sections\\n  - Konkrétní sekce podle zvoleného OS (Linux* nebo Windows* třídy definované v předchozích chuncích, včetně těchto Windows sekcí).\\n  - core.errors.CriticalDiagError\\n  - standard library: sys, datetime\\n\\n11) Data flow (orchestrace běhu)\\n- 1) runner.main.main() načte CLI argumenty pomocí core.config.parse_cli_args() a získá RunConfig.\\n- 2) Pokud je v RunConfig.mode hodnota AUTO, runner.main zavolá core.config.detect_os() a přemapuje výsledek na DiagMode.LINUX nebo DiagMode.WINDOWS.\\n- 3) runner.main vygeneruje časové razítko a zavolá core.paths.generate_root_dir() pro vytvoření kořenového adresáře (např. Diag_YYYYMMDD-HHMMSS), poté core.paths.build_paths() pro vytvoření struktury DiagPaths.\\n- 4) runner.main inicializuje logování pomocí core.logging.init_logger(), čímž získá instanci DiagLogger, a zapíše úvodní informace o běhu (konfigurace, detekovaný OS, cesty, atd.).\\n- 5) runner.main vytvoří prázdný Manifest pomocí core.manifest.create_empty_manifest(), který obsahuje základní metadata běhu (čas, verzi nástroje, OS mód, atd.).\\n- 6) runner.main sestaví SectionContext z RunConfig, DiagPaths, DiagLogger, Manifest a DiagMode.\\n- 7) runner.main podle DiagMode a RunConfig.selected_sections sestaví seznam instancí sekcí (Linux* nebo Windows* třídy) a předá je do sections.base.run_sections().\\n  - run_sections zajistí deterministické pořadí, respektování výběru sekcí, zachycení SectionError a jiných výjimek, jejich zalogování a záznam do manifestu.\\n  - Kritické chyby mohou být propagovány jako CriticalDiagError a mohou ukončit běh s nenulovým návratovým kódem.\\n\\nTento chunk tak doplňuje sadu Windows sekcí (processes_services, network, security, python, devtools, virtualization, wsl, logs) a definuje hlavní orchestrátor runner.main, který propojuje konfiguraci, cesty, logování, manifest a jednotlivé sekce do uceleného běhu diagnostiky, v souladu s MASTER návrhem a předchozími core/sections moduly.\",\"chunk_index\":4,\"chunk_count\":10,\"notes\":[\"Zachovat jednotný vzor pro všechny Windows sekce: dědění z BaseSection, použití SectionContext, run_command/write_command_result, registrace souborů do manifestu, logování přes DiagLogger, read-only přístup a robustní chování při chybách nástrojů.\",\"runner.main je centrální orchestrátor: musí používat core.config pro CLI a detekci OS, core.paths pro strukturu výstupů, core.logging pro logger, core.manifest pro manifest a index klíčových souborů, sections.base.run_sections pro spuštění sekcí a core.errors.CriticalDiagError pro kritické chyby.\",\"Data flow kroky 1–7 jsou závazné pro pořadí hlavních operací (parsování, detekce OS, generování cest, init logování, vytvoření manifestu, sestavení SectionContextu, výběr a spuštění sekcí).\",\"Konkrétní seznam příkazů a rozsah sbíraných dat pro jednotlivé sekce je dán MASTER dokumentem; tento návrh nesmí přidávat nové povinné příkazy ani měnit bezpečnostní omezení (citlivá data, read-only).\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4842,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3003,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 7845
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767904215,
+    "store": true
+  }
+}

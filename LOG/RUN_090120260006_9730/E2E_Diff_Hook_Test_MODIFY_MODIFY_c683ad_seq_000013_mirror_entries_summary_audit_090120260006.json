@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "MODIFY",
+    "response_id": "MODIFY_c683ad",
+    "event": "mirror_entries_summary",
+    "sequence": 13,
+    "logged_at": "2026-01-08T23:06:45.527783"
+  },
+  "details": {
+    "event": "mirror_entries_summary",
+    "level": "info",
+    "details": {
+      "total": 2,
+      "uploaded": 0,
+      "reasons": {},
+      "vector_store_id": "vs_696038838ea4819191dd7dbb56a066fd"
+    },
+    "timestamp": "2026-01-08T23:06:45.527756"
+  }
+}

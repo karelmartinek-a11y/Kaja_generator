@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260017_939d",
+    "project": "Kajovo",
+    "stage": "A1_PLAN",
+    "response_id": "resp_0c08a12b94e2bb5d00695e55b91f0c8190bc901c344ddab58c",
+    "event": "json_coerce_fallback",
+    "sequence": 127,
+    "logged_at": "2026-01-08T23:18:29.251697"
+  },
+  "details": {
+    "event": "json_coerce_fallback",
+    "level": "warning",
+    "details": {
+      "expected_contract": "A1_PLAN",
+      "candidate_count": 7,
+      "parsed_count": 6,
+      "unescape_count": 0,
+      "response_chars": 574
+    },
+    "timestamp": "2026-01-08T23:18:29.251691"
+  }
+}

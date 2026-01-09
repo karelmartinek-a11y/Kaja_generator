@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A2X",
+    "response_id": "GENERATE_53998c",
+    "event": "api_call_attempt",
+    "sequence": 435,
+    "logged_at": "2026-01-08T20:23:44.408113"
+  },
+  "details": {
+    "event": "api_call_attempt",
+    "level": "info",
+    "details": {
+      "stage": "A2X",
+      "request_id": "89fc0f4b",
+      "attempt": 1,
+      "payload_keys": [
+        "model",
+        "temperature",
+        "instructions",
+        "input",
+        "previous_response_id"
+      ]
+    },
+    "timestamp": "2026-01-08T20:23:44.408107"
+  }
+}

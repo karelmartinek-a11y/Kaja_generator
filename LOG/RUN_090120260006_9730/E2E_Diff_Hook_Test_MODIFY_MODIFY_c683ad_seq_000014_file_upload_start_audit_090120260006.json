@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "MODIFY",
+    "response_id": "MODIFY_c683ad",
+    "event": "file_upload_start",
+    "sequence": 14,
+    "logged_at": "2026-01-08T23:06:45.529017"
+  },
+  "details": {
+    "event": "file_upload_start",
+    "level": "info",
+    "details": {
+      "path": "C:\\Kaja_generator\\LOG\\RUN_090120260006_9730\\E2E_Diff_Hook_Test_MODIFY_c683ad_mirror_manifest_090120260006.json",
+      "purpose": "mirror manifest",
+      "scope": "mirror_manifest",
+      "size": 651
+    },
+    "timestamp": "2026-01-08T23:06:45.529012"
+  }
+}

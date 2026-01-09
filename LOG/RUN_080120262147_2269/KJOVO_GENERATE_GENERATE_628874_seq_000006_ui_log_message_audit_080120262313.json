@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_628874",
+    "event": "ui_log_message",
+    "sequence": 6,
+    "logged_at": "2026-01-08T22:13:54.433108"
+  },
+  "details": {
+    "message": "A3: zadání je příliš dlouhé (24691 tokenů > 8192); komprimuji instructions/input_text po chunkech.",
+    "timestamp_local": "23:13:54",
+    "source": "ui_log"
+  }
+}

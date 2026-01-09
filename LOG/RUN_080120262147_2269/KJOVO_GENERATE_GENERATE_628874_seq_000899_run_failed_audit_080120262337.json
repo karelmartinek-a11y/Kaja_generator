@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_628874",
+    "event": "run_failed",
+    "sequence": 899,
+    "logged_at": "2026-01-08T22:37:28.408860"
+  },
+  "details": {
+    "event": "run_failed",
+    "level": "error",
+    "details": {
+      "error": "A3_FILE vrátil jiný path: src/Kaja.Diagnostics/DomainModels/DiagnosticsDomainModels.cs != Kaja.sln",
+      "type": "ValueError",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3621, in execute\n    files = self._run_generate(user_spec, assets, ui_state, progress_callback, stop_check)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 4066, in _run_generate\n    raise ValueError(\n        f\"A3_FILE vrátil jiný path: {a3_data.get('path')} != {path}\"\n    )\nValueError: A3_FILE vrátil jiný path: src/Kaja.Diagnostics/DomainModels/DiagnosticsDomainModels.cs != Kaja.sln\n"
+    },
+    "timestamp": "2026-01-08T22:37:28.408851"
+  }
+}

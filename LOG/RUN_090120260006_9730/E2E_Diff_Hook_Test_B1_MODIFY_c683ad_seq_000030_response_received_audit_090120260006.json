@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "B1",
+    "response_id": "MODIFY_c683ad",
+    "event": "response_received",
+    "sequence": 30,
+    "logged_at": "2026-01-08T23:06:50.391384"
+  },
+  "details": {
+    "event": "response_received",
+    "level": "info",
+    "details": {
+      "stage": "B1",
+      "request_id": "98b9bf89",
+      "response_id": "resp_0a6f03a5ecd8ee6d0069603885426c81a2ba0679d97cbfa565",
+      "base_response_id": "MODIFY_c683ad"
+    },
+    "timestamp": "2026-01-08T23:06:50.391377"
+  }
+}

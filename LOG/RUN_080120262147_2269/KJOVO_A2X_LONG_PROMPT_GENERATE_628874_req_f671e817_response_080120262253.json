@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_628874",
+    "logged_at": "2026-01-08T21:53:24.204028",
+    "request_id": "f671e817"
+  },
+  "payload": {
+    "id": "resp_04f993578f078b9d0069602718f4ac819293135fdb86f0012f",
+    "created_at": 1767909145.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.2-pro-2025-12-11",
+    "object": "response",
+    "output": [
+      {
+        "id": "rs_04f993578f078b9d0069602753348c8192baa0f6abfb2af75d",
+        "summary": [],
+        "type": "reasoning",
+        "content": null,
+        "encrypted_content": null,
+        "status": null
+      },
+      {
+        "id": "msg_04f993578f078b9d006960275335c881928314a1e3e6a40a91",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Projekt Kája: Windows desktop UI aplikace (C#/.NET 8) pro automatizaci OpenAI Responses API (vč. Files API uploadů, volitelně vector store/file_search), robustní logování, pricing a diagnostické sběry. Cíl OS: Windows 10/11 klient + vzdálený Ubuntu Server přes SSH.\\n\\nPředpoklady: existující codebase už má OpenAI automatizaci, uploady, logování a pipeline primitiva; app umí spouštět externí procesy (PowerShell/ssh/scp) a deterministicky chytat stdout/stderr; Ubuntu host má sshd, bash, coreutils, případně sshpass (Variant B, méně bezpečné); sběr může vyžadovat sudo/root a když není, musí to být v artefaktech označeno; když nejsou dostupné vector stores/file_search, přeskočit indexaci a stále uploadovat přes Files API; žádné nové UI požadavky mimo napojení do existujících obrazovek/flow (IN/OUT/DIAGNOSTICS).\\n\\nFunkční požadavky – Ubuntu SSH diagnostics (28.x):\\n- Použít PowerShell one-liner Variant B s heslem inline (méně bezpečné): pro ssh/scp použít `sshpass -p $pw` a `-o StrictHostKeyChecking=no`.\\n- Na Ubuntu spustit bash skript, který vytvoří `$remote_root` pojmenovaný `Diag_YYYYMMDD-HHMMSS` a vždy `mkdir -p` všechny podadresáře.\\n- Všechny příkazy ukládat se stdout+stderr do souborů; každý artefakt musí existovat i při chybě/chybějícím subsystému; chybějící subsystém explicitně označit obsahem `NOT PRESENT` (nebo ekvivalentní strukturovaný řádek obsahující NOT PRESENT).\\n- Povinné Ubuntu složky/artefakty (min. s NOT PRESENT):\\n  - firewall/nft_ruleset.txt\\n  - users_permissions/users_groups.txt, sudoers_listing.txt, umask.txt\\n  - processes_services/process_list.txt, services_state.txt, startup_items.txt\\n  - packages/dpkg_list.txt, apt_policy_key_pkgs.txt (nginx/openssl/python3/certbot/postgresql/redis), snap_list.txt\\n  - web/web_root_overview.txt, static_assets_sizes.csv, web_server_headers_hint.txt (tolerantní `curl -I http://127.0.0.1 || true`)\\n  - nginx/nginx_version.txt, nginx_test.txt, nginx_conf_tree.txt\\n  - app/app_dirs_overview.txt, systemd_units_related.txt (grep gunicorn/uvicorn/celery/worker), app_env_files_found.txt (jen listing/metadata)\\n  - python/where_python.txt, py_launcher_list.txt (pip verze), interpreters_inventory.csv (python3 sys.executable + sys.path jako JSON)\\n  - database/postgres_version.txt, postgres_service_status.txt, postgres_conf_locations.txt\\n  - certs/cert_locations.txt (find *.pem/*.crt), certbot_status.txt, cert_expiry_report.txt (openssl x509 -enddate pro /etc/letsencrypt/live/*/cert.pem)\\n  - cron_webhooks/crontab_root.txt, crontab_users_listing.txt, system_cron_dirs_tree.txt\\n  - logs/journal_nginx_last500.txt, journal_app_last500.txt, journal_db_last500.txt, syslog_tail.txt, auth_log_tail.txt, kernel_log_tail.txt\\n  - virtualization_containers/docker_info.txt, docker_ps.txt, docker_compose_files_found.txt\\n- Skript musí na konci vypsat přesně jeden řádek `REMOTE_ROOT=$remote_root` na stdout; lokální PowerShell to parsuje `Select-String '^REMOTE_ROOT='` a stáhne celý adresář přes `scp -r` (také přes sshpass).\\n- Výstup musí obsahovat MANIFEST.md a README s aktualizovaným seznamem složek vč. nginx/, app/, python/, database/, certs/, cron_webhooks/, logs/, virtualization_containers/.\\n- README/MANIFEST: „File Index“ tabulka s příklady položek: README_problem.md, system/journal_boot_errors.txt, network/ss_listen.txt, nginx/nginx_test.txt, python/venv_candidates_found.txt, python/venv_reports/venv_*__report.json, certs/cert_expiry_report.txt, logs/journal_nginx_last500.txt, logs/journal_app_last500.txt.\\n- README/MANIFEST: varování o redakci secretů/PII a selektivním sdílení.\\n- README/MANIFEST: integrita – `Total files {{file_count}}`, `Total size {{total_size_human}}`, volitelně checksums/sha256.txt.\\n- Šablona 28.23 MANIFEST.md „Diagnostic Manifest“ s poli: timestamp_local, hostname, collector_user, is_root, os_pretty_name, kernel, uptime, output_root; purpose: „Ubuntu web server diagnostic snapshot“; Folder Overview min.: system/, hardware/, storage/, network/, firewall/, users_permissions/, processes_services/, packages/, web/.\\n\\nFunkční požadavky – FULL Windows Diagnostics (29):\\n- Vytvořit výstupní adresář (ne ZIP) s root `Diag_YYYYMMDD-HHMMSS/` a strukturou: MANIFEST.md, README_problem.md, CHANGELOG_last_actions.txt, system/, registry/, filesystem/, hardware/, storage/, drivers/, processes_services/, network/, security/, python/, devtools/, virtualization/, wsl/, logs/.\\n- Windows MANIFEST.md auto-generovat: Generated at, Machine, User, PowerShell ver, Run as Administrator; Folder Overview; Files table (File/Description/Size); pozn.: ACCESS DENIED znamená potřebu admin; chybějící subsystémy explicitně označit.\\n- Windows system/ musí obsahovat: systeminfo.txt, os_build.txt, windows_updates_hotfixes.txt, timezone_locale.txt, uptime_boot.txt, power_settings.txt, group_policy_summary.html, run_context.txt; a env/PATH: env_machine.txt (HKLM parsed), env_user.txt (HKCU parsed), path_effective_process.txt (runtime PATH), path_diff_analysis.txt (diff Machine vs User vs Runtime).\\n- Windows registry/ musí obsahovat: env_machine.reg, env_user.reg; Python registry exporty: python_core_hklm.reg, python_core_hklm_wow6432.reg, python_core_hkcu.reg, pylauncher_hklm.reg, pylauncher_hkcu.reg; App Execution: app_paths_python_hklm.reg, app_paths_python_hkcu.reg, windowsapps_execution_aliases.txt; Associations: file_associations_python.reg; Software: uninstall_inventory.txt (Python/Conda/VC++ runtimes).\",\"chunk_index\":1,\"chunk_count\":10,\"notes\":[\"Zachovat přesné výstupní chování Ubuntu skriptu: jediný řádek `REMOTE_ROOT=$remote_root` pro parsování a následný `scp -r` download.\",\"Všechny požadované soubory musí existovat i při chybě; použít explicitní marker `NOT PRESENT` pro chybějící subsystémy nebo nedostupná data (např. bez root).\",\"Ubuntu: používat sshpass Variant B s inline heslem a `StrictHostKeyChecking=no` (explicitně méně bezpečné).\",\"Windows: výstup není ZIP, ale adresářová struktura s MANIFEST.md generovaným včetně kontextu běhu a tabulky souborů.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 0.98,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "medium",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 1703,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1739,
+      "output_tokens_details": {
+        "reasoning_tokens": 55
+      },
+      "total_tokens": 3442
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767909203,
+    "store": true
+  }
+}

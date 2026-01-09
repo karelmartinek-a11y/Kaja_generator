@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262024_31ec",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_94a897",
+    "logged_at": "2026-01-08T19:39:00.540572",
+    "request_id": "b3325587"
+  },
+  "payload": {
+    "id": "resp_014b1112c59e6f1200696007b742548194909ff0c9629aedbd",
+    "created_at": 1767901111.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_014b1112c59e6f1200696007b813dc8194baff62b0017c4301",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"A1_PLAN dále specifikuje architekturu nástroje CrossDiag, zejména zbývající moduly, tok dat, chybové scénáře, bezpečnost a podmínky běhu.\\n\\nModuly (pokračování):\\n\\n10) crossdiag.output_formatters\\n- Odpovědnost: formátování DiagnosticReport do human-readable textu a JSON.\\n- Exporty:\\n  - report_to_text(report: DiagnosticReport, options: CliOptions) -> str – generuje textový report podle úrovně detailu, voleb CLI a anonymizace.\\n  - report_to_json(report: DiagnosticReport, pretty: bool) -> str – generuje JSON řetězec; při pretty=True formátuje s odsazením.\\n- Vazby: používá crossdiag.model (pro DiagnosticReport a související datové typy), crossdiag.cli (pro typ CliOptions), standardní moduly json a textwrap.\\n- Musí respektovat požadavek, že všechna časová razítka v JSON reportu jsou v UTC a ve formátu ISO 8601.\\n\\n11) crossdiag.logging_utils\\n- Odpovědnost: inicializace a správa interního logování nástroje, definice logovacích úrovní, pomocné funkce pro logování kroků diagnostiky.\\n- Exporty:\\n  - setup_logging(level: str, log_to_file: bool) -> None – nastaví logging konfiguraci podle úrovně (např. DEBUG/INFO/WARNING/ERROR) a volby logování do souboru.\\n  - get_logger(name: str) -> logging.Logger – vrací logger pro daný název modulu/komponenty.\\n  - DEFAULT_LOG_FILE_NAME – konstanta s výchozím názvem log souboru.\\n- Vazby: používá standardní moduly logging, os, pathlib; využívají jej všechny ostatní moduly pro jednotné logování.\\n- Log soubor má být umístěn v uživatelském prostoru (např. %LOCALAPPDATA%/crossdiag nebo ~/.cache/crossdiag) a nesmí vyžadovat zvýšená oprávnění.\\n\\n12) crossdiag.anonymizer\\n- Odpovědnost: anonymizace citlivých údajů v DiagnosticReport (uživatelská jména, hostname, konkrétní cesty) při zapnuté volbě anonymizace.\\n- Exporty:\\n  - anonymize_report(report: DiagnosticReport) -> DiagnosticReport – vrací novou nebo modifikovanou instanci reportu, kde jsou citlivé údaje nahrazeny pseudonymy/maskami.\\n- Vazby: používá crossdiag.model, standardní moduly re, os, socket.\\n- Musí zajistit konzistentní anonymizaci (stejné vstupní hodnoty -> stejné pseudonymy v rámci jednoho běhu), aby byl report stále analyzovatelný.\\n\\n13) crossdiag.errors\\n- Odpovědnost: definice vlastních výjimek a chybových typů pro nástroj.\\n- Exporty:\\n  - třída CrossDiagError – základní výjimka pro nástroj.\\n  - třída ConfigError – chyby konfigurace/CLI.\\n  - třída EnvironmentError – chyby prostředí (např. chybějící nástroje, nedostupné zdroje).\\n  - třída PlatformNotSupportedError – pro nepodporované operace na dané platformě.\\n- Vazby: používají je ostatní moduly pro jednotné zpracování chyb.\\n\\nTok dat (data_flow):\\n1) Uživatel spustí program (python -m crossdiag nebo crossdiag.exe).\\n2) Modul crossdiag.__main__ zavolá crossdiag.cli.parse_args() a získá instanci CliOptions.\\n3) crossdiag.__main__ předá CliOptions do crossdiag.runner.run_diagnostics().\\n4) crossdiag.runner inicializuje logování přes crossdiag.logging_utils.setup_logging() podle voleb CLI (úroveň logování, log do souboru apod.).\\n5) crossdiag.runner vytvoří prázdný DiagnosticReport (crossdiag.model.DiagnosticReport) a nastaví základní metadata (čas spuštění, verze nástroje, úroveň detailu, informace o anonymizaci).\\n6) crossdiag.runner postupně volá diagnostické moduly:\\n   - collect_system_info(),\\n   - collect_python_info(),\\n   - collect_path_info(),\\n   - collect_registry_info(),\\n   - collect_logs();\\n   výsledky ukládá do příslušných polí DiagnosticReport a agreguje DiagnosticIssue.\\n7) crossdiag.runner volitelně zavolá run_python_selftest() (např. podle CLI volby) a přidá výsledné DiagnosticIssue do reportu.\\n8) Pokud je v CliOptions zapnuta anonymizace, crossdiag.runner předá DiagnosticReport do crossdiag.anonymizer.anonymize_report() a nahradí původní report anonymizovanou verzí.\\n9) crossdiag.runner vrátí finální DiagnosticReport volajícímu (crossdiag.__main__).\\n10) crossdiag.__main__ podle voleb CLI zavolá crossdiag.output_formatters.report_to_text() a/nebo report_to_json() a výsledek vypíše na stdout nebo uloží do souboru (podle CLI parametrů).\\n11) crossdiag.__main__ zavolá crossdiag.runner.map_exit_code() pro určení návratového kódu procesu na základě DiagnosticReport (např. rozlišení mezi interní chybou nástroje a nalezenými problémy v systému).\\n12) Proces se ukončí s odpovídajícím návratovým kódem.\\n\\nError handling (zpracování chyb):\\n- Všechny moduly mají pro předvídatelné chyby používat vlastní výjimky z crossdiag.errors:\\n  - ConfigError pro chyby CLI nebo konfigurace.\\n  - PlatformNotSupportedError pro nepodporované operace (např. registry na ne-Windows).\\n  - EnvironmentError pro problémy s prostředím (nedostupné logy, chybějící externí nástroje).\\n  - CrossDiagError jako obecný základ.\\n- Neočekávané výjimky musí být zachyceny v crossdiag.runner.run_diagnostics(), zalogovány přes logging_utils a převedeny na DiagnosticIssue s vysokou závažností (DiagnosticSeverity.ERROR), aby nástroj pokud možno nespadl a vrátil smysluplný report.\\n- crossdiag.diag_registry: při chybě čtení registru (např. nedostatečná oprávnění, chybějící klíče) nesmí vyhazovat neodchycené výjimky; místo toho vytvoří DiagnosticIssue se závažností WARNING nebo ERROR a pokračuje, případně vrátí částečná data nebo None pro RegistrySnapshot.\\n- crossdiag.diag_logs: při chybě čtení log souborů (neexistující soubor, nedostatečná oprávnění, chybný formát) vytvoří DiagnosticIssue a pokračuje v diagnostice ostatních zdrojů logů.\\n- crossdiag.diag_path: při chybě parsování PATH vytvoří DiagnosticIssue a vrátí alespoň částečné informace, pokud jsou dostupné.\\n- crossdiag.output_formatters: při chybě formátování výstupu (např. nevalidní znaky nebo serializační problém v JSON) musí vyhodit CrossDiagError; tato chyba je zachycena v __main__ a vede k nenulovému návratovému kódu.\\n- crossdiag.anonymizer: chyby při anonymizaci musí být zachyceny a zalogovány; v případě selhání anonymizace se nástroj může buď rozhodnout vrátit neanonymizovaný report s varováním, nebo ukončit běh s chybou podle zvolené strategie (bude upřesněno v implementaci, ale plán počítá s oběma možnostmi jako konfigurovatelnými).\\n\\nSecurity notes (bezpečnost):\\n- Nástroj pracuje pouze v režimu čtení vůči systému (registry, logy, soubory) a nesmí provádět žádné zápisy mimo vlastní log soubor v uživatelském prostoru.\\n- Při anonymizaci musí crossdiag.anonymizer zajistit, že citlivé údaje (uživatelská jména, hostname, explicitní cesty obsahující uživatelské jméno) jsou konzistentně nahrazeny pseudonymy nebo maskami.\\n- Nástroj nesmí odesílat žádná data mimo lokální stroj; veškerý výstup (text, JSON) je generován lokálně a předán uživateli.\\n- Při práci s logy musí nástroj respektovat oprávnění uživatele a nesmí se pokoušet obcházet bezpečnostní omezení (např. žádné eskalace práv, žádné obcházení ACL).\\n- Interní log soubor nástroje má být umístěn v uživatelském konfiguračním adresáři (např. %LOCALAPPDATA%/crossdiag nebo ~/.cache/crossdiag) s přístupem omezeným na daného uživatele.\\n- JSON report může obsahovat citlivé informace (cesty, názvy strojů, uživatelská jména); dokumentace musí uživatele upozornit, aby s reportem zacházel jako s potenciálně citlivým souborem.\\n- Při spouštění externích nástrojů (např. journalctl, wevtutil) musí nástroj bezpečně sestavovat příkazové argumenty bez použití shell=True a neakceptovat neověřený vstup od uživatele pro tyto příkazy, aby se předešlo command injection.\\n\\nBuild & run (předpoklady a příklady spuštění):\\n- Prerequisites:\\n  - Nainstalovaný Python 3.10+ (CPython) na cílovém systému.\\n  - Přístup k systémovým nástrojům pro logy, pokud jsou používány (např. journalctl na Linuxu, wevtutil na Windows).\\n  - Na Windows: dostupný modul winreg (součást standardní knihovny) a oprávnění pro čtení relevantních klíčů registru.\\n  - Na Linuxu: oprávnění pro čtení /var/log a/nebo přístup k journalctl podle konfigurace systému.\\n- Příklady příkazů:\\n  - Spuštění v režimu modulu: `python -m crossdiag`.\\n  - Spuštění se základní diagnostikou a textovým výstupem: `python -m crossdiag --level basic --format text`.\\n\\nTento chunk doplňuje architektonický plán o definici modulů output_formatters, logging_utils, anonymizer a errors, detailní tok dat mezi CLI, runnerem a formátovači, jednotnou strategii zpracování chyb a bezpečnostní zásady při práci s logy, registry a citlivými daty, včetně předpokladů pro běh nástroje na různých platformách.\",\"chunk_index\":3,\"chunk_count\":5,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4004,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2577,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 6581
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767901140,
+    "store": true
+  }
+}

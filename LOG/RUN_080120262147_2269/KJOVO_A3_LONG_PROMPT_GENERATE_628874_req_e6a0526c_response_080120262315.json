@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "GENERATE_628874",
+    "logged_at": "2026-01-08T22:15:07.389453",
+    "request_id": "e6a0526c"
+  },
+  "payload": {
+    "id": "resp_00af9024d188b03c0069602c21f84481a0b50af9838de8d94b",
+    "created_at": 1767910434.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.2-pro-2025-12-11",
+    "object": "response",
+    "output": [
+      {
+        "id": "rs_00af9024d188b03c0069602c6a690081a08cd36937b351d3cb",
+        "summary": [],
+        "type": "reasoning",
+        "content": null,
+        "encrypted_content": null,
+        "status": null
+      },
+      {
+        "id": "msg_00af9024d188b03c0069602c6a6a1481a0ba069989b9606eee",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Role: generátor obsahu jednoho konkrétního souboru dle A2_STRUCTURE. Výstup vždy pouze validní JSON bez markdownu/dalšího textu; content je celý čistý obsah souboru (ne diff/patch). Pro dlouhé soubory používej chunking: max 500 řádků na chunk; posílej po částech, které se spojí do kompletního souboru. Povinný kontrakt výstupu souboru: {\\\"contract\\\":\\\"A3_FILE\\\",\\\"path\\\":string,\\\"chunking\\\":{\\\"max_lines\\\":500,\\\"chunk_index\\\":integer,\\\"chunk_count\\\":integer,\\\"has_more\\\":boolean,\\\"next_chunk_index\\\":integer|null},\\\"content\\\":string}.\\nDeterminismus: implementuj pouze to definované v A1/A2/A2X; A2X_FILE_MAP je jediný zdroj pravdy pro importy/exporty; exporty musí přesně odpovídat A2X_FILE_MAP (name/kind/signature) a být doslovně přítomné v contentu; nezaváděj nové symboly ani nové soubory; zachovej shodný datový model napříč soubory; výsledek musí být spustitelný bez ručních úprav.\\nKÁJOVO UI DESIGN STANDARD (normativní; precedence: (1) tokens+kontrakty stavů, (2) specifikace komponent, (3) layout, (4) obecná pravidla). Jednotky px; round(x) matematicky (0.5 nahoru); nesmí vznikat překryv prvků mimo overlay (tooltip/roletka/dialog/overlay scrollbar).\\nTOKENS: barvy HEX: bílá #FFFFFF, černá #000000, červená #FF0000, šedivá #808080. Vrstvy prvku (zvenku dovnitř): LEM 2px, OKRAJ 1px, POZADÍ, OBSAH; „obsahová plocha“ = uvnitř okraje (po odečtu lemu+okraje). UI_scale: min(W/1280,H/720); škáluje typografie/paddingy/výšky řádků/ikony/rozměry času/datu/tloušťky ikon čar; neškáluje lem 2px, okraj 1px, a GAP_MIN 2px.\\nTypografie: pouze Montserrat Regular/Bold; fonty musí být bundlované a registrované při startu; žádný systémový font ani fallback; při nenačtení fontu zobrazit chybový dialog ve stylu Kájovo a ukončit; build by měl kontrolovat hash fontů. FS_base=16 při UI_scale=1; FS=round(FS_base*UI_scale); LH=round(1.25*FS). Nadpisy/sekce/hlavičky tabulek: Bold a VŠE VELKÝMI PÍSMENY; běžný obsah: Regular.\\nRadius: R=max(1, round(0.35*FS)); ostré rohy zakázány.\\nRozestupy/rozměry: GAP_MIN=2; PAD_X=round(0.8*FS); PAD_Y=round(0.4*FS); ROW_H=round(1.4*LH); STATUS_H=round(1.6*LH).\\nIkony: ICON=round(1.5*FS) čtverec; primárně outline (bez výplně) pokud komponenta neurčí jinak; STROKE=max(1, round(0.12*FS)); barva jen z token barev.\\nObecný vzhled: striktně černobílé; šedivá jen pro neaktivní text/symboly; červená jen pro ukončení/kritické akce a stavy nebezpečí/nedostupné dle standardu. Zakázány stíny/gradienty/textury/průhlednosti (mimo overlay). Vše musí používat LEM/OKRAJ/POZADÍ/OBSAH. Překryv zakázán mimo definované overlay. Změny stavu nesmí měnit layout/rozměry (jen barvy, u textu případně fit/scale dle pravidel).\\nInterakce: hover běžně žádný; tooltip výjimky: tabulky a dropdown/combobox jen při overflow textu a po setrvání 2 s. Focus: TAB/SHIFT+TAB cyklus; ENTER nebo mezerník aktivuje prvek (ne textová pole). Focus je overlay: LEM bílý 2px, ostatní vrstvy dle stavu; focus nesmí měnit rozměry/layout. ESC globálně zavírá overlay v pořadí: tooltip, roletka dropdown/combobox, dialog; ESC odpovídá CLOSE v dialogu.\",\"chunk_index\":1,\"chunk_count\":3,\"notes\":[\"Zachovat výstup pouze jako validní JSON; v A3 generování vždy použít kontrakt A3_FILE s chunking max 500 řádků.\",\"A2X_FILE_MAP je jediný zdroj pravdy pro import/export; žádné nové symboly/soubory; exporty musí být doslovně přítomné a odpovídat mapě.\",\"Design standard je normativní; klíčové výpočty: UI_scale, FS/LH, R, PAD_X/PAD_Y, ROW_H/STATUS_H, ICON/STROKE; lem/okraj se nikdy neškálují.\",\"Hover prakticky žádný; tooltip pouze při overflow + 2s; focus overlay = bílý lem 2px; ESC zavírání overlay v daném pořadí.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 0.98,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "medium",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 2583,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1408,
+      "output_tokens_details": {
+        "reasoning_tokens": 133
+      },
+      "total_tokens": 3991
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767910506,
+    "store": true
+  }
+}

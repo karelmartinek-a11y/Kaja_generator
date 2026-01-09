@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "A1",
+    "response_id": "GENERATE_628874",
+    "event": "chunk_compress_too_long",
+    "sequence": 369,
+    "logged_at": "2026-01-08T21:38:18.906614"
+  },
+  "details": {
+    "event": "chunk_compress_too_long",
+    "level": "warning",
+    "details": {
+      "stage": "A1",
+      "label": "instructions_reshrink_tight",
+      "summary_tokens": 4114,
+      "max_tokens": 2064
+    },
+    "timestamp": "2026-01-08T21:38:18.906583"
+  }
+}

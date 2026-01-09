@@ -75,6 +75,13 @@ class PipelineResult:
 
 
 @dataclass
+class PipelineContinueContext:
+    run_dir: Path
+    stage_for_response_id: str
+    stage_response_paths: Dict[str, Path]
+
+
+@dataclass
 class AttachmentInfo:
     file_id: str
     name: str
@@ -220,7 +227,9 @@ class PipelineExecutor:
         self._ui_state: UiState | None = None
         self._response_id = ""
         self._api_response_id = ""
-        self._diagnostic_packages: Dict[str, DiagnosticPackage] = {}
+        self._dialog_chunk_response_id = ""
+        self._continue_context: PipelineContinueContext | None = None
+        self._diagnostic_packages: Dict[str, DiagnosticPackage] = {}        
         self._diagnostic_uploads: List[Dict[str, Any]] = []
         self._timeline: List[Dict[str, Any]] = []
         self._request_snapshot: Dict[str, Any] = {}
@@ -1437,6 +1446,78 @@ class PipelineExecutor:
         )
         return compressed_instructions, compressed_input
 
+    def _stream_dialog_chunks(
+        self,
+        stage: str,
+        content: str,
+        ui_state: UiState,
+    ) -> int:
+        max_tokens = self._max_request_tokens(ui_state.model)
+        guard_tokens = max(512, int(max_tokens * 0.1))
+        chunk_tokens = max(256, max_tokens - guard_tokens)
+        chunk_chars = chunk_tokens * 4
+        chunks = self._split_text_into_chunks(content, chunk_chars)
+        chunk_count = len(chunks)
+        previous = self._resolve_previous_response_id(ui_state, self._api_response_id)
+        self._audit_event(
+            "dialog_chunk_upload_start",
+            {
+                "stage": stage,
+                "chunks": chunk_count,
+                "chunk_chars": chunk_chars,
+                "max_tokens": max_tokens,
+                "previous_response_id": previous or "",
+            },
+            stage=stage,
+        )
+        last_api_id = ""
+        for idx, chunk in enumerate(chunks):
+            payload: Dict[str, Any] = {
+                "model": ui_state.model or "gpt-4o",
+                "instructions": (
+                    "Ulož si chunk zadání 1:1. Neprováděj shrnutí ani úpravy. "
+                    "Odpověz pouze potvrzením CHUNK_OK <index>/<count>."
+                ),
+                "input": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": f"ZADÁNÍ CHUNK {idx + 1}/{chunk_count}\n{chunk}",
+                            }
+                        ],
+                    }
+                ],
+            }
+            if idx == 0:
+                if previous:
+                    payload["previous_response_id"] = previous
+            else:
+                payload["previous_response_id"] = last_api_id or self._api_response_id
+            response = self._send_request(
+                f"{stage}_DIALOG_CHUNK",
+                payload,
+                ui_state,
+                update_response_id=True,
+            )
+            last_api_id = (
+                response.get("id")
+                or response.get("response_id")
+                or self._api_response_id
+            )
+        self._dialog_chunk_response_id = last_api_id
+        self._audit_event(
+            "dialog_chunk_upload_done",
+            {
+                "stage": stage,
+                "chunks": chunk_count,
+                "last_response_id": last_api_id or "",
+            },
+            stage=stage,
+        )
+        return chunk_count
+
     def _prepare_dialog_content(
         self,
         stage: str,
@@ -1457,28 +1538,18 @@ class PipelineExecutor:
             stage=stage,
         )
         if estimated_tokens <= max_dialog_tokens:
+            self._dialog_chunk_response_id = ""
             return dialog
         self._log(
             f"{stage}: zadání je dlouhé ({self._estimate_tokens(dialog)} tokenů); "
-            "komprimuji po chunkech."
+            "odesílám beze ztrát ve více chuncích."
         )
-        compressed = self._compress_text_by_chunks(
-            stage,
-            "dialog",
-            dialog,
-            ui_state,
-            max_dialog_tokens,
+        chunks = self._stream_dialog_chunks(stage, dialog, ui_state)
+        placeholder = (
+            f"ZADÁNÍ PŘEDÁNO VE {chunks} CHUNK(Á)CH. "
+            "Použij celý text z předchozích zpráv; neprováděj shrnutí."
         )
-        self._audit_event(
-            "dialog_tokens_compressed",
-            {
-                "stage": stage,
-                "estimated_tokens": self._estimate_tokens(compressed),
-                "max_tokens": max_dialog_tokens,
-            },
-            stage=stage,
-        )
-        return compressed
+        return placeholder
 
     def _extract_response_text(self, response: Dict[str, Any]) -> str:
         if not response:
@@ -2133,9 +2204,7 @@ class PipelineExecutor:
         return f"{trimmed}\n\n{anchor}"
 
     def _model_context_limit(self, model: str | None) -> int:
-        if not model:
-            return DEFAULT_CONTEXT_LIMIT
-        name = model.lower()
+        name = (model or "gpt-4o").lower()
         for marker, size in (
             ("128k", 128000),
             ("64k", 64000),
@@ -2144,6 +2213,8 @@ class PipelineExecutor:
         ):
             if marker in name:
                 return size
+        if name.startswith("gpt-5"):
+            return 128000
         if name.startswith(("gpt-4o", "gpt-4.1")):
             return 128000
         if name.startswith(("gpt-4-turbo", "gpt-4-1106", "gpt-4-0125")):
@@ -2556,10 +2627,7 @@ class PipelineExecutor:
             input_text = f"{input_text}\n{input_suffix}"
         dialog_block = self._format_dialog_block(dialog_label, dialog_content)
         if dialog_block:
-            instructions = f"{instructions}\n\n{dialog_block}"
-            input_text = (
-                f"{input_text}\n\n{dialog_block}\n\nPRAVIDLA A KONTRAKT:\n{core_instructions}"
-            )
+            input_text = f"{input_text}\n\n{dialog_block}\n\nPRAVIDLA A KONTRAKT:\n{core_instructions}"
         strict_block = self._strict_rules_block(template_key)
         if strict_block:
             instructions = f"{instructions}\n\n{strict_block}"
@@ -3463,6 +3531,7 @@ class PipelineExecutor:
         response_id = response_id or self.generate_response_id(mode)
         self._response_id = response_id
         self._api_response_id = ""
+        self._dialog_chunk_response_id = ""
         self._audit_event(
             "run_start",
             {
@@ -3730,37 +3799,78 @@ class PipelineExecutor:
     ) -> List[Path]:
         self._log("Spouštím sekvenci A1 → A2 → A2X → A3")
         self._load_request_templates()
-        progress_callback("A1: plán projektu", 0.1)
-        self._ensure_not_cancelled(stop_check)
+        stage_order = ["A1", "A2", "A2X", "A3"]
+        stage_contracts = {
+            "A1": "A1_PLAN",
+            "A2": "A2_STRUCTURE",
+            "A2X": FILE_MAP_CONTRACT,
+        }
+        start_index = 0
+        skipped_stage_data: Dict[str, Dict[str, Any]] = {}
+        if self._continue_context and self._continue_context.stage_for_response_id in stage_order:
+            stage_index = stage_order.index(self._continue_context.stage_for_response_id)
+            if stage_index == len(stage_order) - 1:
+                start_index = stage_index
+            else:
+                start_index = stage_index + 1
+            try:
+                for skip_idx in range(start_index):
+                    stage_name = stage_order[skip_idx]
+                    contract = stage_contracts.get(stage_name)
+                    stage_path = self._continue_context.stage_response_paths.get(stage_name)
+                    if not contract or not stage_path:
+                        raise ValueError(f"Chybí uložená odpověď pro fázi {stage_name}")
+                    skipped_stage_data[stage_name] = self._load_saved_stage_response(
+                        stage_path, contract, assets
+                    )
+            except Exception as exc:
+                self._log(f"Pokračování selhalo: {exc}")
+                start_index = 0
+                skipped_stage_data.clear()
+                self._continue_context = None
         dialog_content = self._prepare_dialog_content("A1", user_spec, ui_state)
-        a1_payload = self._build_request_payload(
-            "A1",
-            {"<USER_SPEC>": dialog_content},
-            assets,
-            ui_state,
-            include_mirror=False,
-            include_diagnostics=False,
-            include_attachments=True,
-            dialog_label="ZADÁNÍ PROGRAMU",
-            dialog_content=dialog_content,
-        )
-        a1_response = self._send_request("A1", a1_payload, ui_state, assets)
-        a1_data = self._parse_json_response(a1_response, "A1_PLAN", assets=assets)
-        progress_callback("A2: struktura souborů", 0.25)
-        self._ensure_not_cancelled(stop_check)
-        a2_previous = self._resolve_previous_response_id(ui_state, self._api_response_id)
-        a2_payload = self._build_request_payload(
-            "A2",
-            {},
-            assets,
-            ui_state,
-            previous_response_id=a2_previous,
-            include_mirror=False,
-            include_diagnostics=False,
-            include_attachments=True,
-        )
-        a2_response = self._send_request("A2", a2_payload, ui_state, assets)
-        a2_data = self._parse_json_response(a2_response, "A2_STRUCTURE", assets=assets)
+        a1_data: Dict[str, Any]
+        if start_index <= 0:
+            progress_callback("A1: plán projektu", 0.1)
+            self._ensure_not_cancelled(stop_check)
+            a1_payload = self._build_request_payload(
+                "A1",
+                {"<USER_SPEC>": dialog_content},
+                assets,
+                ui_state,
+                previous_response_id=self._dialog_chunk_response_id,
+                include_mirror=False,
+                include_diagnostics=False,
+                include_attachments=True,
+                dialog_label="ZADÁNÍ PROGRAMU",
+                dialog_content=dialog_content,
+            )
+            a1_response = self._send_request("A1", a1_payload, ui_state, assets)
+            a1_data = self._parse_json_response(a1_response, "A1_PLAN", assets=assets)
+        else:
+            progress_callback("A1: obnovený plán", 0.1)
+            a1_data = skipped_stage_data["A1"]
+        a2_data: Dict[str, Any]
+        files: List[Dict[str, Any]]
+        if start_index <= 1:
+            progress_callback("A2: struktura souborů", 0.25)
+            self._ensure_not_cancelled(stop_check)
+            a2_previous = self._resolve_previous_response_id(ui_state, self._api_response_id)
+            a2_payload = self._build_request_payload(
+                "A2",
+                {},
+                assets,
+                ui_state,
+                previous_response_id=a2_previous,
+                include_mirror=False,
+                include_diagnostics=False,
+                include_attachments=True,
+            )
+            a2_response = self._send_request("A2", a2_payload, ui_state, assets)
+            a2_data = self._parse_json_response(a2_response, "A2_STRUCTURE", assets=assets)
+        else:
+            progress_callback("A2: obnovená struktura souborů", 0.25)
+            a2_data = skipped_stage_data["A2"]
         a2_response_id = self._api_response_id
         files = a2_data.get("files", [])
         self._validate_script_expectation_in_structure(files, ui_state, "A2_STRUCTURE")
@@ -3769,160 +3879,174 @@ class PipelineExecutor:
             for entry in files
             if isinstance(entry, dict) and isinstance(entry.get("path"), str)
         ]
-        progress_callback("A2X: mapování API", 0.30)
-        self._ensure_not_cancelled(stop_check)
+        def _prepare_file_map_context(data: Dict[str, Any]):
+            entries = data.get("files", [])
+            if not isinstance(entries, list):
+                entries = []
+            file_map_by_path: Dict[str, Dict[str, Any]] = {}
+            for entry in entries:
+                if not isinstance(entry, dict):
+                    continue
+                path = entry.get("path")
+                if isinstance(path, str):
+                    file_map_by_path[path] = entry
+            export_index = self._build_export_index(entries)
+            export_index_list = [
+                {
+                    "name": name,
+                    "path": info.get("path"),
+                    "kind": info.get("kind"),
+                    "signature": info.get("signature"),
+                }
+                for name, info in sorted(export_index.items())
+            ]
+            export_index_block = self._format_json_block("EXPORT_INDEX", export_index_list)
+            invariants_block = ""
+            invariants = data.get("invariants")
+            if isinstance(invariants, list) and invariants:
+                invariants_block = self._format_json_block("A2X_INVARIANTS", invariants)
+            return entries, file_map_by_path, export_index_block, invariants_block
+
         dialog_block = self._format_dialog_block("ZADÁNÍ PROGRAMU", dialog_content)
         a1_block = self._format_json_block("A1_PLAN", a1_data)
         a2_block = self._format_json_block("A2_STRUCTURE", a2_data)
-        a2x_contract = {
-            "contract": FILE_MAP_CONTRACT,
-            "root": "string",
-            "files": [
-                {
-                    "path": "string",
-                    "purpose": "string",
-                    "language": "string",
-                    "exports": [
-                        {
-                            "name": "string",
-                            "kind": "string",
-                            "signature": "string",
-                        }
-                    ],
-                    "imports": [
-                        {
-                            "path": "string",
-                            "symbols": ["string"],
-                        }
-                    ],
-                }
-            ],
-            "invariants": ["string"],
-        }
-        a2x_contract_text = json.dumps(a2x_contract, ensure_ascii=False)
-        rules = [
-            "A2_STRUCTURE je jediný seznam souborů (žádné nové soubory).",
-            "Každý path z A2_STRUCTURE musí být v A2X_FILE_MAP přesně jednou.",
-            "exports uvádí veřejné symboly; signature musí být doslovný text v cílovém jazyce.",
-            "imports.path musí být path z A2_STRUCTURE; externí importy označ prefixem external:.",
-            "imports.symbols musí odpovídat exportům cílového souboru.",
-            "Nepoužívej duplicitní názvy exportů napříč soubory.",
-        ]
-        core_instructions = (
-            "Jsi deterministický mapovač API mezi soubory. "
-            "OUTPUT: VRAŤ POUZE validní JSON. ŽÁDNÝ markdown ani další text. "
-            f"KONTRAKT {FILE_MAP_CONTRACT}: {a2x_contract_text}. "
-            "PRAVIDLA: " + " ".join(rules)
-        )
-        a2x_instructions = f"{dialog_block}\n\n{core_instructions}"
-        a2x_input = (
-            "VSTUPY PRO MAPOVÁNÍ:\n"
-            f"{a1_block}\n\n{a2_block}\n\n"
-            "VYGENERUJ A2X_FILE_MAP dle A1/A2. REDUNDANTNĚ KONTRAKT: "
-            "vrať pouze JSON dle A2X_FILE_MAP.\n\n"
-            f"{dialog_block}\n\nPRAVIDLA A KONTRAKT:\n{core_instructions}"
-        )
-        a2x_instructions, a2x_input = self._maybe_trim_prompt_texts(
-            "A2X",
-            a2x_instructions,
-            a2x_input,
-            ui_state,
-        )
-        a2x_instructions = self._ensure_core_instructions_block(
-            a2x_instructions,
-            core_instructions,
-        )
-        a2x_input = self._ensure_core_instructions_block(
-            a2x_input,
-            core_instructions,
-            prefix="PRAVIDLA A KONTRAKT:\n",
-        )
-        max_tokens = self._max_request_tokens(ui_state.model)
-        a2x_instructions = self._ensure_contract_presence(
-            a2x_instructions,
-            "A2X",
-            max_tokens=max_tokens,
-        )
-        a2x_input = self._ensure_contract_presence(
-            a2x_input,
-            "A2X",
-            max_tokens=max_tokens,
-        )
-        combined_tokens = self._estimate_request_tokens(a2x_instructions, a2x_input)
-        if combined_tokens > max_tokens:
-            allowance = max(64, max_tokens - self._estimate_tokens(a2x_instructions))
-            a2x_input = self._hard_trim_text(a2x_input, allowance).strip()
-            self._audit_event(
-                "prompt_contract_trim",
-                {
-                    "stage": "A2X",
-                    "estimated_tokens": combined_tokens,
-                    "max_tokens": max_tokens,
-                    "input_allowance_tokens": allowance,
-                },
-                stage="A2X",
-                level="warning",
+        a2x_data: Dict[str, Any]
+        file_map_entries: List[Dict[str, Any]]
+        file_map_by_path: Dict[str, Dict[str, Any]]
+        export_index_block: str
+        invariants_block: str
+        if start_index <= 2:
+            progress_callback("A2X: mapování API", 0.30)
+            self._ensure_not_cancelled(stop_check)
+            a2x_contract = {
+                "contract": FILE_MAP_CONTRACT,
+                "root": "string",
+                "files": [
+                    {
+                        "path": "string",
+                        "purpose": "string",
+                        "language": "string",
+                        "exports": [
+                            {
+                                "name": "string",
+                                "kind": "string",
+                                "signature": "string",
+                            }
+                        ],
+                        "imports": [
+                            {
+                                "path": "string",
+                                "symbols": ["string"],
+                            }
+                        ],
+                    }
+                ],
+                "invariants": ["string"],
+            }
+            a2x_contract_text = json.dumps(a2x_contract, ensure_ascii=False)
+            rules = [
+                "A2_STRUCTURE je jediný seznam souborů (žádné nové soubory).",
+                "Každý path z A2_STRUCTURE musí být v A2X_FILE_MAP přesně jednou.",
+                "exports uvádí veřejné symboly; signature musí být doslovný text v cílovém jazyce.",
+                "imports.path musí být path z A2_STRUCTURE; externí importy označ prefixem external:.",
+                "imports.symbols musí odpovídat exportům cílového souboru.",
+                "Nepoužívej duplicitní názvy exportů napříč soubory.",
+            ]
+            core_instructions = (
+                "Jsi deterministický mapovač API mezi soubory. "
+                "OUTPUT: VRAŤ POUZE validní JSON. ŽÁDNÝ markdown ani další text. "
+                f"KONTRAKT {FILE_MAP_CONTRACT}: {a2x_contract_text}. "
+                "PRAVIDLA: " + " ".join(rules)
             )
-        a2x_instructions = self._build_instructions_text(
-            a2x_instructions,
-            assets,
-            ui_state,
-            include_mirror=False,
-            include_diagnostics=False,
-            include_design_standard=False,
-        )
-        a2x_input = self._build_input_text_with_assets(
-            a2x_input,
-            assets,
-            ui_state,
-            include_mirror=False,
-            include_diagnostics=False,
-        )
-        a2x_payload: Dict[str, Any] = {
-            "model": ui_state.model or "gpt-4o",
-            "temperature": 0.0,
-            "instructions": a2x_instructions,
-            "input": self._build_input_parts(
+            a2x_instructions = f"{dialog_block}\n\n{core_instructions}"
+            a2x_input = (
+                "VSTUPY PRO MAPOVÁNÍ:\n"
+                f"{a1_block}\n\n{a2_block}\n\n"
+                "VYGENERUJ A2X_FILE_MAP dle A1/A2. REDUNDANTNĚ KONTRAKT: "
+                "vrať pouze JSON dle A2X_FILE_MAP.\n\n"
+                f"{dialog_block}\n\nPRAVIDLA A KONTRAKT:\n{core_instructions}"
+            )
+            a2x_instructions, a2x_input = self._maybe_trim_prompt_texts(
+                "A2X",
+                a2x_instructions,
                 a2x_input,
+                ui_state,
+            )
+            a2x_instructions = self._ensure_core_instructions_block(
+                a2x_instructions,
+                core_instructions,
+            )
+            a2x_input = self._ensure_core_instructions_block(
+                a2x_input,
+                core_instructions,
+                prefix="PRAVIDLA A KONTRAKT:\n",
+            )
+            max_tokens = self._max_request_tokens(ui_state.model)
+            a2x_instructions = self._ensure_contract_presence(
+                a2x_instructions,
+                "A2X",
+                max_tokens=max_tokens,
+            )
+            a2x_input = self._ensure_contract_presence(
+                a2x_input,
+                "A2X",
+                max_tokens=max_tokens,
+            )
+            combined_tokens = self._estimate_request_tokens(a2x_instructions, a2x_input)
+            if combined_tokens > max_tokens:
+                allowance = max(64, max_tokens - self._estimate_tokens(a2x_instructions))
+                a2x_input = self._hard_trim_text(a2x_input, allowance).strip()
+                self._audit_event(
+                    "prompt_contract_trim",
+                    {
+                        "stage": "A2X",
+                        "estimated_tokens": combined_tokens,
+                        "max_tokens": max_tokens,
+                        "input_allowance_tokens": allowance,
+                    },
+                    stage="A2X",
+                    level="warning",
+                )
+            a2x_instructions = self._build_instructions_text(
+                a2x_instructions,
                 assets,
-                include_attachments=True,
+                ui_state,
                 include_mirror=False,
                 include_diagnostics=False,
-            ),
-        }
-        a2x_previous = self._resolve_previous_response_id(ui_state, a2_response_id)
-        if a2x_previous:
-            a2x_payload["previous_response_id"] = a2x_previous
-        if not self._model_capabilities.get("supports_temperature", False):
-            a2x_payload.pop("temperature", None)
-        self._ensure_payload_within_limits("A2X", a2x_payload, ui_state)
-        a2x_response = self._send_request("A2X", a2x_payload, ui_state, assets)
-        a2x_data = self._parse_json_response(a2x_response, FILE_MAP_CONTRACT, assets=assets)
-        file_map_entries = a2x_data.get("files", [])
-        if not isinstance(file_map_entries, list):
-            file_map_entries = []
-        file_map_by_path: Dict[str, Dict[str, Any]] = {}
-        for entry in file_map_entries:
-            if not isinstance(entry, dict):
-                continue
-            path = entry.get("path")
-            if isinstance(path, str):
-                file_map_by_path[path] = entry
-        export_index = self._build_export_index(file_map_entries)
-        export_index_list = [
-            {
-                "name": name,
-                "path": info.get("path"),
-                "kind": info.get("kind"),
-                "signature": info.get("signature"),
+                include_design_standard=False,
+            )
+            a2x_input = self._build_input_text_with_assets(
+                a2x_input,
+                assets,
+                ui_state,
+                include_mirror=False,
+                include_diagnostics=False,
+            )
+            a2x_payload: Dict[str, Any] = {
+                "model": ui_state.model or "gpt-4o",
+                "temperature": 0.0,
+                "instructions": a2x_instructions,
+                "input": self._build_input_parts(
+                    a2x_input,
+                    assets,
+                    include_attachments=True,
+                    include_mirror=False,
+                    include_diagnostics=False,
+                ),
             }
-            for name, info in sorted(export_index.items())
-        ]
-        export_index_block = self._format_json_block("EXPORT_INDEX", export_index_list)
-        invariants_block = ""
-        invariants = a2x_data.get("invariants")
-        if isinstance(invariants, list) and invariants:
-            invariants_block = self._format_json_block("A2X_INVARIANTS", invariants)
+            a2x_previous = self._resolve_previous_response_id(ui_state, a2_response_id)
+            if a2x_previous:
+                a2x_payload["previous_response_id"] = a2x_previous
+            if not self._model_capabilities.get("supports_temperature", False):
+                a2x_payload.pop("temperature", None)
+            self._ensure_payload_within_limits("A2X", a2x_payload, ui_state)
+            a2x_response = self._send_request("A2X", a2x_payload, ui_state, assets)
+            a2x_data = self._parse_json_response(a2x_response, FILE_MAP_CONTRACT, assets=assets)
+            file_map_entries, file_map_by_path, export_index_block, invariants_block = _prepare_file_map_context(a2x_data)
+        else:
+            progress_callback("A2X: obnovené mapování API", 0.30)
+            a2x_data = skipped_stage_data["A2X"]
+            file_map_entries, file_map_by_path, export_index_block, invariants_block = _prepare_file_map_context(a2x_data)
         progress_callback("A3: generování obsahu souborů", 0.35)
         written: List[Path] = []
         per_file_budget = 0.65 / max(len(files), 1)
@@ -4008,6 +4132,51 @@ class PipelineExecutor:
                 break
         return written
 
+    def _load_saved_stage_response(
+        self,
+        path: Path,
+        expected_contract: str,
+        assets: RequestAssets,
+    ) -> Dict[str, Any]:
+        if not path.exists():
+            raise FileNotFoundError(f"Soubor neexistuje: {path}")
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            raise ValueError(f"Nelze načíst JSON z {path}: {exc}") from exc
+
+        response_payload: Dict[str, Any] | None = None
+        if isinstance(raw, dict):
+            candidate = raw.get("payload")
+            if isinstance(candidate, dict):
+                response_payload = candidate
+            else:
+                response_payload = raw
+        if response_payload is None:
+            raise ValueError(f"Neplatný formát uložené odpovědi v {path}")
+
+        text = self._extract_response_text(response_payload)
+        try:
+            payload = self._coerce_json_payload(text, expected_contract)
+        except ValueError as exc:
+            repaired_text, changed = self._repair_json_brackets(text)
+            if not changed:
+                raise
+            payload = self._coerce_json_payload(repaired_text, expected_contract)
+
+        if (
+            expected_contract
+            and isinstance(payload, dict)
+            and payload.get("contract") != expected_contract
+        ):
+            payload["contract"] = expected_contract
+
+        if expected_contract == FILE_MAP_CONTRACT:
+            payload = self._normalize_a2x_payload(payload)
+
+        self._validate_contract(payload, expected_contract, assets)
+        return payload
+
     def _run_modify(
         self,
         user_spec: str,
@@ -4026,6 +4195,7 @@ class PipelineExecutor:
             {"<USER_TASK>": dialog_content},
             assets,
             ui_state,
+            previous_response_id=self._dialog_chunk_response_id,
             include_mirror=True,
             include_diagnostics=True,
             include_attachments=True,
@@ -4169,7 +4339,7 @@ class PipelineExecutor:
         dialog_block = self._format_dialog_block("ÚKOL", dialog_content)
         base_instructions = "QA režim: očekává se pouze textová odpověď, žádný soubor. Nepoužívej IN/OUT."
         base_input = f"ÚKOL: {dialog_content}\nOčekává se pouze textová odpověď, žádný soubor."
-        qa_instructions = f"{base_instructions}\n\n{dialog_block}"
+        qa_instructions = base_instructions
         qa_input = f"{base_input}\n\nPRAVIDLA A KONTRAKT:\n{base_instructions}"
         qa_instructions, qa_input = self._maybe_trim_prompt_texts(
             "QA",
@@ -4206,7 +4376,7 @@ class PipelineExecutor:
         if not self._model_capabilities.get("supports_temperature", False):
             request_payload.pop("temperature", None)
         self._ensure_payload_within_limits("QA", request_payload, ui_state)
-        previous = self._resolve_previous_response_id(ui_state, "")
+        previous = self._dialog_chunk_response_id or self._resolve_previous_response_id(ui_state, "")
         if previous:
             request_payload["previous_response_id"] = previous
         response = self._send_request("QA", request_payload, ui_state, assets)
@@ -4232,7 +4402,7 @@ class PipelineExecutor:
             "OUTPUT: VRAŤ POUZE validní JSON. ŽÁDNÝ markdown, žádné komentáře, žádný další text.\n"
             f"KONTRAKT C_FILES_ALL:\n{self._c_contract_block}"
         )
-        base_instructions = f"{dialog_block}\n{core_instructions}"
+        base_instructions = core_instructions
         base_input = (
             "Vrať všechny soubory najednou podle kontraktu C_FILES_ALL. "
             "REDUNDANTNÍ KONTRAKT: vrať pouze JSON dle C_FILES_ALL.\n"
@@ -4280,6 +4450,9 @@ class PipelineExecutor:
         else:
             request_payload.pop("temperature", None)
         self._ensure_payload_within_limits("C", request_payload, ui_state)
+        previous = self._dialog_chunk_response_id or self._resolve_previous_response_id(ui_state, "")
+        if previous:
+            request_payload["previous_response_id"] = previous
         batch_dir = Path(self._run.log_dir) / "batch"
         create_dir(batch_dir)
         input_jsonl_path = batch_dir / f"batch_input_{self._run.run_id}.jsonl"
@@ -4412,21 +4585,22 @@ class PipelineExecutor:
             "resolved": False,
             "source": "defaults",
         }
-        if not model or not self._client:
+        effective_model = model or "gpt-4o"
+        if not self._client:
             self._audit_event(
                 "model_capabilities_default",
                 {
-                    "model": model or "",
-                    "reason": "no_model_or_client",
+                    "model": effective_model,
+                    "reason": "no_client",
                 },
                 stage=self._ui_state.mode if self._ui_state else "",
             )
             return capabilities
         if hasattr(self._client, "get_model_capabilities"):
             try:
-                resolved = self._client.get_model_capabilities(model, probe=True)
+                resolved = self._client.get_model_capabilities(effective_model, probe=True)
             except Exception as exc:
-                self._log(f"Nelze načíst metadata modelu {model}: {exc}")
+                self._log(f"Nelze načíst metadata modelu {effective_model}: {exc}")
                 self._audit_exception(
                     "model_capabilities_failed",
                     exc,
@@ -4437,7 +4611,7 @@ class PipelineExecutor:
                 capabilities.update(resolved)
                 self._audit_event(
                     "model_capabilities_resolved",
-                    {"model": model, **capabilities},
+                    {"model": effective_model, **capabilities},
                     stage=self._ui_state.mode if self._ui_state else "",
                 )
                 return capabilities

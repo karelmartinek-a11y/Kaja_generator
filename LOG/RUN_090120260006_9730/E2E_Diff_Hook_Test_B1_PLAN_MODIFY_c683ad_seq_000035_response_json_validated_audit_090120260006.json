@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "B1_PLAN",
+    "response_id": "MODIFY_c683ad",
+    "event": "response_json_validated",
+    "sequence": 35,
+    "logged_at": "2026-01-08T23:06:50.395700"
+  },
+  "details": {
+    "event": "response_json_validated",
+    "level": "info",
+    "details": {
+      "expected_contract": "B1_PLAN"
+    },
+    "timestamp": "2026-01-08T23:06:50.395694"
+  }
+}

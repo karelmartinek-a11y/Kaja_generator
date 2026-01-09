@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A2X",
+    "response_id": "GENERATE_94f2ac",
+    "event": "chunk_split",
+    "sequence": 89,
+    "logged_at": "2026-01-09T17:54:01.959732"
+  },
+  "details": {
+    "event": "chunk_split",
+    "level": "info",
+    "details": {
+      "stage": "A2X",
+      "label": "instructions",
+      "chunk_count": 1,
+      "total_chars": 930,
+      "max_chunk_chars": 6552,
+      "max_chunk_tokens": 1638,
+      "chunk_ratio": 0.2,
+      "depth": 0,
+      "max_tokens": 2949
+    },
+    "timestamp": "2026-01-09T17:54:01.959726"
+  }
+}

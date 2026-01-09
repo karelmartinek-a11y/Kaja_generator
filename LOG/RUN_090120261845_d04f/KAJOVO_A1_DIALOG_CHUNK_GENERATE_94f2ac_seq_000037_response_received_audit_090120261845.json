@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120261845_d04f",
+    "project": "KAJOVO",
+    "stage": "A1_DIALOG_CHUNK",
+    "response_id": "GENERATE_94f2ac",
+    "event": "response_received",
+    "sequence": 37,
+    "logged_at": "2026-01-09T17:45:26.546596"
+  },
+  "details": {
+    "event": "response_received",
+    "level": "info",
+    "details": {
+      "stage": "A1_DIALOG_CHUNK",
+      "request_id": "017816cd",
+      "response_id": "resp_0f578689332b72ae0069613eb4aa68819fba2923762d7acb32",
+      "base_response_id": "GENERATE_94f2ac"
+    },
+    "timestamp": "2026-01-09T17:45:26.546590"
+  }
+}

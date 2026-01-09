@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_628874",
+    "event": "ui_log_message",
+    "sequence": 1,
+    "logged_at": "2026-01-08T20:47:26.168653"
+  },
+  "details": {
+    "message": "Ceník: Ceník offline / odhad",
+    "timestamp_local": "21:47:26",
+    "source": "ui_log"
+  }
+}

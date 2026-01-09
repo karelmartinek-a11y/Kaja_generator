@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_53998c",
+    "logged_at": "2026-01-08T20:21:56.535839",
+    "request_id": "d6b33b69"
+  },
+  "payload": {
+    "id": "resp_0f7139e7db063b3f00696011d0e444819ea63f7b0aac86cc24",
+    "created_at": 1767903696.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0f7139e7db063b3f00696011d1a4d0819e8973e69b9f400cca",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Nástroj je plně definovaná, modulární, read‑only diagnostika pro Linux (Ubuntu web server) a Windows (10/11) s jednotným jádrem `core.*`, sekcemi `sections.*` a CLI runnerem `runner.main`. Tento chunk explicitně ukončuje MASTER zadání – žádné další technické informace ani výjimky už nejsou, vše dříve definované zůstává v platnosti.\\n\\nArchitektura:\\n- Jádro (`core.*`):\\n  - `core.config`: definuje režimy běhu (`DiagMode`: AUTO, LINUX, WINDOWS), úrovně detailu (`DetailLevel`), jména sekcí (`SectionName`: SYSTEM, FILESYSTEM, NETWORK, LOGS, REGISTRY, HARDWARE, STORAGE, DRIVERS, PROCESSES_SERVICES, SECURITY, PYTHON, DEVTOOLS, VIRTUALIZATION, WSL, atd.), běhovou konfiguraci (`RunConfig`) a CLI parser (`parse_cli_args`). Obsahuje `detect_os()` pro mapování skutečného OS na `DiagMode`.\\n  - `core.paths`: správa adresářové struktury výstupu. `generate_root_dir()` (pokud není `dry-run`) vytvoří kořen `Diag_YYYYMMDD-HHMMSS`. `build_paths()` sestaví `DiagPaths` s cestami na podsložky (system, registry, filesystem, hardware, storage, drivers, processes_services, network, security, python, devtools, virtualization, wsl, logs, atd.) a na klíčové soubory (MANIFEST, index, logy). Vše deterministické a řízené `RunConfig`.\\n  - `core.logging`: inicializace a použití `DiagLogger`. `init_logger(DiagPaths)` nastaví logování do souboru (např. `logs/diag_run.log`) a na stdout/stderr, s jednotným formátem a úrovněmi (INFO, WARN, ERROR). Log nesmí obsahovat citlivá data; citlivé hodnoty se před zápisem maskují.\\n  - `core.manifest`: model manifestu a indexu klíčových souborů. `ManifestEntry` (relativní cesta, sekce, popis, velikost, volitelný SHA‑256 hash), `Manifest` (metadata běhu + seznam entry). `create_empty_manifest()` vytvoří prázdný manifest s metadaty (čas, OS, verze nástroje, parametry běhu). `add_file()` přidá položku, volitelně spočítá hash (pokud není `--no-hash`); při chybě hashování zaloguje problém a pokračuje s `sha256=None`. `write_manifest()` zapíše `MANIFEST.md` v deterministickém, snadno parsovatelném formátu. `write_key_files_index()` vytvoří index klíčových souborů (např. `KEY_FILES_INDEX.md`) s odkazy na nejdůležitější výstupy.\\n  - `core.exec`: spouštění systémových příkazů. `run_command()` vrací `CommandResult` (stdout, stderr, návratový kód, příkaz) i při nenulovém návratovém kódu; nenulový kód není automaticky výjimka. Sekce musí návratový kód vyhodnotit a případně zalogovat varování/chybu. `write_command_result()` uloží výstup příkazu do souboru (včetně metadat – příkaz, návratový kód) a registruje ho do manifestu.\\n  - `core.errors`: společná hierarchie výjimek a formátování chyb. `DiagError` jako základ, `CriticalDiagError` pro chyby znemožňující pokračování (např. selhání vytvoření kořenového adresáře, zápisu manifestu), `SectionError` pro chyby v konkrétní sekci (navázané na `SectionName`). `format_exception()` poskytuje jednotný textový stack trace pro logování.\\n\\n- Základ sekcí (`sections.base`):\\n  - `SectionContext` (dataclass): sdílený kontext pro běh sekcí – obsahuje `RunConfig`, `DiagPaths`, `DiagLogger`, `Manifest`, `DiagMode`. Sekce tak nevyužívají globální proměnné.\\n  - `BaseSection` (ABC): abstraktní základ pro všechny sekce. Definuje:\\n    - `name() -> SectionName` – identifikátor sekce.\\n    - `run(ctx: SectionContext) -> None` – hlavní metoda pro sběr dat.\\n    - Pomocné metody pro bezpečné vytváření souborů v diagnostické struktuře, zápis výstupů příkazů, registraci souborů do manifestu a jednotné zachycení/propagaci chyb jako `SectionError`.\\n  - `run_sections(ctx: SectionContext, sections: list[BaseSection]) -> None`: orchestrátor sekcí. Iteruje přes seznam instancí sekcí, volá `run(ctx)`, zachytává `SectionError`, loguje je a zapisuje do manifestu jako dílčí selhání. Nekritické chyby jedné sekce nesmí shodit celý běh; kritické chyby (např. `CriticalDiagError` z jádra) mohou ukončit běh s nenulovým kódem.\\n\\n- Linux sekce (`sections.linux.*`):\\n  - `system.py` – `LinuxSystemSection`: základní systémové informace (kernel, distribuce, CPU, paměť, běžící služby atd.) dle dříve popsaného MASTER návrhu. Používá `run_command` a `write_command_result`, ukládá výstupy do `system/`, registruje do manifestu.\\n  - `filesystem.py` – `LinuxFilesystemSection`: informace o souborových systémech, discích, mount pointech, kvótách atd. Výstupy v `filesystem/`.\\n  - `network.py` – `LinuxNetworkSection`: síťová konfigurace, rozhraní, routování, aktivní spojení, firewall (např. `ip`, `ss`, `iptables`/`nft`, `route`, atd.). Výstupy v `network/`.\\n  - `logs.py` – `LinuxLogsSection`: systémové a aplikační logy (např. `journalctl`, logy web serveru), s omezením rozsahu a případným maskováním citlivých údajů. Výstupy v `logs/`.\\n  Všechny Linux sekce dědí z `BaseSection`, používají `DiagPaths`, `DiagLogger`, `Manifest`, respektují read‑only charakter a omezení na citlivá data. Chybějící nástroje nebo nedostupné soubory se zaznamenávají jako částečná selhání.\\n\\n- Windows sekce (`sections.windows.*`):\\n  Již dříve detailně definované:\\n  - `system.py` – `WindowsSystemSection`: systémové informace o OS (verze, build, role, základní HW info) pomocí `systeminfo`, WMI/PowerShell atd. Výstupy v `system/`.\\n  - `registry.py` – `WindowsRegistrySection`: export vybraných částí registru (přes `reg.exe` nebo PowerShell), s omezením a maskováním citlivých údajů. Výstupy v `registry/`.\\n  - `filesystem.py` – `WindowsFilesystemSection`: informace o discích, oddílech, souborových systémech, vybraných adresářích. Výstupy v `filesystem/`.\\n  - `hardware.py` – `WindowsHardwareSection`: HW komponenty (CPU, RAM, základní deska, síťové karty, atd.) přes `wmic`, PowerShell a další nástroje. Výstupy v `hardware/`.\\n  - `storage.py` – `WindowsStorageSection`: úložiště, disky, oddíly, volume, RAID, atd. Výstupy v `storage/`.\\n  - `drivers.py` – `WindowsDriversSection`: seznam ovladačů, jejich verze a stav (`driverquery`, WMI, PowerShell). Výstupy v `drivers/`.\\n\\n  Nově shrnutá, ale plně začleněná sekce:\\n  - `processes_services.py` – `WindowsProcessesServicesSection` (sekce PROCESSES_SERVICES): sběr informací o běžících procesech a službách, jejich stavech a konfiguraci startu. Používá `tasklist`, `sc query`, PowerShell `Get-Process`, `Get-Service` atd. Výstupy v podsložce pro procesy/služby, s registrací do manifestu a logováním průběhu i chyb.\\n\\nCelkově: nástroj je čistě diagnostický (read‑only), modulární, s jednotným jádrem, manifestem, logováním, deterministickou strukturou výstupu a robustním zacházením s chybami. Tento chunk uzavírá specifikaci – žádné další technické doplňky mimo dříve popsané části neexistují.\",\"chunk_index\":1,\"chunk_count\":3,\"notes\":[\"MASTER zadání je tímto chunkem explicitně ukončeno; další chunky už jen rozvíjejí či shrnují, ale nesmí přidávat nové technické výjimky mimo dosavadní pravidla.\",\"Zachovat read-only charakter, maskování citlivých dat v logu i výstupech a deterministickou strukturu adresářů a manifestu.\",\"Sekce musí používat `run_command`/`write_command_result`, `SectionContext` a chybový model (`DiagError`, `CriticalDiagError`, `SectionError`).\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 2174,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2236,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 4410
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767903716,
+    "store": true
+  }
+}

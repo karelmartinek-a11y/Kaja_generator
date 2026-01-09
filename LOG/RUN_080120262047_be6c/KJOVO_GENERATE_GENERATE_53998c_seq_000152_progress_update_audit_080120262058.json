@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_53998c",
+    "event": "progress_update",
+    "sequence": 152,
+    "logged_at": "2026-01-08T19:58:34.502659"
+  },
+  "details": {
+    "event": "progress_update",
+    "level": "info",
+    "details": {
+      "message": "A1_LONG_PROMPT: sestavuji request",
+      "ratio": 0.1
+    },
+    "timestamp": "2026-01-08T19:58:34.502651"
+  }
+}

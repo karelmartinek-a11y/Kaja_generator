@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262024_31ec",
+    "project": "KJOVO",
+    "stage": "A2",
+    "response_id": "GENERATE_94a897",
+    "event": "payload_token_estimate",
+    "sequence": 238,
+    "logged_at": "2026-01-08T19:37:10.342013"
+  },
+  "details": {
+    "event": "payload_token_estimate",
+    "level": "info",
+    "details": {
+      "stage": "A2",
+      "estimated_tokens": 4066,
+      "max_tokens": 6554
+    },
+    "timestamp": "2026-01-08T19:37:10.342007"
+  }
+}

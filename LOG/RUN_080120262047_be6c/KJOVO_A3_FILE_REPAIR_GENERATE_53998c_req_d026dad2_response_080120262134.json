@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A3_FILE_REPAIR",
+    "response_id": "GENERATE_53998c",
+    "logged_at": "2026-01-08T20:34:20.724214",
+    "request_id": "d026dad2"
+  },
+  "payload": {
+    "id": "resp_0a0555d10c8e77e400696014cb56048195a7d577472eac8cb8",
+    "created_at": 1767904459.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi JSON repair modul. VraĹĄ pouze validnĂ­ JSON bez markdownu. Oprav pouze syntaxi (zĂˇvorky, ÄŤĂˇrky, uvozovky, escapovĂˇnĂ­). NesmĂ­Ĺˇ mÄ›nit vĂ˝znam ani pĹ™idĂˇvat novĂ˝ obsah. MUSĂŤ obsahovat top-level contract='A3_FILE'.",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0a0555d10c8e77e400696014cbbd688195bbe6d59bba9f0f1f",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"A3_FILE\",\"path\":\"core/__init__.py\",\"language\":\"python\",\"content\":\"'''Core package initializer.\\n\\nThis module intentionally does not expose any public API. All public\\nsymbols are defined in the concrete modules within the core package\\n(e.g. core.config, core.paths, core.logging, core.manifest, core.exec,\\ncore.errors) as specified by the A2X_FILE_MAP contract.\\n'''\\n\"}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 244,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 102,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 346
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767904460,
+    "store": true
+  }
+}

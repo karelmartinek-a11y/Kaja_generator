@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "GENERATE_628874",
+    "logged_at": "2026-01-08T22:17:16.109161",
+    "request_id": "667b1149"
+  },
+  "payload": {
+    "id": "resp_08f57ebac6ea1a130069602c6aea8c8197aaeb440a7fc3e5cd",
+    "created_at": 1767910506.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.2-pro-2025-12-11",
+    "object": "response",
+    "output": [
+      {
+        "id": "rs_08f57ebac6ea1a130069602cea954881978a7bc552a092dd25",
+        "summary": [],
+        "type": "reasoning",
+        "content": null,
+        "encrypted_content": null,
+        "status": null
+      },
+      {
+        "id": "msg_08f57ebac6ea1a130069602cea96a881979e03b6f00ed2e1c2",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Role: generátor obsahu jednoho konkrétního souboru dle A2_STRUCTURE. Výstup vždy pouze validní JSON bez markdownu/dalšího textu; pole content je celý čistý obsah souboru (ne diff/patch). Pro dlouhé soubory používej chunking: max 500 řádků na chunk; posílej po částech, které se spojí do kompletního souboru. Povinný kontrakt výstupu souboru: {\\\"contract\\\":\\\"A3_FILE\\\",\\\"path\\\":string,\\\"chunking\\\":{\\\"max_lines\\\":500,\\\"chunk_index\\\":integer,\\\"chunk_count\\\":integer,\\\"has_more\\\":boolean,\\\"next_chunk_index\\\":integer|null},\\\"content\\\":string}.\\nDeterminismus: implementuj pouze to definované v A1/A2/A2X; A2X_FILE_MAP je jediný zdroj pravdy pro importy/exporty; exporty musí přesně odpovídat A2X_FILE_MAP (name/kind/signature) a být doslovně přítomné v contentu; nezaváděj nové symboly ani nové soubory; zachovej shodný datový model napříč soubory; výsledek musí být spustitelný bez ručních úprav.\\n\\nKÁJOVO UI DESIGN STANDARD (normativní; precedence: (1) tokens+kontrakty stavů, (2) specifikace komponent, (3) layout, (4) obecná pravidla). Jednotky px; round(x) matematicky (0.5 nahoru). Nesmí vznikat překryv prvků mimo overlay (tooltip/roletka/dialog/overlay scrollbar).\\n\\nTOKENS: barvy HEX: bílá #FFFFFF, černá #000000, červená #FF0000, šedivá #808080. Vrstvy prvku (zvenku dovnitř): LEM 2px, OKRAJ 1px, POZADÍ, OBSAH; „obsahová plocha“ = uvnitř okraje (po odečtu lemu+okraje). UI_scale: min(W/1280,H/720); škáluje typografie/paddingy/výšky řádků/ikony/rozměry času/datu/tloušťky ikon čar; neškáluje lem 2px, okraj 1px, a GAP_MIN 2px.\\nTypografie: pouze Montserrat Regular/Bold; fonty musí být bundlované a registrované při startu; žádný systémový font ani fallback; při nenačtení fontu zobrazit chybový dialog ve stylu Kájovo a ukončit; build by měl kontrolovat hash fontů. FS_base=16 při UI_scale=1; FS=round(FS_base*UI_scale); LH=round(1.25*FS). Nadpisy/sekce/hlavičky tabulek: Bold a VŠE VELKÝMI PÍSMENY; běžný obsah: Regular.\\nRadius: R=max(1, round(0.35*FS)); ostré rohy zakázány.\\nRozestupy/rozměry: GAP_MIN=2; PAD_X=round(0.8*FS); PAD_Y=round(0.4*FS); ROW_H=round(1.4*LH); STATUS_H=round(1.6*LH).\\nIkony: ICON=round(1.5*FS) čtverec; primárně outline (bez výplně) pokud komponenta neurčí jinak; STROKE=max(1, round(0.12*FS)); barva jen z token barev.\\nObecný vzhled: striktně černobílé; šedivá jen pro neaktivní text/symboly; červená jen pro ukončení/kritické akce a stavy nebezpečí/nedostupné dle standardu. Zakázány stíny/gradienty/textury/průhlednosti (mimo overlay). Vše musí používat LEM/OKRAJ/POZADÍ/OBSAH. Překryv zakázán mimo definované overlay. Změny stavu nesmí měnit layout/rozměry (jen barvy, u textu případně fit/scale dle pravidel).\\nInterakce: hover běžně žádný; tooltip výjimky: tabulky a dropdown/combobox jen při overflow textu a po setrvání 2 s. Focus: TAB/SHIFT+TAB cyklus; ENTER nebo mezerník aktivuje prvek (ne textová pole). Focus je overlay: LEM bílý 2px, ostatní vrstvy dle stavu; focus nesmí měnit rozměry/layout. ESC globálně zavírá overlay v pořadí: tooltip, roletka dropdown/combobox, dialog; ESC odpovídá CLOSE v dialogu.\\n\\nLayout aplikace:\\n- Záhlaví programu MUSÍ obsahovat: název+verzi, ovládací prvky, a ukončovací prvek vpravo. Ukončovací prvek je vždy kritický (červený kontrakt).\\n- Sekce: rámovaná oblast (LEM/OKRAJ/POZADÍ) pro logickou skupinu; název sekce je součást horního lemu (přeruší horní lem), typografie Bold a VŠE VELKÝMI PÍSMENY; sekce sama není interaktivní (barvy dle stavových kontraktů).\\n- Stavový řádek (STATUS): výška STATUS_H; vlevo text aktuálního kroku (Regular) + volitelně progress „teploměr“; vpravo čas a datum.\\n  - Čas (PRAGOTRON / flap): formát HH:MM:SS (8 znaků); každý znak samostatný modul (obdélník s R): lem bílý 2px, okraj černý 1px, pozadí černé, znak bílý Montserrat Bold; uvnitř uprostřed vodorovná bílá linka 1px („spára“); výška modulu TIME_H=round(1.2*LH).\\n  - Datum (kalendář): modul s R, lem/okraj jako ostatní; uvnitř horní lišta oddělená bílou linkou 1px; text DD.MM.YYYY (Bold, bílý) vycentrovaný; proporce dle PŘÍLOHY A.\\n  - Progress „teploměr“: horizontální indikátor; rám lem bílý 2px + okraj černý 1px; pozadí černé; výplň bílá; odhadnutelný: 0–100 %; neodhadnutelný: bílý segment se pohybuje tam a zpět.\\n\\nKontrakty barevných stavů (globální):\\n- Nečervené interaktivní prvky mají 3 stavy: NORMAL (lem bílý, okraj černý, pozadí černé, obsah bílý), ACTIVE (lem bílý, okraj černý, pozadí bílé, obsah černý), DISABLED (lem šedivý, okraj černý, pozadí černé, obsah šedivý).\\n- Červené (kritické) prvky mají jen 2 stavy: NORMAL (lem červený, okraj černý, pozadí červené, obsah černý), ACTIVE (lem červený, okraj černý, pozadí černé, obsah červený). Pozn.: Focus overlay nastaví lem na bílý i u červeného prvku.\\n\\nKomponenty (specifikace):\\n- Button: dle stavového kontraktu (nečervený/červený); padding PAD_X/PAD_Y; radius R; text Bold pro primární, Regular pro sekundární (pokud nejasné, Bold). Aktivace klikem; klávesnice: focus + ENTER/MEZERNÍK. Preferovaná šířka deterministicky: W_pref = textWidth(FS)+2*PAD_X+2*(LEM+OKRAJ); skupina tlačítek může být roztažena proporčně dle W_pref; pokud není místo, použij algoritmus text fit/scale.\\n- Toggle/Radio/Checkbox/Klikatelná ikona: stejné vrstvy a stavový kontrakt; nesmí měnit layout mezi stavy; fokusovatelné a ovladatelné klávesnicí. Ikony outline, velikost ICON, tloušťka STROKE, barva dle stavu.\\n- Tabulka/seznam: sloupce měnitelná šířka; řádky fixní výška ROW_H; výběr řádku vždy invert (ACTIVE kontrakt na celý řádek); CTRL+C kopíruje vybraný text/buňku/řádek. Tooltip v tabulce: po 2 s nečinnosti kurzoru jen při overflow; vzhled tooltipu: lem černý 2px, okraj bílý 1px, pozadí bílé, text černý Regular; tooltip je overlay a může překrývat UI.\\n- Dialog: geometrie obdélník s R, lem bílý 2px, okraj černý 1px, pozadí černé. Název vlevo nahoře přerušuje horní lem jako sekce; Bold a VŠE VELKÝMI PÍSMENY. Obsah standardně 5 řádků (5*LH); více obsahu => vertikální overlay scrollbar dle specifikace scrollbar. Akce vždy přítomné: OK/CANCEL/CLOSE; v dialogu je vždy vycentrovaný text (Regular) bez dalšího rámu. Význam: OK potvrdit/provést; CANCEL zahodit změny; CLOSE zavřít bez akce; pokud nejsou změny, CANCEL a CLOSE se chovají stejně (ale zůstávají kvůli jednotnosti). Klávesy: ENTER=OK (pokud focus není v editable text poli); ESC=CLOSE; TAB/SHIFT+TAB cyklus v dialogu.\\n- Textové pole (v dialogu): typ zadávací (editable) a zobrazovací read-only (umožňuje selection+CTRL+C). Vzhled: lem bílý 2px, okraj černý 1px, pozadí černé, text bílý Regular, placeholder šedivý Regular. Placeholder řetězce pevné: editable „Zde pište...“, read-only „Zde se zobrazí text...“. Caret pouze v editable s focusem; blikající svislá čára střídající bílou a černou. Selection vždy inverzní: vybraný text černý, pozadí bílé. Chování: editable jako editor; read-only needitovat, ale select+copy.\\n- Text fit / scale-to-fit / fallback scroll (globální algoritmus): cíl text se MUSÍ vejít; scroll jen fallback pro selhání měření/renderu. Overflow= přesah obsahové plochy o >1px. Postup: (1) aplikuj UI_scale; (2) prvek s jednoprvkovým textem může zvětšit šířku v hlavní ose dle W_pref, pokud layout dovolí; (3) pokud overflow, scale-to-fit obsah (text/ikony) bez limitů; (4) znovu přeměř; pokud stále overflow (framework/rounding), povol overlay scrollbar jen na ose overflow; (5) scroll se nesmí zapínat preventivně.\\n- Scrollbar (posuvný válec): overlay (neubírá místo). Vzhled: track černý, track okraj bílý, thumb bílý; šířka max(6, round(0.8*FS)). Pokud overlay scrollbar nelze, povolena výjimka standardního scrollbaru, ale barvy musí odpovídat paletě.\\n- Dropdown (needitovatelný): pole je needitovatelný box dle nečerveného kontraktu; vpravo šipka dolů (referenční ikona) barva dle stavu. Roletka se otevře dolů jako overlay; zobrazuje 5 položek; více položek => overlay scrollbar.\",\"chunk_index\":2,\"chunk_count\":3,\"notes\":[\"Komprese slučuje EXISTING_SUMMARY + CHUNK_TEXT (sekce 4–6) bez změny významu a s prioritou normativních pravidel.\",\"Zachovány deterministické požadavky na A3_FILE kontrakt, chunking, import/export dle A2X_FILE_MAP, a zákaz nových symbolů/souborů.\",\"Zachovány přesné tokeny (barvy, vrstvy), výpočty (UI_scale, FS, LH, R, PAD_X/Y, ROW_H, STATUS_H, TIME_H, ICON, STROKE) a pravidla interakcí (ESC/TAB/ENTER).\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 0.98,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "medium",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 3731,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2979,
+      "output_tokens_details": {
+        "reasoning_tokens": 44
+      },
+      "total_tokens": 6710
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767910634,
+    "store": true
+  }
+}

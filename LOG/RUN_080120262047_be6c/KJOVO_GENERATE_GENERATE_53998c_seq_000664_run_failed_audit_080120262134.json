@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_53998c",
+    "event": "run_failed",
+    "sequence": 664,
+    "logged_at": "2026-01-08T20:34:20.736015"
+  },
+  "details": {
+    "event": "run_failed",
+    "level": "error",
+    "details": {
+      "error": "A3_FILE.chunking musí být objekt.",
+      "type": "ValueError",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3574, in execute\n    files = self._run_generate(user_spec, assets, ui_state, progress_callback, stop_check)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 4017, in _run_generate\n    a3_data = self._parse_json_response(a3_response, \"A3_FILE\", assets=assets)\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2905, in _parse_json_response\n    self._validate_contract(payload, expected_contract, assets)\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 2952, in _validate_contract\n    self._validate_a3_file(payload)\n    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3261, in _validate_a3_file\n    self._validate_chunking(payload.get(\"chunking\"), \"A3_FILE.chunking\")\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\kaja_generator\\kaja\\core\\pipeline.py\", line 3387, in _validate_chunking\n    raise ValueError(f\"{label} musí být objekt.\")\nValueError: A3_FILE.chunking musí být objekt.\n"
+    },
+    "timestamp": "2026-01-08T20:34:20.736008"
+  }
+}

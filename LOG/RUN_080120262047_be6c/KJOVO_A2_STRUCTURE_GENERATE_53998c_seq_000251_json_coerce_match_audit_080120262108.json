@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A2_STRUCTURE",
+    "response_id": "GENERATE_53998c",
+    "event": "json_coerce_match",
+    "sequence": 251,
+    "logged_at": "2026-01-08T20:08:52.120076"
+  },
+  "details": {
+    "event": "json_coerce_match",
+    "level": "info",
+    "details": {
+      "expected_contract": "A2_STRUCTURE",
+      "candidate_count": 1,
+      "parsed_count": 1,
+      "unescape_count": 0,
+      "response_chars": 13351
+    },
+    "timestamp": "2026-01-08T20:08:52.120068"
+  }
+}

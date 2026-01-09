@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262024_31ec",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_94a897",
+    "logged_at": "2026-01-08T19:40:22.235168",
+    "request_id": "27a0c44d"
+  },
+  "payload": {
+    "id": "resp_0668366c1779a63700696007fc6170819cb6e778a255b8f146",
+    "created_at": 1767901180.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0668366c1779a63700696007fd08d8819c9e82a94bbda290a0",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk dokončuje specifikaci A2_STRUCTURE a doplňuje ji o zbývající soubory balíčku `crossdiag`, zároveň potvrzuje, že závěrečná věta „Konec MASTER zadání.“ nepřidává žádné nové technické požadavky. Všechny dříve definované kontrakty, pravidla a struktury zůstávají závazné.\\n\\nNově doplněné soubory A2_STRUCTURE:\\n\\n1) `crossdiag/diag_registry.py`\\n- Účel: Windows-specifická diagnostika registru související s Pythonem a asociacemi souborů; na jiných platformách vrací prázdná data.\\n- Exporty (konceptuálně): funkce `collect_registry_info(detail: DetailLevel) -> tuple[RegistrySnapshot | None, list[DiagnosticIssue]]`.\\n- Importy (konceptuálně):\\n  - Standardní/built-in: `sys`, `platform`, podmíněně `winreg` na Windows.\\n  - Typy: `List`, `Tuple`, `Optional` z `typing`.\\n  - Interní: z `crossdiag.model` typy `RegistrySnapshot`, `RegistryKeyInfo`, `DiagnosticIssue`, `DiagnosticSeverity`, `DetailLevel`; z `crossdiag.logging_utils` funkce `get_logger`; z `crossdiag.errors` výjimka `CrossDiagError`.\\n- Chování: Na Windows čte relevantní klíče registru (např. asociace `.py`, instalace Pythonu, PATH v registru), vytváří `RegistrySnapshot` a případné `DiagnosticIssue` při chybách čtení, nedostatečných oprávněních nebo nekonzistencích. Na jiných platformách vrací `None` pro snapshot a prázdný seznam problémů nebo jen minimální informaci, aby byla zachována multiplatformnost.\\n\\n2) `crossdiag/diag_logs.py`\\n- Účel: Diagnostika systémových a aplikačních logů souvisejících s Pythonem nebo nástrojem; čtení, filtrování a agregace záznamů.\\n- Exporty (konceptuálně): funkce `collect_logs(detail: DetailLevel) -> tuple[list[LogSource], list[LogEntry], list[DiagnosticIssue]]`.\\n- Importy (konceptuálně):\\n  - Standardní: `os`, `platform`, `subprocess`.\\n  - Další: `Path` z `pathlib`, `datetime`, `timedelta` z `datetime`.\\n  - Typy: `List`, `Tuple`, `Iterable` z `typing`.\\n  - Interní: z `crossdiag.model` typy `LogSource`, `LogEntry`, `DiagnosticIssue`, `DiagnosticSeverity`, `DetailLevel`; z `crossdiag.logging_utils` funkce `get_logger`.\\n- Chování: Podle platformy hledá relevantní logy (např. systémové logy, logy správce balíčků, logy Pythonu či virtuálních prostředí), filtruje záznamy související s Pythonem a nástrojem CrossDiag, agreguje je do strukturovaných `LogSource` a `LogEntry` a vytváří `DiagnosticIssue` při problémech s přístupem nebo parsováním.\\n\\n3) `crossdiag/diag_system.py`\\n- Účel: Sběr základních systémových informací o OS, architektuře, uživateli a prostředí.\\n- Exporty (konceptuálně): funkce `collect_system_info(detail: DetailLevel) -> tuple[SystemInfo, list[DiagnosticIssue]]`.\\n- Importy (konceptuálně):\\n  - Standardní: `os`, `platform`, `getpass`, `socket`.\\n  - Typy: `List`, `Tuple` z `typing`.\\n  - Interní: z `crossdiag.model` typy `SystemInfo`, `DiagnosticIssue`, `DiagnosticSeverity`, `DetailLevel`; z `crossdiag.logging_utils` funkce `get_logger`.\\n- Chování: Zjišťuje název OS, verzi, architekturu, hostname, uživatelské jméno, základní informace o prostředí (např. proměnné prostředí relevantní pro Python) a případné problémy (např. podezřelé hodnoty proměnných) reportuje jako `DiagnosticIssue`.\\n\\n4) `crossdiag/output_formatters.py`\\n- Účel: Formátování `DiagnosticReport` do human-readable textu a JSON řetězce.\\n- Exporty (konceptuálně):\\n  - `report_to_text(report: DiagnosticReport, options: CliOptions) -> str` – generuje textový report pro CLI.\\n  - `report_to_json(report: DiagnosticReport, pretty: bool) -> str` – generuje JSON řetězec, volitelně formátovaný.\\n- Importy (konceptuálně):\\n  - Standardní: `json`, `textwrap`.\\n  - Typy: `Any` z `typing`.\\n  - Interní: z `crossdiag.model` typy `DiagnosticReport`, `DiagnosticIssue`, `DiagnosticSeverity`; z `crossdiag.cli` typ `CliOptions`; z `crossdiag.logging_utils` funkce `get_logger`.\\n- Chování: Převádí strukturovaný report do čitelného textu (seskupení podle závažnosti, sekcí, zvýraznění problémů) a do JSON (včetně všech polí modelu). Respektuje volby CLI (např. úroveň detailu, anonymizace již aplikovaná předem).\\n\\n5) `crossdiag/logging_utils.py`\\n- Účel: Inicializace a správa interního logování nástroje, včetně konfigurace logovacího souboru a úrovní.\\n- Exporty (konceptuálně):\\n  - `setup_logging(level: str, log_to_file: bool) -> None` – nastaví logging podle úrovně a volby logování do souboru.\\n  - `get_logger(name: str) -> logging.Logger` – vrací konfigurovaný logger pro daný název.\\n  - `DEFAULT_LOG_FILE_NAME: str` – výchozí název logovacího souboru.\\n- Importy (konceptuálně):\\n  - Standardní: `logging`, `os`.\\n  - Další: `Path` z `pathlib`.\\n  - Typy: `Optional` z `typing`.\\n  - Interní: z `crossdiag.errors` typ `ConfigError`.\\n- Chování: Centralizovaně nastavuje formát logů, úroveň (např. INFO/DEBUG) a případné logování do souboru v uživatelsky bezpečné lokaci. Při chybné konfiguraci vyhazuje `ConfigError`.\\n\\n6) `crossdiag/anonymizer.py`\\n- Účel: Anonymizace citlivých údajů v `DiagnosticReport` (uživatelská jména, hostname, cesty) při zapnuté volbě anonymizace.\\n- Exporty (konceptuálně): `anonymize_report(report: DiagnosticReport) -> DiagnosticReport`.\\n- Importy (konceptuálně):\\n  - Standardní: `os`, `re`, `socket`.\\n  - Typy: `List`, `Tuple` z `typing`.\\n  - Interní: z `crossdiag.model` typy `DiagnosticReport`, `DiagnosticIssue`, `DiagnosticSeverity`; z `crossdiag.logging_utils` funkce `get_logger`.\\n- Chování: Prochází strukturu reportu a nahrazuje konkrétní identifikátory (uživatelská jména, hostname, části cest) anonymizovanými tokeny, přičemž zachovává strukturu a konzistenci dat. Případné problémy (např. nemožnost anonymizovat některé části) může zaznamenat jako `DiagnosticIssue`.\\n\\n7) `crossdiag/errors.py`\\n- Účel: Definice vlastních výjimek a chybových typů pro nástroj pro jednotné zpracování chyb.\\n- Exporty (konceptuálně):\\n  - `CrossDiagError(Exception)` – základní výjimka nástroje.\\n  - `ConfigError(CrossDiagError)` – chyby konfigurace (např. logging, CLI).\\n  - `EnvironmentError(CrossDiagError)` – problémy s prostředím (PATH, instalace Pythonu apod.).\\n  - `PlatformNotSupportedError(CrossDiagError)` – použití funkcí na nepodporované platformě.\\n- Importy: pouze built-in `Exception` (žádné nestandardní importy).\\n- Chování: Slouží jako jednotná hierarchie chyb, kterou ostatní moduly používají pro konzistentní error handling.\\n\\n8) `MANIFEST.md`\\n- Účel: Dokumentace obsahu distribuce nástroje CrossDiag a popis jednotlivých souborů včetně verzování; slouží jako lidsky čitelný manifest projektu.\\n- Exporty: žádné programové symboly (čistě dokumentační soubor).\\n- Importy: žádné (statický textový dokument).\\n\\nDoplňující kontext k celému projektu (navazuje na předchozí chunky, shrnutí):\\n- Celý balíček `crossdiag` je navržen jako multiplatformní diagnostický nástroj zaměřený na Python, PATH, registry (Windows), logy a systémové informace.\\n- Architektura je modulární: jednotlivé diagnostické oblasti (`diag_python`, `diag_path`, `diag_registry`, `diag_logs`, `diag_system`) jsou oddělené moduly, orchestraci zajišťuje `runner.py`, CLI rozhraní `cli.py` a vstupní bod `__main__.py`.\\n- Datové modely (`DiagnosticReport`, `PythonInstallation`, `PathEntry`, `RegistrySnapshot`, `LogSource`, `SystemInfo`, `DiagnosticIssue` atd.) jsou centralizovány v `model.py` a používají se napříč moduly.\\n- Výstupní formáty (text, JSON) jsou řešeny v `output_formatters.py`, anonymizace v `anonymizer.py`, logování v `logging_utils.py`, vlastní chyby v `errors.py`.\\n- Bezpečnostní a provozní zásady: nástroj pracuje read-only (neprovádí změny v systému), neodesílá data mimo stroj, opatrně spouští externí nástroje, robustně zachytává výjimky a převádí je na `DiagnosticIssue` nebo vlastní výjimky.\\n- CLI podporuje různé úrovně detailu (`DetailLevel`), volbu formátu (`--format text,json`), anonymizaci (`--anonymize`), a nástroj má definované návratové kódy (0 pro úspěšný běh i s nalezenými problémy, nenulový pro fatální chyby běhu).\\n- Verifikační scénáře zahrnují testy pro `--help`, validní JSON výstup, detekci instalací Pythonu a registru na Windows, detekci symlinků na Linuxu, chování při nedostatečných oprávněních, funkčnost anonymizace a reakci na poškozenou PATH.\\n- Politika generování výstupu: třífázová strategie `PLAN->STRUCTURE->FILE_CONTENT` (A1, A2, A3) a limit `max_lines_per_chunk` = 500 pro generování obsahu souborů v A3.\\n\\nZávěrečné upřesnění tohoto chunku:\\n- Poslední věta „Konec MASTER zadání.“ pouze formálně ukončuje specifikaci a nepřidává žádné nové soubory, pravidla ani změny návrhu.\\n- Kompletní sada souborů, jejich účel, exporty/importy a pravidla chování jsou plně definovány v A1_PLAN a A2_STRUCTURE (včetně tohoto doplnění) a budou deterministicky použity ve fázi A3 pro generování implementace.\\n- Všechna dříve stanovená pravidla (modularita, jednotné logování, vlastní výjimky, bezpečnost, anonymizace, robustní error handling, verifikační scénáře, politika generování) zůstávají beze změny a tento chunk je pouze potvrzuje a uzavírá specifikaci.\",\"chunk_index\":5,\"chunk_count\":5,\"notes\":[]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 3273,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 2852,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 6125
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767901222,
+    "store": true
+  }
+}

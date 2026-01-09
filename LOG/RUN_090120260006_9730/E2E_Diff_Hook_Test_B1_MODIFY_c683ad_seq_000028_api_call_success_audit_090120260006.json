@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "B1",
+    "response_id": "MODIFY_c683ad",
+    "event": "api_call_success",
+    "sequence": 28,
+    "logged_at": "2026-01-08T23:06:50.386470"
+  },
+  "details": {
+    "event": "api_call_success",
+    "level": "info",
+    "details": {
+      "stage": "B1",
+      "request_id": "98b9bf89"
+    },
+    "timestamp": "2026-01-08T23:06:50.386460"
+  }
+}

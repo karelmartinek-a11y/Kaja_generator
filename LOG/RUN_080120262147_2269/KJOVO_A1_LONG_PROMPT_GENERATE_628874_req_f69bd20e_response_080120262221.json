@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "GENERATE_628874",
+    "logged_at": "2026-01-08T21:21:35.833481",
+    "request_id": "f69bd20e"
+  },
+  "payload": {
+    "id": "resp_0f07508405ea22e00069601f7fed3c819e9823e5891b5d21a1",
+    "created_at": 1767907199.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.2-pro-2025-12-11",
+    "object": "response",
+    "output": [
+      {
+        "id": "rs_0f07508405ea22e00069601fdecaf4819e8204657d894a6e59",
+        "summary": [],
+        "type": "reasoning",
+        "content": null,
+        "encrypted_content": null,
+        "status": null
+      },
+      {
+        "id": "msg_0f07508405ea22e00069601fdecc04819e9c31182aeacc3461",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Role: senior software architekt/implementátor. Master pravidla: žádné externí soubory; výstup vždy pouze validní JSON (bez markdownu/komentářů). Cílový kontrakt pro další krok: A1_PLAN se strukturou: project{name,one_liner,target_os,language,runtime}, assumptions[], requirements{functional[],non_functional[],constraints[]}, architecture{modules[{name,responsibility,exports,dependencies}],data_flow[],error_handling[],security_notes[]}, build_run{prerequisites[],commands[],verification[]}, deliverable_policy{file_generation_strategy:\\\"PLAN->STRUCTURE->FILE_CONTENT\\\",max_lines_per_chunk:500}.\\n\\nZadání programu „Kája“ (Windows app pro OpenAI Responses API automation; robustní UI, detailní logování, pricing, A/B/QA/C pipeline, IN/OUT/DIAGNOSTICS, vector store + file_search jen když podporováno; viz existující shrnutí) je rozšířeno o dvě oblasti:\\n\\n28.x SSH diagnostics (Ubuntu web server):\\n- Varianta SSH PowerShell one-liner s heslem v příkazu (méně bezpečná; vyžaduje sshpass). Používá sshpass -p $pw pro ssh i scp a StrictHostKeyChecking=no.\\n- Remote bash skript sbírá diagnostiku do $remote_root (Diag_... struktura). Vše vždy mkdir -p; stdout+stderr se zapisuje do souborů.\\n- Remote složky + artefakty (vše logovat; chybějící subsystémy jako NOT PRESENT; žádné secrets):\\n  - firewall/: nft_ruleset.txt\\n  - users_permissions/: users_groups.txt, sudoers_listing.txt, umask.txt\\n  - processes_services/: process_list.txt, services_state.txt, startup_items.txt\\n  - packages/: dpkg_list.txt, apt_policy_key_pkgs.txt (nginx/openssl/python3/certbot/postgresql/redis), snap_list.txt\\n  - web/: web_root_overview.txt, static_assets_sizes.csv, web_server_headers_hint.txt (curl -I http://127.0.0.1 tolerantně přes || true)\\n  - nginx/: nginx_version.txt, nginx_test.txt, nginx_conf_tree.txt\\n  - app/: app_dirs_overview.txt, systemd_units_related.txt (grep gunicorn/uvicorn/celery/worker), app_env_files_found.txt (jen listing/metadata; žádné secrets)\\n  - python/: where_python.txt, py_launcher_list.txt (pip versions), interpreters_inventory.csv (python3 sys.executable + sys.path jako JSON)\\n  - database/: postgres_version.txt, postgres_service_status.txt, postgres_conf_locations.txt\\n  - certs/: cert_locations.txt (find *.pem/*.crt), certbot_status.txt, cert_expiry_report.txt (openssl x509 -enddate pro /etc/letsencrypt/live/*/cert.pem)\\n  - cron_webhooks/: crontab_root.txt, crontab_users_listing.txt, system_cron_dirs_tree.txt\\n  - logs/: journal_nginx_last500.txt, journal_app_last500.txt, journal_db_last500.txt, syslog_tail.txt, auth_log_tail.txt, kernel_log_tail.txt\\n  - virtualization_containers/: docker_info.txt, docker_ps.txt, docker_compose_files_found.txt\\n- Na konci remote skript vypíše REMOTE_ROOT=$remote_root; PowerShell lokálně parsuje Select-String '^REMOTE_ROOT=' a stáhne celý adresář přes scp -r.\\n- MANIFEST/README doplnění pro Ubuntu diagnostiku:\\n  - Folder list musí zahrnout i: nginx/, app/, python/, database/, certs/, cron_webhooks/, logs/, virtualization_containers/.\\n  - „File Index“ tabulka v README/MANIFEST s příklady položek (např. README_problem.md, system/journal_boot_errors.txt, network/ss_listen.txt, nginx/nginx_test.txt, python/venv_candidates_found.txt, python/venv_reports/venv_*__report.json, certs/cert_expiry_report.txt, logs/journal_nginx_last500.txt, logs/journal_app_last500.txt).\\n  - Notes: před sdílením redigovat secrets; logy mohou obsahovat PII → selektivní sdílení.\\n  - Integrity: šablony Total files {{file_count}}, Total size {{total_size_human}}, volitelně checksums/sha256.txt.\\n- Šablona 28.23 MANIFEST.md („Diagnostic Manifest“): timestamp_local, hostname, collector_user, is_root, os_pretty_name, kernel, uptime, output_root; Purpose: Ubuntu web server diagnostic snapshot; Folder Overview min.: system/, hardware/, storage/, network/, firewall/, users_permissions/, processes_services/, packages/, web/.\\n- Artefakty upload na Files API, evidovat v manifestech; volitelně do vector store s attributes source=diagnostics/scope/captured_at.\\n\\n29) FULL Windows Diagnostics (konečný návrh; výstup jako adresář se soubory, ne ZIP):\\n- Cíle: umožnit úplnou rekonstrukci systému bez archivace; oddělit defaultní vs runtime hodnoty; rozebrat více instalací Pythonu a všechny venv; transparentně analyzovat PATH, registry, aliasy a asociace.\\n- Kořen: Diag_YYYYMMDD-HHMMSS/{MANIFEST.md, README_problem.md, CHANGELOG_last_actions.txt, system/, registry/, filesystem/, hardware/, storage/, drivers/, processes_services/, network/, security/, python/, devtools/, virtualization/, wsl/, logs/}.\\n- MANIFEST.md (auto): Generated at, Machine, User, PowerShell ver, Run as Administrator; Folder Overview; Files tabulka (File/Description/Size); Notes: ACCESS DENIED = vyžaduje admin; chybějící subsystémy explicitně.\\n- system/: systeminfo.txt, os_build.txt, windows_updates_hotfixes.txt, timezone_locale.txt, uptime_boot.txt, power_settings.txt, group_policy_summary.html, run_context.txt; env/PATH: env_machine.txt (HKLM parsed), env_user.txt (HKCU), path_effective_process.txt (runtime PATH), path_diff_analysis.txt (diff Machine vs User vs Runtime).\\n- registry/: env_machine.reg (HKLM ...\\\\Environment), env_user.reg (HKCU\\\\Environment); Python registry: python_core_hklm.reg, python_core_hklm_wow6432.reg, python_core_hkcu.reg, pylauncher_hklm.reg, pylauncher_hkcu.reg; App Execution: app_paths_python_hklm.reg, app_paths_python_hkcu.reg, windowsapps_execution_aliases.txt; Asociace: file_associations_python.reg; Software: uninstall_inventory.txt (Python/Conda/VC++ runtimes).\\n- filesystem/: python_executables_found.txt, python_install_dirs_tree.txt; venv: venv_candidates_found.txt, venv_tree_summaries/venv_<name>.txt; projekty: project_requirements_found.txt; uživatelská data (bez binárního obsahu, jen strom/velikosti): userprofile_tree_depth3.txt, userprofile_top_sizes.csv, appdata_roaming_tree_depth4.txt, appdata_local_tree_depth4.txt, appdata_locallow_tree_depth4.txt (pokud existuje), appdata_top_sizes.csv, known_folders_locations.txt (Documents/Downloads/Desktop vč. redirects/OneDrive), onedrive_status_hint.txt.\\n- python/: where_python.txt, py_launcher_list.txt, interpreters_inventory.csv; default runtime: python_version_default.txt, pip_version_default.txt, pip_list_default.txt, pip_freeze_default.txt, pip_debug_default.txt, pip_config_all.txt; internals: python_sys_path.json, python_site_packages.txt, python_platform.json; venv reports: python/venv_reports/venv_<name>__report.json.\\n- processes_services/: process_list.txt, services_state.txt, startup_items.txt, scheduled_tasks_summary.txt.\\n- network/: ipconfig_all.txt, adapters_details.txt, dns_client_config.txt, hosts_file.txt, routes.txt, netstat_ano.txt, firewall_profiles.txt, firewall_rules_export.wfw, winhttp_proxy.txt, internet_proxy_user.txt, wifi_profiles.txt.\\n- security/: defender_status.txt, applocker_effective.txt, uac_settings.txt, certificates_machine_summary.txt.\\n- hardware/: cpu.txt, memory_modules.txt, memory_summary.txt, motherboard_bios.txt, gpu_adapters.txt, monitors_displays.txt.\\n- storage/: volumes.txt, mount_points.txt, smart_status.txt, disk_performance_counters.txt.\\n- drivers/: driverquery_verbose.txt, pnp_devices.txt, problem_devices.txt, signed_drivers.txt.\\n- devtools/: git_version.txt, node_version.txt, dotnet_info.txt, vcpp_runtimes.txt.\\n- virtualization/: hyperv_state.txt, virtual_machine_platform.txt, windows_features.txt.\\n- wsl/: wsl_status.txt, wsl_list_verbose.txt, wsl_versions.txt.\\n- logs/: eventlog_system_last200.txt, eventlog_application_last200.txt, eventlog_security_last50.txt, wer_crash_list.txt, reliability_monitor_summary.txt, windows_setup_logs_hint.txt.\\n\\nKonec MASTER zadání.\\n\\nSTRIKTNÍ PRAVIDLA (determinismus):\\n- Piš plán jako finální specifikaci: používej explicitní názvy modulů, souborů a veřejných API.\\n- Architecture.modules musí uvádět konkrétní exporty (funkce/třídy/konstanty) a vazby mezi moduly.\\n- Uveď jednotné názvosloví doménových entit a sdílené datové modely.\\n- Pokud něco chybí, dej to do assumptions/constraints, nevymýšlej si nové požadavky.\\n\\nDESIGN STANDARD (doc/Kajovo_UI_Design_Standard_MASTER_v1.0_AI.md, sha256=90e718f04fecbcb95a14d8c0abad3aa78c8ab499e598314494906bd4b1399d93) – normativní specifikace UI (cs-CZ) s precedence: (a) TOKENS+KONTRAKTY stavů (sekce 1 a 5) > (b) Specifikace komponent (sekce 6) > (c) Layout (sekce 4) > (d) Obecná pravidla (2–3). Jednotky px; round(x) matematicky (0.5 nahoru); nesmí překryvy mimo tooltip/roletka/dialog/scrollbar.\\n\\nTOKENS (1):\\n- Barvy HEX: bílá #FFFFFF, černá #000000, červená #FF0000, šedivá #808080.\\n- Vrstvy prvku: LEM 2px; OKRAJ 1px; POZADÍ; OBSAH. „Obsahová plocha“ = uvnitř okraje (uvnitř lemu 2px a okraje 1px).\\n- UI_scale: referenční okno 1280×720 při 1.0; UI_scale = min(W/1280, H/720). Škáluje typografie/paddingy/výšky řádků/ikony/rozměry modulů času-datu/tloušťky ikon čar. Neškáluje: tloušťka lemu (2px) a okraje (1px), min mezera GAP_MIN (2px).\\n- Typografie: jediný font Montserrat (Regular/Bold); font musí být bundled, načten/registrován při startu; při selhání zobrazit Kájovo error dialog a ukončit; fallback fonty zakázány; build měl by kontrolovat hash font souborů.\\n- FS_base=16px při UI_scale=1.0; FS=round(FS_base×UI_scale); LH=round(1.25×FS). Nadpisy/sekce/hlavičky tabulek: Bold, VŠE VELKÝMI; běžný obsah: Regular.\\n- Radius: R=max(1, round(0.35×FS)); ostré rohy zakázány.\\n- Rozestupy: GAP_MIN=2px; PAD_X=round(0.8×FS); PAD_Y=round(0.4×FS); ROW_H=round(1.4×LH); STATUS_H=round(1.6×LH).\\n- Ikony: ICON=round(1.5×FS) čtverec; outline; STROKE=max(1, round(0.12×FS)); barvy jen z token palety.\\n\\nObecná pravidla vzhledu (2): striktně černobílé; šedivá jen pro neaktivní; červená jen pro kritické/ukončení a „nebezpečí/nedostupné“; zakázány stíny/gradienty/textury/průhlednosti (mimo overlay); komponenty musí používat vrstvy; bez překryvů mimo výjimky; změna stavu nesmí měnit layout/rozměry (jen barvy, u textu případně fit/scale dle pravidel).\\n\\nPozn.: V tomto chunku začíná sekce 3.1 Hover (další obsah v dalších částech).\",\"chunk_index\":2,\"chunk_count\":4,\"notes\":[\"Doplněn detailní výčet souborů pro FULL Windows Diagnostics pro složky python/, processes_services/, network/, security/, hardware/, storage/, drivers/, devtools/, virtualization/, wsl/, logs/.\",\"Přidána striktní pravidla determinismu pro tvorbu plánu (exports v modules, jednotné datové modely, chybějící věci do assumptions/constraints).\",\"Přidán začátek normativního dokumentu KÁJOVO UI DESIGN STANDARD: precedence, jednotky/rounding/bez překryvů, TOKENS (barvy, vrstvy, UI_scale, typografie+font bundling, radius, rozestupy, ikony) a obecná pravidla vzhledu.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 0.98,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "medium",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4034,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 3136,
+      "output_tokens_details": {
+        "reasoning_tokens": 36
+      },
+      "total_tokens": 7170
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767907294,
+    "store": true
+  }
+}

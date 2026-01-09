@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262147_2269",
+    "project": "KJOVO",
+    "stage": "A3_LONG_PROMPT",
+    "response_id": "GENERATE_628874",
+    "logged_at": "2026-01-08T22:29:49.799502",
+    "request_id": "adf436c7"
+  },
+  "payload": {
+    "id": "resp_018f1caf6dd046530069602f8fe54c81a2a089debb2b5a0a31",
+    "created_at": 1767911312.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.2-pro-2025-12-11",
+    "object": "response",
+    "output": [
+      {
+        "id": "rs_018f1caf6dd046530069602fdbf06081a283af98c933e27750",
+        "summary": [],
+        "type": "reasoning",
+        "content": null,
+        "encrypted_content": null,
+        "status": null
+      },
+      {
+        "id": "msg_018f1caf6dd046530069602fdbf86881a28f33bcdb52209652",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Souhrn dosud: návrh diagnostické/orchestrační aplikace (Ubuntu přes SSH 28.x, Windows FULL 29) s deterministickými výstupy do pevně definované stromové struktury (DirectoryLayout). Běh je best-effort (selže jen když nejde vytvořit output root); u chyb používá markery jako NOT PRESENT/TIMEOUT. Bezpečnost: redakce tajemství, žádné plošné dumpy env, žádná hesla/tokeny v logu. Volitelná integrace OpenAI: upload do Files API a volitelné indexování do vector store; šablony MANIFEST/README embedded. Definované doménové kontrakty (RunSpec/DiagnosticsRunSpec, ArtifactSpec, CommandResult, ManifestFileEntry, FilesApiUploadRecord, VectorIndexRecord, DiagnosticsRunResult aj.). A3 moduly: ProcessRunner + redaction, PathPolicies, NotPresentWriter, Manifest generator, Integrity service, Files uploader a Vector indexer, Ubuntu remote script builder + SSH collector, WindowsFull collector skeleton, Python inventory service, orchestrátor/progress. Přidán konkrétní OpenAI klient (OpenAIClientImplementation.cs: sealed OpenAIClient : IOpenAIClient) a samostatný logging projekt (ILog/LogLevel/LogEvent, ConsoleLog).\\n\\nNové v tomto chunku (A3 / chunk 10): export index a podpisy veřejných symbolů pro část diagnostických modulů:\\n- Execution: IProcessRunner.RunAsync(ProcessRunSpec, ct) -> CommandResult; DefaultProcessRunner(ILog, IRedactionPolicy); ProcessRunnerFactory.CreateDefault(ILog, IRedactionPolicy); ProcessRunSpec obsahuje FileName, Arguments, WorkingDirectory, Environment(Dictionary<string,string>), StdoutFile, StderrFile, CombinedFile, Timeout(TimeSpan), CreateNoWindow(bool).\\n- IO: DirectoryLayout.EnsureUbuntuTree(outputRoot) a EnsureWindowsFullTree(outputRoot); PathPolicies.EnsureRelativeUnderRoot(root, relativePath) a ToSafeFileName(input).\\n- Indexing/VectorStore: IVectorIndexer.TryIndexAsync(VectorIndexSpec, ct) -> VectorIndexOutcome; OpenAIVectorIndexer(IOpenAIClient, ILog); VectorIndexSpec(VectorStoreId, Files(IReadOnlyList<FilesApiUploadRecord>), BaseAttributes(Dictionary<string,string>)); VectorIndexOutcome(Supported, Records(IReadOnlyList<VectorIndexRecord>), Note).\\n- Integrity: IIntegrityService.ComputeAsync(outputRoot, includeChecksums, ct) -> IntegrityComputationResult; FileSystemIntegrityService implementace; IntegrityComputationResult(FileCount, TotalSizeBytes, TotalSizeHuman, ChecksumsFilePath?).\\n- Manifest: IManifestGenerator.GenerateAsync(ManifestSpec, ct); IntegritySummarySpec(FileCount, TotalSizeHuman, IncludeChecksums, ChecksumsRelativePath?). ManifestSpec definice pokračuje v dalším chunku.\",\"chunk_index\":10,\"chunk_count\":14,\"notes\":[\"Chunk je převážně seznam public API (export index) se signaturami; implementační detaily zde nepřibývají, ale zpřesňují tvar kontraktů (ProcessRunSpec, VectorIndexSpec/Outcome, IntegrityComputationResult, Manifest contracts).\",\"ManifestSpec je v tomto výřezu utnutý; kompletní tvar je nutné doplnit z následujících chunků.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 0.98,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "medium",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 2149,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1034,
+      "output_tokens_details": {
+        "reasoning_tokens": 296
+      },
+      "total_tokens": 3183
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767911388,
+    "store": true
+  }
+}

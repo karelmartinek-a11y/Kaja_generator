@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A3_FILE_REPAIR",
+    "response_id": "GENERATE_53998c",
+    "event": "api_call_success",
+    "sequence": 657,
+    "logged_at": "2026-01-08T20:34:20.717111"
+  },
+  "details": {
+    "event": "api_call_success",
+    "level": "info",
+    "details": {
+      "stage": "A3_FILE_REPAIR",
+      "request_id": "d026dad2"
+    },
+    "timestamp": "2026-01-08T20:34:20.717098"
+  }
+}

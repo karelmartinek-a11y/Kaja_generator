@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262024_31ec",
+    "project": "KJOVO",
+    "stage": "A2X_LONG_PROMPT",
+    "response_id": "GENERATE_94a897",
+    "logged_at": "2026-01-08T19:39:40.251888",
+    "request_id": "2a4b577c"
+  },
+  "payload": {
+    "id": "resp_0330a41be3c4bdc200696007d4ac908197a65635c4f1b5f76b",
+    "created_at": 1767901140.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 2949 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-5.1-2025-11-13",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0330a41be3c4bdc200696007d66e848197af1e1ee1d27da48e",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"Tento chunk dokončuje A2_STRUCTURE a doplňuje plán A1_PLAN o zbytek souborové struktury, verifikační scénáře a politiku generování výstupu.\\n\\nDoplňující obsah k A1_PLAN (navazuje na předchozí chunk):\\n- Příklady spuštění nástroje CrossDiag (rozšíření sekce Build & run):\\n  - Spuštění s plnou diagnostikou a JSON výstupem do souboru: `python -m crossdiag --level full --format json --output report.json`.\\n  - Spuštění s anonymizací a kombinovaným výstupem: `python -m crossdiag --level full --format text,json --anonymize`.\\n  - Zobrazení nápovědy: `python -m crossdiag --help`.\\n\\n- Verifikační scénáře (verification):\\n  - Ověřit, že `python -m crossdiag --help` skončí s návratovým kódem 0 a zobrazí nápovědu.\\n  - Ověřit, že `python -m crossdiag --level basic --format json` vytiskne validní JSON na stdout, který lze úspěšně parsovat pomocí `json.loads()`.\\n  - Ověřit, že při spuštění na Windows nástroj vrátí nenulový počet `PythonInstallation` objektů v JSON reportu (pokud je Python nainstalován) a obsahuje sekci `registry_snapshot` (pokud jsou dostupné klíče).\\n  - Ověřit, že při spuštění na Linuxu nástroj správně detekuje symlinky `python` a `python3` a reportuje jejich cíle.\\n  - Ověřit, že při nedostatečných oprávněních pro čtení některých logů nebo registrů nástroj neskončí chybou, ale vytvoří `DiagnosticIssue` se závažností WARNING nebo ERROR.\\n  - Ověřit, že volba `--anonymize` skutečně nahradí uživatelská jména a hostname v cestách a dalších polích reportu.\\n  - Ověřit, že při záměrně poškozené proměnné PATH (např. neexistující cesty) nástroj tyto problémy detekuje a uvede v seznamu `DiagnosticIssue`.\\n  - Ověřit, že návratový kód procesu je 0 při úspěšném běhu nástroje, i když byly nalezeny problémy v systému, a nenulový při fatální chybě běhu nástroje (např. neodchycená výjimka v diagnostickém modulu).\\n\\n- Deliverable policy:\\n  - `file_generation_strategy`: \\\"PLAN->STRUCTURE->FILE_CONTENT\\\" – generování probíhá ve třech fázích: nejprve plán (A1_PLAN), poté struktura souborů (A2_STRUCTURE) a nakonec konkrétní obsah souborů (A3).\\n  - `max_lines_per_chunk`: 500 – při generování obsahu souborů v A3 je třeba omezit počet řádků na chunk na max. 500, aby se velké soubory dělily na více částí.\\n\\nA2_STRUCTURE (pokračování a rozšíření):\\n- Struktura balíčku `crossdiag` je definována jako JSON objekt s kořenem `root: \\\"crossdiag\\\"` a polem `files`, kde každý prvek popisuje jeden soubor: `path`, `purpose`, `language`, `generated_in_phase`.\\n- Již dříve byly popsány soubory:\\n  - `crossdiag/__init__.py`: inicializace balíčku, reexporty `__version__`, `main`, `CliOptions`, `run_diagnostics`, `DiagnosticReport`.\\n  - `crossdiag/__main__.py`: vstupní bod CLI, funkce `main(argv: list[str] | None = None) -> int`, používá `parse_args`, `run_diagnostics`, `map_exit_code`, `report_to_text`, `report_to_json`, `get_logger`, `DiagnosticReport`, `CrossDiagError`.\\n  - `crossdiag/cli.py`: definice CLI, třída `CliOptions`, funkce `build_arg_parser()` a `parse_args()`, používá `argparse`, `typing`, `ConfigError`.\\n  - `crossdiag/runner.py`: orchestrace diagnostiky, funkce `run_diagnostics(options: CliOptions) -> DiagnosticReport` a `map_exit_code(report: DiagnosticReport) -> int`, importuje diagnostické moduly, anonymizér, logger a chyby.\\n  - `crossdiag/model.py`: datové modely (`DiagnosticReport`, `PythonInstallation`, `PathEntry`, `RegistryKeyInfo`, `RegistrySnapshot`, `LogSource`, `LogEntry`, `SystemInfo`, `DiagnosticIssue`) a enumy (`DiagnosticSeverity`, `DetailLevel`).\\n  - `crossdiag/diag_python.py`: sběr informací o Pythonu a selftest.\\n  - `crossdiag/diag_path.py`: analýza PATH a souvisejících cest.\\n  - `crossdiag/diag_registry.py`: (začátek definice v předchozím chunku, zde jen navazuje) – modul pro čtení a analýzu registru na Windows, vrací `RegistrySnapshot` a `DiagnosticIssue`.\\n\\nCelkový význam:\\n- Tento chunk uzavírá plán tím, že:\\n  - Přidává konkrétní příklady spuštění CLI pro různé scénáře (plná diagnostika, JSON výstup, anonymizace, nápověda).\\n  - Definuje sadu verifikačních testů, které mají být použity k ověření správné funkce nástroje na různých platformách (Windows, Linux), včetně chování při chybách oprávnění, poškozené PATH a anonymizaci.\\n  - Stanovuje politiku generování souborů (strategie a limit řádků na chunk), která bude závazná pro fázi A3 při generování skutečného kódu.\\n- Všechna dříve popsaná pravidla z A1_PLAN zůstávají v platnosti: modulární architektura, jednotné logování, vlastní výjimky, bezpečnostní omezení (read-only přístup, žádné odesílání dat, bezpečné spouštění externích nástrojů), anonymizace citlivých údajů a robustní error handling.\\n- A2_STRUCTURE slouží jako přesná specifikace souborového layoutu a rozhraní mezi moduly, která bude deterministicky použita v další fázi (A3) pro generování implementace.\\n\",\"chunk_index\":4,\"chunk_count\":5,\"notes\":[\"Zachovat všechny příklady CLI příkazů a verifikační scénáře beze změny významu, včetně přesných přepínačů a očekávaných výsledků (návratové kódy, přítomnost sekcí v JSON, chování při chybách).\",\"Dodržet deliverable policy: strategie PLAN->STRUCTURE->FILE_CONTENT a limit 500 řádků na chunk při generování obsahu souborů v A3.\",\"Při navazování v dalších krocích předpokládat, že A2_STRUCTURE již obsahuje kompletní seznam souborů a jejich účel; tento chunk pouze doplňuje kontext a testovací/ověřovací požadavky.\",\"Zachovat vazbu na předchozí části A1_PLAN: bezpečnostní zásady, anonymizace, error handling a datový tok zůstávají neměnné a tento chunk je pouze rozšiřuje o příklady použití a testy.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": "none",
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 4360,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 6116
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767901180,
+    "store": true
+  }
+}

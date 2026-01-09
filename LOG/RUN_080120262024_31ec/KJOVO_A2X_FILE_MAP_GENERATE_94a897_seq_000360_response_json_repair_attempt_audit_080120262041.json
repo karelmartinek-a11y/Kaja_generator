@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262024_31ec",
+    "project": "KJOVO",
+    "stage": "A2X_FILE_MAP",
+    "response_id": "GENERATE_94a897",
+    "event": "response_json_repair_attempt",
+    "sequence": 360,
+    "logged_at": "2026-01-08T19:41:09.589389"
+  },
+  "details": {
+    "event": "response_json_repair_attempt",
+    "level": "warning",
+    "details": {
+      "expected_contract": "A2X_FILE_MAP",
+      "method": "model_repair",
+      "text_chars": 20124,
+      "error": "A2X_FILE_MAP.imports.symbols musí být neprázdný list."
+    },
+    "timestamp": "2026-01-08T19:41:09.589383"
+  }
+}

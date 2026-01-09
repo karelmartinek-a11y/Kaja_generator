@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "A2X_FILE_MAP",
+    "response_id": "GENERATE_53998c",
+    "event": "response_text_extracted",
+    "sequence": 441,
+    "logged_at": "2026-01-08T20:25:43.222881"
+  },
+  "details": {
+    "event": "response_text_extracted",
+    "level": "info",
+    "details": {
+      "expected_contract": "A2X_FILE_MAP",
+      "text_chars": 43712
+    },
+    "timestamp": "2026-01-08T20:25:43.222875"
+  }
+}

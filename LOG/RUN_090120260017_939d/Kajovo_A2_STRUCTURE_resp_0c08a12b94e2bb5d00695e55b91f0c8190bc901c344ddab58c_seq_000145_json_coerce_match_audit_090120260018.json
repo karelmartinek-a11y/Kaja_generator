@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260017_939d",
+    "project": "Kajovo",
+    "stage": "A2_STRUCTURE",
+    "response_id": "resp_0c08a12b94e2bb5d00695e55b91f0c8190bc901c344ddab58c",
+    "event": "json_coerce_match",
+    "sequence": 145,
+    "logged_at": "2026-01-08T23:18:37.722699"
+  },
+  "details": {
+    "event": "json_coerce_match",
+    "level": "info",
+    "details": {
+      "expected_contract": "A2_STRUCTURE",
+      "candidate_count": 2,
+      "parsed_count": 1,
+      "unescape_count": 0,
+      "response_chars": 987
+    },
+    "timestamp": "2026-01-08T23:18:37.722693"
+  }
+}

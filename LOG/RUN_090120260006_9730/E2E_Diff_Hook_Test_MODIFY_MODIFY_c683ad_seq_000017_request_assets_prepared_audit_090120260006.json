@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260006_9730",
+    "project": "E2E Diff/Hook Test",
+    "stage": "MODIFY",
+    "response_id": "MODIFY_c683ad",
+    "event": "request_assets_prepared",
+    "sequence": 17,
+    "logged_at": "2026-01-08T23:06:45.723552"
+  },
+  "details": {
+    "event": "request_assets_prepared",
+    "level": "info",
+    "details": {
+      "mode": "MODIFY",
+      "attachments": 0,
+      "attachment_ids": 0,
+      "vector_store_id": "vs_696038838ea4819191dd7dbb56a066fd",
+      "file_search_enabled": true,
+      "attachments_in_vector_store": false,
+      "attachments_as_input_files": true,
+      "mirror_entries": 2,
+      "diagnostics": 0
+    },
+    "timestamp": "2026-01-08T23:06:45.723547"
+  }
+}

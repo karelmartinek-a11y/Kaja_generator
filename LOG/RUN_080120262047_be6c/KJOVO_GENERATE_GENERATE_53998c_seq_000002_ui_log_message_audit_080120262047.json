@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "run_id": "RUN_080120262047_be6c",
+    "project": "KJOVO",
+    "stage": "GENERATE",
+    "response_id": "GENERATE_53998c",
+    "event": "ui_log_message",
+    "sequence": 2,
+    "logged_at": "2026-01-08T19:47:56.152657"
+  },
+  "details": {
+    "message": "Spouštím sekvenci A1 → A2 → A2X → A3",
+    "timestamp_local": "20:47:56",
+    "source": "ui_log"
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "run_id": "RUN_090120260017_939d",
+    "project": "Kajovo",
+    "stage": "A1_LONG_PROMPT",
+    "response_id": "resp_0c08a12b94e2bb5d00695e55b91f0c8190bc901c344ddab58c",
+    "logged_at": "2026-01-08T23:18:10.790900",
+    "request_id": "f2165392"
+  },
+  "payload": {
+    "id": "resp_0eaa74684684c7a10069603b28062081a28dad818d3d928a4d",
+    "created_at": 1767914280.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": "Jsi kompresní modul. Vrať pouze validní JSON bez markdownu. KONTRAKT LONG_PROMPT_COMPRESS: {\"contract\": \"LONG_PROMPT_COMPRESS\", \"summary\": \"string\", \"chunk_index\": \"integer\", \"chunk_count\": \"integer\", \"notes\": [\"string\"]}. Zachovej všechna pravidla, kontrakty a význam. Výsledek musí být deterministicky použitelný jako vstup pro další kroky. Limit: summary <= 46080 tokenů (1 token ~ 4 znaky).",
+    "metadata": {},
+    "model": "gpt-4o-2024-08-06",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_0eaa74684684c7a10069603b2a6dc881a2821e5e01b4a5eb8f",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"contract\":\"LONG_PROMPT_COMPRESS\",\"summary\":\"This document provides a comprehensive guide for the 'Kája' application, a Windows-based desktop program designed to automate requests to OpenAI's Responses API and process responses. It includes detailed program requirements, design guidelines, and implementation instructions. Key sections cover the user interface design, program functionality, and technical specifications. The program must be robust, with features like API key management, file handling, and batch processing. It should support various operational modes and include detailed logging and error handling. The document also outlines the diagnostics, pricing, and security measures, as well as guidelines for the user interface and interaction elements. Additionally, it includes a detailed appendix with original requirements and a full diagnostic package for Windows and Ubuntu systems.\",\"chunk_index\":2,\"chunk_count\":4,\"notes\":[\"The document is structured to ensure no detail is lost, even if redundant.\",\"It includes a comprehensive list of files and diagnostics for both Windows and Ubuntu systems.\",\"The design guidelines emphasize a minimalist, black-and-white UI with specific font and color rules.\",\"The program must handle various operational modes and provide detailed logging and error handling.\"]}",
+            "type": "output_text",
+            "logprobs": []
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 0.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "background": false,
+    "conversation": null,
+    "max_output_tokens": null,
+    "max_tool_calls": null,
+    "previous_response_id": null,
+    "prompt": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": null,
+    "reasoning": {
+      "effort": null,
+      "generate_summary": null,
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "top_logprobs": 0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 33612,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 231,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 33843
+    },
+    "user": null,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1767914290,
+    "store": true
+  }
+}
