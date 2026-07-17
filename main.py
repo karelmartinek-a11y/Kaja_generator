@@ -5,7 +5,7 @@ from pathlib import Path
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QApplication
 
-from kaja.ui.main_window import MainWindow
+from kaja.ui.boot_window import BootScreenWindow
 from tmp_write_settings import ensure_settings_file
 
 LOGGER = logging.getLogger(__name__)
@@ -48,7 +48,10 @@ def main() -> int:
     ensure_settings_file(project_root)
     app = QApplication(sys.argv)
     _register_fonts(project_root)
-    window = MainWindow()
+    window = BootScreenWindow()
+    screen = app.primaryScreen()
+    if screen:
+        window.setGeometry(screen.availableGeometry())
     window.showMaximized()
     return app.exec()
 
